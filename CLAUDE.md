@@ -1,4 +1,4 @@
-# Moneylog (moneylog.dudeocode.com)
+# Moneylog (moneylog.vibecodelab.dev)
 
 - 문서 세트 버전: v0.5 / 최종 수정: 2026-10-09
 

@@ -9,7 +9,7 @@
 | VS Code + Claude CLI | 코드를 만드는 곳 | 작업대 |
 | GitHub | 코드 보관 | 보관함 |
 | Vercel | 코드를 인터넷에 공개 | 가게 |
-| Cloudflare | `moneylog.dudeocode.com` 주소 연결 | 주소록 |
+| Cloudflare | `moneylog.vibecodelab.dev` 주소 연결 | 주소록 |
 | Supabase | 로그인과 데이터 저장 | 금고 |
 
 흐름: 코드 수정 → GitHub에 올림(push) → Vercel이 자동으로 다시 공개
@@ -78,13 +78,13 @@ dist
 2. 배포가 끝나면 `xxxx.vercel.app` 주소가 생긴다. 열어서 "Moneylog"가 보이는지 확인
 
 ## 6. 도메인 연결 (Cloudflare + Vercel)
-1. Vercel 프로젝트 **Settings → Domains**에 `moneylog.dudeocode.com` 입력
+1. Vercel 프로젝트 **Settings → Domains**에 `moneylog.vibecodelab.dev` 입력
 2. Vercel이 알려주는 값(보통 CNAME)을 확인
 3. Cloudflare **DNS**에서 레코드 추가
    - Type: `CNAME` / Name: `moneylog` / Target: Vercel이 알려준 값
    - **프록시 상태는 처음엔 "DNS only"(회색 구름)로 둔다.** (주황 구름이면 인증서 연결에서 막히기 쉬움)
 4. Vercel Domains 화면에서 상태가 Valid로 바뀔 때까지 기다린다. (몇 분~몇 십 분)
-5. `https://moneylog.dudeocode.com`에서 자물쇠와 함께 "Moneylog"가 보이면 성공
+5. `https://moneylog.vibecodelab.dev`에서 자물쇠와 함께 "Moneylog"가 보이면 성공
 
 ## 7. Supabase 연결
 1. Supabase에서 새 프로젝트 `moneylog` 생성
@@ -100,8 +100,8 @@ VITE_SUPABASE_ANON_KEY=복사한_anon_key
 ```
 5. Vercel: **Settings → Environment Variables**에 같은 이름 두 개를 등록 후 **다시 배포(Redeploy)**
 6. Supabase **Authentication → URL Configuration**
-   - Site URL: `https://moneylog.dudeocode.com`
-   - Redirect URLs: `https://moneylog.dudeocode.com`, `http://localhost:5173`
+   - Site URL: `https://moneylog.vibecodelab.dev`
+   - Redirect URLs: `https://moneylog.vibecodelab.dev`, `http://localhost:5173`
 
 ## 8. 매일 작업 흐름
 ```bash
@@ -124,7 +124,7 @@ git push                        # GitHub에 올리기 → Vercel 자동 배포
 | `.env`를 GitHub에 올려버림 | 즉시 Supabase에서 anon key 재발급, Claude CLI에게 기록에서 제거하는 방법 문의 |
 
 ## 10. 완료 체크리스트 (단계 1~2)
-- [ ] `moneylog.dudeocode.com`에서 "Moneylog"가 보인다 (자물쇠 포함)
+- [ ] `moneylog.vibecodelab.dev`에서 "Moneylog"가 보인다 (자물쇠 포함)
 - [ ] 새로고침해도 404가 나지 않는다
 - [ ] GitHub 저장소가 Private이고 `.env`가 올라가 있지 않다
 - [ ] 폰과 PC에서 같은 계정으로 로그인된다
@@ -133,7 +133,7 @@ git push                        # GitHub에 올리기 → Vercel 자동 배포
 
 ## 11. 폰·PC에 설치하기 (PWA)
 
-PWA는 인터넷 주소(`moneylog.dudeocode.com`)를 앱처럼 설치해서 쓰는 방식이다. 앱스토어 등록 없이 홈 화면 아이콘으로 열 수 있다. 단계 1에서 만들고 단계 2·12에서 다시 확인한다.
+PWA는 인터넷 주소(`moneylog.vibecodelab.dev`)를 앱처럼 설치해서 쓰는 방식이다. 앱스토어 등록 없이 홈 화면 아이콘으로 열 수 있다. 단계 1에서 만들고 단계 2·12에서 다시 확인한다.
 
 ### 설치 방법
 | 기기 | 방법 |
@@ -227,7 +227,7 @@ export default {
 ```
 
 ### 확인 방법
-1. 배포한 주소(`https://moneylog.dudeocode.com`)를 크롬으로 연다.
+1. 배포한 주소(`https://moneylog.vibecodelab.dev`)를 크롬으로 연다.
 2. `F12` → Application → Manifest에 오류가 없고, Service Workers가 활성인지 본다.
 3. 폰으로 설치해 보고, 홈 화면 아이콘으로 열었을 때 주소창이 없는지 확인한다.
 4. 로그인한 뒤 앱을 완전히 닫았다가 다시 열어도 로그인이 유지되는지 확인한다.

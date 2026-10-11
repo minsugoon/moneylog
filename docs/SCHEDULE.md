@@ -16,7 +16,7 @@
 ## 전체 일정 (약 6주, 하루 1~2시간 기준)
 | 주 | 단계 | 결과물 |
 |----|------|--------|
-| 1주 | 0~2 | 환경 준비, 빈 앱이 moneylog.dudeocode.com에 공개, 폰·PC 화면 틀, PWA 설치, 로그인 |
+| 1주 | 0~2 | 환경 준비, 빈 앱이 moneylog.vibecodelab.dev에 공개, 폰·PC 화면 틀, PWA 설치, 로그인 |
 | 2주 | 3~4 | 결제수단 등록, 직접 입력, 내역 목록, 메모·하루 정리 |
 | 3주 | 5~6 | 할부 계산, 고정지출, 보기 3종 → **MVP 완성** |
 | 4주 | 7~8 | 붙여넣기·문자 인식, 고정지출 자동 인식 |
@@ -45,7 +45,7 @@
 - [ ] `index.html`에 `lang="ko"`, `noindex`, `viewport-fit=cover` 설정
 - [ ] 화면 틀: 모바일은 하단 탭 4개(내역/입력/보기/설정), PC는 좌측 사이드바. 내용은 빈 화면이면 된다. `components/layout/`에 분리 (`PRD.md` 5-1장)
 - [ ] PWA 기본: `vite-plugin-pwa` 설치, manifest, 임시 아이콘 4종, `index.html`에 아이폰용 메타 태그 (`SETUP_GUIDE.md` 11장)
-- 완료 확인: moneylog.dudeocode.com에서 "Moneylog"가 보인다 (HTTPS 자물쇠 포함)
+- 완료 확인: moneylog.vibecodelab.dev에서 "Moneylog"가 보인다 (HTTPS 자물쇠 포함)
 - 완료 확인(PWA): 폰 홈 화면에 추가하면 아이콘이 생기고, 그 아이콘으로 열면 주소창 없이 열린다
 - 완료 확인(화면 틀): 브라우저 창 폭을 줄였다 늘리면 하단 탭과 사이드바가 바뀐다
 - 막히기 쉬운 곳: Cloudflare 프록시(주황 구름)는 처음엔 "DNS only"로 둔다.
@@ -53,7 +53,7 @@
 ## 단계 2. Supabase 연결 + 로그인 (2일)
 - [ ] 새 Supabase 프로젝트 생성, `DATA_MODEL.md`의 **1~4번 SQL**(결제수단·내역·고정지출 표) 실행
 - [ ] 로컬 `.env`와 Vercel 환경변수에 URL, anon key 등록
-- [ ] Supabase Auth의 Site URL과 Redirect URL에 `https://moneylog.dudeocode.com`과 `http://localhost:5173` 등록
+- [ ] Supabase Auth의 Site URL과 Redirect URL에 `https://moneylog.vibecodelab.dev`과 `http://localhost:5173` 등록
 - [ ] 로그인/로그아웃 화면, 로그인 안 하면 접근 불가
 - [ ] 로그인 방식은 이메일+비밀번호. 이메일 링크(매직링크)는 쓰지 않는다 (아이폰 설치 앱에서 로그인이 끊김)
 - 완료 확인: 폰과 PC에서 같은 계정으로 로그인되고, 설치한 앱(홈 화면 아이콘)에서도 로그인이 유지된다

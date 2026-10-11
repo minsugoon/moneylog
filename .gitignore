@@ -1,0 +1,24 @@
+# 패키지·빌드 결과
+node_modules
+dist
+dev-dist
+*.tsbuildinfo
+
+# 환경변수 (키가 들어 있으므로 절대 올리지 않는다)
+.env
+.env.local
+.env.*.local
+
+# 로그
+*.log
+npm-debug.log*
+
+# 에디터·OS
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+Thumbs.db
+
+# Vercel
+.vercel

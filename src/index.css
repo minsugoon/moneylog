@@ -1,0 +1,20 @@
+@import 'tailwindcss';
+
+/* 화면 폭 기준: 기본 = 모바일, md: = 768px(태블릿), pc: = 1100px(PC) */
+@theme {
+  --breakpoint-pc: 1100px;
+  --color-brand: #2c4dd6;
+  --color-app-bg: #f2f4f9;
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
+body {
+  background-color: var(--color-app-bg);
+  color: #1f2937;
+  -webkit-tap-highlight-color: transparent;
+}

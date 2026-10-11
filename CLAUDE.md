@@ -147,7 +147,7 @@ moneylog/
 ## 10-1. PWA 규칙 (PRD 8-1장)
 - 설치 가능한 PWA로 만든다. manifest(이름 Moneylog, display standalone, lang ko, 테마 색 `#2C4DD6`, 배경 색 `#F2F4F9`), 아이콘 4종, 서비스워커.
 - 서비스워커는 **앱 껍데기(화면 파일)만 캐시**한다. Supabase 요청(`*.supabase.co`)은 절대 캐시하지 않는다(NetworkOnly). 내역과 로그인 정보를 기기 캐시에 남기지 않기 위해서다.
-- 로그인은 이메일+비밀번호로 한다. 이메일 링크(매직링크)는 쓰지 않는다. 아이폰에서 링크가 설치한 앱이 아니라 Safari로 열려 로그인이 끊긴다.
+- 가입·로그인은 구글(기본) + 이메일+비밀번호(예비) 두 가지를 제공한다. 이메일 링크(매직링크) 로그인은 쓰지 않는다. 아이폰에서 링크가 설치한 앱이 아니라 Safari로 열려 로그인이 끊긴다. 구글 로그인도 바깥 페이지를 거치므로 아이폰 설치 앱에서 꼭 확인한다. Apple 로그인은 정식 런칭 단계에서 추가한다.
 - `index.html`에 아이폰용 메타 태그(`apple-mobile-web-app-capable`, `apple-touch-icon`, `theme-color`)를 넣는다.
 - 새 버전을 배포하면 다음 실행 때 자동 갱신한다 (`registerType: 'autoUpdate'`).
 - PWA는 `npm run dev`에서 설치 확인이 어렵다. 배포 주소, 또는 `npm run build` 후 `npm run preview`로 확인한다.

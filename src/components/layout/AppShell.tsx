@@ -1,12 +1,17 @@
-import { useState } from 'react'
+import { useState, type ReactNode } from 'react'
 import type { TabKey } from './navItems.ts'
 import BottomTabs from './BottomTabs.tsx'
 import SideNav from './SideNav.tsx'
 import QuickEntryPanel from './QuickEntryPanel.tsx'
 
+interface AppShellProps {
+  // 탭마다 보여줄 화면. 아직 없는 탭은 비워 둔다.
+  pages: Partial<Record<TabKey, ReactNode>>
+}
+
 // 화면 틀: 폭에 따라 배치만 바뀐다 (CSS로만 구분)
 // 모바일: 본문 + 하단 탭 / 태블릿: 사이드바 + 본문 / PC: 사이드바 + 본문 + 빠른 입력
-function AppShell() {
+function AppShell({ pages }: AppShellProps) {
   const [activeTab, setActiveTab] = useState<TabKey>('list')
 
   return (
@@ -18,8 +23,9 @@ function AppShell() {
         <header className="px-4 pt-[calc(1rem+env(safe-area-inset-top))] pb-2 md:hidden">
           <h1 className="text-xl font-bold text-brand">Moneylog</h1>
         </header>
-        {/* 각 탭의 내용은 다음 단계에서 채운다 */}
-        <section className="p-4 md:p-6" aria-label="본문" />
+        <section className="p-4 md:p-6" aria-label="본문">
+          {pages[activeTab]}
+        </section>
       </main>
 
       <QuickEntryPanel />

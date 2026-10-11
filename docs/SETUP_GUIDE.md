@@ -102,6 +102,25 @@ VITE_SUPABASE_ANON_KEY=복사한_anon_key
 6. Supabase **Authentication → URL Configuration**
    - Site URL: `https://moneylog.vibecodelab.dev`
    - Redirect URLs: `https://moneylog.vibecodelab.dev`, `http://localhost:5173`
+7. Supabase **Authentication → Sign In / Providers → Email**
+   - Email 켜짐, "Confirm email" 켜짐(가입하면 확인 메일이 간다. 메일 링크를 누른 뒤 앱에서 비밀번호로 로그인)
+
+## 7-1. 구글 로그인 연결
+구글 로그인은 "구글이 이 사람이 맞다고 보증해 주는" 방식이다. 구글과 Supabase 양쪽에 서로를 등록해야 한다.
+
+1. Supabase **Authentication → Sign In / Providers → Google**을 열어 **Callback URL**을 복사해 둔다.
+   - 모양: `https://<프로젝트ID>.supabase.co/auth/v1/callback`
+2. [Google Cloud Console](https://console.cloud.google.com)에서 새 프로젝트 `moneylog` 생성
+3. **Google Auth Platform**(또는 APIs & Services → OAuth consent screen)
+   - 앱 이름 `Moneylog`, 지원 이메일 입력, 대상(Audience)은 **External(외부)**
+   - 처음에는 "테스트" 상태다. 테스트 상태에서는 **테스트 사용자로 등록한 구글 계정만** 로그인된다. 내 구글 계정을 테스트 사용자에 추가한다.
+4. **Clients(사용자 인증 정보) → OAuth 클라이언트 만들기**
+   - 유형: **웹 애플리케이션**
+   - 승인된 JavaScript 원본: `https://moneylog.vibecodelab.dev`, `http://localhost:5173`
+   - 승인된 리디렉션 URI: 1번에서 복사한 Supabase Callback URL
+5. 만들어진 **클라이언트 ID**와 **클라이언트 보안 비밀번호**를 Supabase Google 화면에 붙여넣고 켠 뒤 저장
+   - ⚠ 클라이언트 보안 비밀번호는 Supabase 화면에만 넣는다. 코드·`.env`·채팅에 넣지 않는다.
+6. 정식 런칭 때: 동의 화면을 "프로덕션"으로 게시하고 구글 검수를 받는다. 개인정보 처리방침 주소가 필요하다.
 
 ## 8. 매일 작업 흐름
 ```bash
@@ -119,6 +138,9 @@ git push                        # GitHub에 올리기 → Vercel 자동 배포
 | 도메인이 안 열림 | Cloudflare가 "DNS only"인지, Vercel Domains가 Valid인지 |
 | 새로고침하면 404 | `vercel.json`이 있는지 |
 | 로그인 후 주소가 이상하게 이동 | Supabase Redirect URLs에 도메인이 등록됐는지 |
+| 구글 로그인에서 `redirect_uri_mismatch` | Google Cloud의 승인된 리디렉션 URI가 Supabase Callback URL과 글자 하나까지 같은지 |
+| 구글 로그인에서 "액세스 차단됨" | 동의 화면이 테스트 상태라면 내 구글 계정이 테스트 사용자에 있는지 |
+| 구글 로그인 후 localhost로 돌아감 | Supabase Site URL이 배포 주소인지, Redirect URLs에 배포 주소가 있는지 |
 | 배포 후 데이터가 안 불러와짐 | Vercel 환경변수 등록 후 Redeploy 했는지 |
 | 로컬에서는 되는데 배포에서 안 됨 | 환경변수 이름이 `VITE_`로 시작하는지 |
 | `.env`를 GitHub에 올려버림 | 즉시 Supabase에서 anon key 재발급, Claude CLI에게 기록에서 제거하는 방법 문의 |
@@ -236,7 +258,7 @@ export default {
 | 증상 | 확인할 것 |
 |------|-----------|
 | 설치 항목이 안 보임 | 주소가 HTTPS인지, Manifest 오류가 없는지, 512×512 아이콘이 있는지 |
-| 아이폰에서 설치 후 로그인이 풀림 | 이메일 링크 로그인을 쓰고 있지 않은지. 이메일+비밀번호로 바꾼다 |
+| 아이폰에서 설치 후 로그인이 풀림 | 이메일 링크 로그인을 쓰고 있지 않은지. 구글 로그인 후 앱으로 돌아오지 않으면 이메일+비밀번호로 로그인한다 |
 | 새 버전이 안 보임 | 앱을 완전히 종료(앱 전환 화면에서 위로 밀기)한 뒤 다시 열기 |
 | 안드로이드 아이콘이 잘림 | 마스커블 아이콘의 글자를 가운데 80% 안에 두기 |
 | `npm run dev`에서 설치가 안 됨 | 정상이다. 배포 주소나 `npm run build` 후 `npm run preview`로 확인 |

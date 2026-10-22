@@ -22,3 +22,6 @@ Thumbs.db
 
 # Vercel
 .vercel
+
+# Claude Code 개인 권한 설정 (컴퓨터마다 다르므로 올리지 않는다)
+.claude/settings.local.json

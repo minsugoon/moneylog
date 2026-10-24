@@ -1,6 +1,6 @@
 # Moneylog (moneylog.vibecodelab.dev)
 
-- 문서 세트 버전: v0.6 / 최종 수정: 2026-10-19
+- 문서 세트 버전: v0.6 / 최종 수정: 2026-10-24
 - 이어서 작업할 때는 맨 아래 **14장 "현재 진행 상황"**을 먼저 읽는다.
 
 ## 0. 먼저 읽을 것
@@ -168,22 +168,22 @@ moneylog/
 ## 13. 하지 않는 것 (PRD 범위 밖)
 지출 분류/카테고리, 예산 설정, 은행·카드사 자동 연동(API), 전체 계좌번호 저장, 카드사 실적 조건 자동 수집, 제외 판단의 100% 자동화, 앱스토어 등록용 네이티브 앱(PWA 설치로 대신)
 
-## 14. 현재 진행 상황 (2026-10-19 기준, 데스크탑 → 노트북 인수인계)
+## 14. 현재 진행 상황 (2026-10-24 기준)
 
 ### 14-1. 단계별 상태
 | 단계 | 상태 | 커밋 | 내용 |
 |------|------|------|------|
 | 1 | ✅ 완료 (2026-10-11) | `cf6b186` | Vite+React+TS+Tailwind 뼈대, 반응형 화면 틀(하단 탭/사이드바/빠른 입력 자리), PWA 설정, Vercel 배포, 도메인 moneylog.vibecodelab.dev 연결 |
 | 1 이후 | ✅ | `ce23972`, `67b6470` | 도메인을 moneylog.vibecodelab.dev로 문서 일괄 변경, `.mcp.json`(Supabase MCP) 추가 |
-| 2 | 🔶 코드 완료, 완료 확인 남음 | `32300bf` | Supabase 연결, 구글 로그인(기본) + 이메일·비밀번호 가입/로그인(예비), 로그인 안 하면 앱 진입 불가, 설정 화면에 계정 정보·로그아웃 |
-| 3~12 | ⬜ 시작 전 | | |
+| 2 | ✅ 완료 (2026-10-24) | `32300bf` | Supabase 연결, 구글 로그인(기본) + 이메일·비밀번호 가입/로그인(예비), 로그인 안 하면 앱 진입 불가, 설정 화면에 계정 정보·로그아웃. Supabase는 **새 프로젝트로 다시 만들었고**(ID `nytowuyczllgwuomoivv`), DB 표 3개(accounts, transactions, fixed_rules)와 보안 규칙을 2026-10-24에 만들어 확인함 |
+| 3 | ⬜ 다음 차례 (계획 확인 대기) | | 결제수단 등록 |
+| 4~12 | ⬜ 시작 전 | | |
 
-### 14-2. 단계 2에서 남은 일 (다음 작업은 여기부터)
-- [ ] Supabase에 `DATA_MODEL.md` **1~4번 SQL**(결제수단·내역·고정지출 표)이 실행됐는지 확인 — 2026-10-19에 MCP 연결 시간 초과로 **확인 못 함**. Supabase Table Editor에서 `accounts`, `transactions`, `fixed_rules` 표가 있는지 눈으로 확인한다. 없으면 실행.
-- [ ] Vercel 환경변수(`VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`) 등록 후 Redeploy 했는지 확인
-- [ ] 완료 확인: 폰과 PC에서 같은 계정으로 로그인, 설치한 앱(홈 화면 아이콘)에서도 로그인 유지
-- [ ] 완료 확인(구글): 아이폰 설치 앱에서 "구글로 계속하기" → 로그인 후 앱으로 돌아오는지
-- [ ] 모두 통과하면 `docs/SCHEDULE.md` 진행 기록의 단계 2 완료일을 채우고 커밋 → 단계 3(결제수단 등록) 시작
+### 14-2. 다음 작업은 여기부터
+- [ ] **단계 3(결제수단 등록)**: 만들 파일 목록과 계획을 먼저 말하고 OK를 받은 뒤 진행한다. 필요한 표 `accounts`는 이미 만들어져 있다.
+- [ ] (선택) Supabase 점검 도구 경고 정리: ① `public.rls_auto_enable()` 함수를 로그인 안 한 사용자도 실행 가능(Supabase 기본 함수로 보임, 내용 확인 후 외부 실행 권한 회수) ② 이메일 가입의 "유출된 비밀번호 차단"이 꺼짐(대시보드 설정, 요금제에 따라 불가) ③ 보안 규칙의 `auth.uid()`를 `(select auth.uid())`로 바꾸면 빠름(내역이 많아지기 전에 적용하고 `DATA_MODEL.md`도 함께 고친다)
+- [ ] 데스크탑에도 `.env`가 있다면 새 Supabase 값(URL, Publishable key)으로 바꾼다
+- 참고(해결됨): 구글 로그인 후 `localhost:3000`으로 돌아가던 문제는 Supabase **Site URL이 기본값**이어서였다. Authentication → URL Configuration에서 Site URL을 `https://moneylog.vibecodelab.dev`로, Redirect URLs에 `https://moneylog.vibecodelab.dev/**`, `http://localhost:5173/**`를 등록해 해결했다. Supabase 프로젝트를 새로 만들면 구글 로그인 설정과 이 주소 등록을 다시 해야 한다.
 
 ### 14-3. 지금까지 만든 파일 (화면/로직 위치)
 - `src/App.tsx` — 로그인 여부에 따라 "설정 필요 / 확인 중 / 로그인 화면 / 앱 본문"을 고른다
@@ -205,8 +205,8 @@ moneylog/
 ### 14-5. 새 컴퓨터(노트북)에서 처음 할 일
 1. Node.js(LTS), Git, VS Code, Claude Code 설치 후 로그인 (`SETUP_GUIDE.md`)
 2. `git clone` 으로 GitHub Private 저장소 `moneylog`를 받는다 → 폴더에서 `npm install`
-3. **`.env`는 GitHub에 없다.** 프로젝트 맨 위에 `.env`를 새로 만들고 Supabase 대시보드(Project Settings → API)에서 URL과 anon key를 다시 복사해 넣는다. (`.env.example` 모양 참고. 메신저·메일로 키를 보내지 않는다.)
+3. **`.env`는 GitHub에 없다.** 프로젝트 맨 위에 `.env`를 새로 만들고 Supabase 대시보드(Project Settings → API Keys)에서 URL과 **Publishable key**(`sb_publishable_…`)를 다시 복사해 넣는다. 변수 이름은 `VITE_SUPABASE_ANON_KEY` 그대로 쓴다. Secret key와 `service_role`은 쓰지 않는다. (`.env.example` 모양 참고. 메신저·메일로 키를 보내지 않는다.)
 4. `npm run dev` → `http://localhost:5173` 에서 로그인 화면이 뜨고 로그인되는지 확인. (localhost:5173은 Supabase·Google 양쪽에 이미 등록되어 있어 노트북에서도 그대로 된다. 포트가 5173이 아니면 로그인 후 돌아오지 못하니 다른 dev 서버를 끄고 다시 실행.)
-5. Claude Code에서 Supabase MCP(`.mcp.json`, 읽기 전용) 사용 시 처음 한 번 Supabase 로그인(인증) 창이 뜬다. 허용한다.
+5. Claude Code에서 Supabase MCP(`.mcp.json`, **쓰기 가능** `read_only=false`) 사용 시 처음 한 번 `/mcp`에서 Supabase 로그인(인증)을 한다. 인증은 노트북 브라우저에서 해야 하고, 한 번 하면 Remote Control(폰)에서도 쓴다. 쓰기 권한이라 SQL은 실행 전에 내용을 보여주고 확인을 받으며, 구조를 바꾸면 `docs/DATA_MODEL.md`도 함께 고친다. 삭제와 RLS 끄기는 하지 않는다.
 6. `.claude/settings.local.json`(권한 허용 목록)과 Claude 메모리는 컴퓨터마다 따로라 옮겨지지 않는다. 필요한 내용은 이 문서에 다 적었다.
 7. `git pull` 로 시작하고 `git push` 로 끝내는 습관: 데스크탑과 노트북을 오갈 때 충돌을 막는다.

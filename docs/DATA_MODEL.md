@@ -1,6 +1,7 @@
 # Moneylog 데이터 구조 (Supabase)
 
-- 버전: v0.5 / 최종 수정: 2026-10-09
+- 버전: v0.6 / 최종 수정: 2026-10-25
+- 변경(v0.6): 보안 규칙(policy)의 `auth.uid()`를 `(select auth.uid())`로 바꿈. 내역이 많아져도 빠르게 하기 위한 Supabase 권장 방식이고 결과는 같다.
 - 원칙: 모든 표는 `user_id = auth.uid()`인 행만 읽고 쓴다 (RLS). 전체 카드·계좌번호는 저장하지 않는다.
 - DB를 바꾸면 이 문서도 같이 고친다.
 
@@ -24,6 +25,12 @@
 | 8 | 제외 키워드 표 + 보안 | 단계 10 |
 
 한 번에 모두 실행해도 문제는 없다. 새 프로젝트에서 **SQL Editor**에 붙여넣고 **Run**.
+
+**적용 현황 (2026-10-25, 새 Supabase 프로젝트 `nytowuyczllgwuomoivv`)**
+- 1~5번 적용 완료: `accounts`, `transactions`, `fixed_rules`, `daily_notes` + 보안 규칙 (Claude가 Supabase MCP로 적용)
+- 6~7번(단계 9), 8번(단계 10)은 해당 단계 시작 전에 적용
+- 추가 조치: Supabase 기본 함수 `public.rls_auto_enable()`(새 표에 보안을 자동으로 켜 주는 안전장치)의 외부 실행 권한을 회수했다. 안전장치 자체는 계속 작동한다.
+- 남은 점검 경고: "유출된 비밀번호 차단"은 Supabase 대시보드(Authentication)에서만 켤 수 있다. 요금제에 따라 못 켤 수 있다.
 
 ## 3. SQL 전체본
 
@@ -90,11 +97,11 @@ alter table public.transactions enable row level security;
 alter table public.fixed_rules enable row level security;
 
 create policy "own accounts" on public.accounts
-  for all using (user_id = auth.uid()) with check (user_id = auth.uid());
+  for all using (user_id = (select auth.uid())) with check (user_id = (select auth.uid()));
 create policy "own transactions" on public.transactions
-  for all using (user_id = auth.uid()) with check (user_id = auth.uid());
+  for all using (user_id = (select auth.uid())) with check (user_id = (select auth.uid()));
 create policy "own fixed_rules" on public.fixed_rules
-  for all using (user_id = auth.uid()) with check (user_id = auth.uid());
+  for all using (user_id = (select auth.uid())) with check (user_id = (select auth.uid()));
 ```
 
 ### 5) 하루 정리 (일기) + 보안
@@ -113,7 +120,7 @@ create index daily_notes_user_date_idx on public.daily_notes (user_id, note_date
 
 alter table public.daily_notes enable row level security;
 create policy "own daily_notes" on public.daily_notes
-  for all using (user_id = auth.uid()) with check (user_id = auth.uid());
+  for all using (user_id = (select auth.uid())) with check (user_id = (select auth.uid()));
 ```
 - 하루에 한 편만 저장한다 (`unique (user_id, note_date)`). 저장은 "있으면 고치고 없으면 만드는" 방식(upsert)으로 한다.
 - 내용을 지우면 그 행을 삭제한다 (빈 글은 저장하지 않음).
@@ -172,9 +179,9 @@ alter table public.card_programs enable row level security;
 alter table public.card_benefits enable row level security;
 
 create policy "own card_programs" on public.card_programs
-  for all using (user_id = auth.uid()) with check (user_id = auth.uid());
+  for all using (user_id = (select auth.uid())) with check (user_id = (select auth.uid()));
 create policy "own card_benefits" on public.card_benefits
-  for all using (user_id = auth.uid()) with check (user_id = auth.uid());
+  for all using (user_id = (select auth.uid())) with check (user_id = (select auth.uid()));
 ```
 - `required_amount`가 비어 있으면 프로그램의 `target_amount`를 쓴다.
 
@@ -197,7 +204,7 @@ create index exclusion_rules_user_idx on public.exclusion_rules (user_id, is_act
 
 alter table public.exclusion_rules enable row level security;
 create policy "own exclusion_rules" on public.exclusion_rules
-  for all using (user_id = auth.uid()) with check (user_id = auth.uid());
+  for all using (user_id = (select auth.uid())) with check (user_id = (select auth.uid()));
 ```
 - `interest_free`(무이자 할부)는 키워드가 아니라 내역의 체크 칸으로 판단하므로 `category`에 없다.
 - 기본 키워드는 SQL이 아니라 **앱이 첫 로그인 때 자동 등록**한다. (목록 수정이 쉽도록)

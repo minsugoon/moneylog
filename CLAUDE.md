@@ -1,6 +1,6 @@
 # Moneylog (moneylog.vibecodelab.dev)
 
-- 문서 세트 버전: v0.6 / 최종 수정: 2026-10-24
+- 문서 세트 버전: v0.6 / 최종 수정: 2026-10-25
 - 이어서 작업할 때는 맨 아래 **14장 "현재 진행 상황"**을 먼저 읽는다.
 
 ## 0. 먼저 읽을 것
@@ -168,39 +168,49 @@ moneylog/
 ## 13. 하지 않는 것 (PRD 범위 밖)
 지출 분류/카테고리, 예산 설정, 은행·카드사 자동 연동(API), 전체 계좌번호 저장, 카드사 실적 조건 자동 수집, 제외 판단의 100% 자동화, 앱스토어 등록용 네이티브 앱(PWA 설치로 대신)
 
-## 14. 현재 진행 상황 (2026-10-24 기준)
+## 14. 현재 진행 상황 (2026-10-25 기준)
 
 ### 14-1. 단계별 상태
 | 단계 | 상태 | 커밋 | 내용 |
 |------|------|------|------|
-| 1 | ✅ 완료 (2026-10-11) | `cf6b186` | Vite+React+TS+Tailwind 뼈대, 반응형 화면 틀(하단 탭/사이드바/빠른 입력 자리), PWA 설정, Vercel 배포, 도메인 moneylog.vibecodelab.dev 연결 |
-| 1 이후 | ✅ | `ce23972`, `67b6470` | 도메인을 moneylog.vibecodelab.dev로 문서 일괄 변경, `.mcp.json`(Supabase MCP) 추가 |
-| 2 | ✅ 완료 (2026-10-24) | `32300bf` | Supabase 연결, 구글 로그인(기본) + 이메일·비밀번호 가입/로그인(예비), 로그인 안 하면 앱 진입 불가, 설정 화면에 계정 정보·로그아웃. Supabase는 **새 프로젝트로 다시 만들었고**(ID `nytowuyczllgwuomoivv`), DB 표 3개(accounts, transactions, fixed_rules)와 보안 규칙을 2026-10-24에 만들어 확인함 |
-| 3 | ⬜ 다음 차례 (계획 확인 대기) | | 결제수단 등록 |
-| 4~12 | ⬜ 시작 전 | | |
+| 1 | ✅ 완료 (2026-10-11) | `cf6b186` | Vite+React+TS+Tailwind 뼈대, 반응형 화면 틀, PWA 설정, Vercel 배포, 도메인 moneylog.vibecodelab.dev 연결 |
+| 2 | ✅ 완료 (2026-10-24) | `32300bf` | Supabase 연결, 구글 로그인(기본) + 이메일·비밀번호(예비). Supabase는 **새 프로젝트**(ID `nytowuyczllgwuomoivv`)로 다시 만들었다 |
+| 3 | ✅ 코드 완료 (2026-10-25) | `65b1d9d` | 결제수단 등록·수정·삭제·사용중지·순서변경 (설정 탭) |
+| 4 | ✅ 코드 완료 (2026-10-25) | `3ba7dc9` | 입력 폼, 내역 목록, 메모, 하루 정리(자동 저장), PC 빠른 입력 패널. `daily_notes` 표 생성 |
+| 5 | ✅ 코드 완료 (2026-10-25) | `8e4dd35` | 할부 회차·잔액, 사용일/월 납부액 기준 토글, 고정지출 입력 |
+| 6 | ✅ 코드 완료 (2026-10-25) | `54abcb9` | 보기 3종(고정지출·기간별·결제수단별) → **MVP 코드 완성** |
+| 7~12 | ⬜ 시작 전 | | 붙여넣기·문자 인식 → 고정지출 자동 인식 → 카드 실적 → 실적 제외 → 파일 업로드 → 마무리 |
+
+"코드 완료"는 빌드·테스트(66개)·DB 동작 검증까지 끝났다는 뜻이다. 로그인이 필요한 화면은 Claude가 직접 눌러볼 수 없어서 **사람이 직접 확인하는 단계가 남아 있다.** (14-2 참고)
 
 ### 14-2. 다음 작업은 여기부터
-- [ ] **단계 3(결제수단 등록)**: 만들 파일 목록과 계획을 먼저 말하고 OK를 받은 뒤 진행한다. 필요한 표 `accounts`는 이미 만들어져 있다.
-- [ ] (선택) Supabase 점검 도구 경고 정리: ① `public.rls_auto_enable()` 함수를 로그인 안 한 사용자도 실행 가능(Supabase 기본 함수로 보임, 내용 확인 후 외부 실행 권한 회수) ② 이메일 가입의 "유출된 비밀번호 차단"이 꺼짐(대시보드 설정, 요금제에 따라 불가) ③ 보안 규칙의 `auth.uid()`를 `(select auth.uid())`로 바꾸면 빠름(내역이 많아지기 전에 적용하고 `DATA_MODEL.md`도 함께 고친다)
+- [ ] **MVP 직접 확인** (배포 주소와 폰·PC 둘 다): ① 설정 > 결제수단에 카드 2·통장 2·현금 등록, 새로고침해도 남는지 ② 입력 탭에서 실제 지출 10건 입력(할부 1건, 고정지출 1건, 취소 1건 포함) ③ 내역에서 월 합계·수정·삭제 ④ 하루 정리를 쓰고 다음 날 다시 열어 남아 있는지 ⑤ 보기 3종과 "월 납부액 기준" 토글 ⑥ 기존 스프레드시트의 같은 달 합계와 비교
+- [ ] 확인이 끝나면 `docs/SCHEDULE.md` 단계 3~6의 "완료 확인"을 체크하고 단계 7(붙여넣기·문자 인식)을 시작한다. 단계 7은 **내 실제 샘플(개인정보는 임의 값으로 바꾼 것)** 이 필요하다.
+- [ ] Supabase 대시보드에서 "유출된 비밀번호 차단"(Authentication) 켜기 — 코드로는 못 켜고 요금제에 따라 불가할 수 있다
 - [ ] 데스크탑에도 `.env`가 있다면 새 Supabase 값(URL, Publishable key)으로 바꾼다
 - 참고(해결됨): 구글 로그인 후 `localhost:3000`으로 돌아가던 문제는 Supabase **Site URL이 기본값**이어서였다. Authentication → URL Configuration에서 Site URL을 `https://moneylog.vibecodelab.dev`로, Redirect URLs에 `https://moneylog.vibecodelab.dev/**`, `http://localhost:5173/**`를 등록해 해결했다. Supabase 프로젝트를 새로 만들면 구글 로그인 설정과 이 주소 등록을 다시 해야 한다.
 
 ### 14-3. 지금까지 만든 파일 (화면/로직 위치)
-- `src/App.tsx` — 로그인 여부에 따라 "설정 필요 / 확인 중 / 로그인 화면 / 앱 본문"을 고른다
-- `src/lib/supabase.ts` — Supabase 연결 하나. `.env`가 비면 연결을 만들지 않고 "앱 설정이 필요해요" 화면을 띄운다
-- `src/hooks/useAuth.ts` — 로그인 상태, 구글 로그인, 이메일 로그인·가입, 로그아웃
-- `src/pages/LoginPage.tsx` — 로그인/가입 화면 / `src/pages/SettingsPage.tsx` — 계정 정보·로그아웃
-- `src/components/StatusScreen.tsx` — 로딩·안내 문구 화면 / `src/components/GoogleLogo.tsx` — 구글 버튼 로고
-- `src/components/layout/` — `AppShell`, `BottomTabs`, `SideNav`, `QuickEntryPanel`(아직 빈 자리), `navItems.ts`(탭 4개 정의)
-- `vite.config.ts` — PWA 설정(Supabase 요청은 캐시 안 함), `vercel.json` — 새로고침 404 방지
+- `src/App.tsx` — 로그인 여부에 따라 "설정 필요 / 확인 중 / 로그인 화면 / 앱 본문"을 고른다. 앱 본문은 `LedgerProvider`로 감싸고, 탭별 화면(내역·입력·보기·설정)과 PC 빠른 입력 패널 내용을 `AppShell`에 넘긴다
+- `src/lib/` — `supabase.ts`(연결 하나), `types.ts`(DB 표와 같은 모양의 타입), `errors.ts`(DB 오류 → 한국어 문구, `ActionResult`), `fetchAllPages.ts`(1000줄 넘는 데이터도 나눠 불러오기)
+- `src/hooks/` — 데이터 호출은 여기에만 있다: `useAuth`, `useAccounts`, `useTransactions`, `useDailyNotes`, `useViewBasis`(보기 기준을 기기에 기억). `LedgerProvider` + `useLedger`가 결제수단·내역·하루 정리를 한 번만 불러와 모든 화면이 나눠 쓴다
+- `src/utils/` — 계산·표시 로직(테스트 파일 동반): `format`(금액·날짜·결제수단 표시), `installment`(실결제액·월 납부액·회차·잔액·기준별 금액), `summary`(월별 내역·날짜별 묶기), `viewStats`(보기 3종 집계), `issuers`(은행·카드사 목록), `storage`(기기에 작은 설정 기억)
+- `src/pages/` — `HistoryPage`(내역), `EntryPage`(입력), `ViewsPage`(보기), `SettingsPage`(결제수단·계정), `LoginPage`
+- `src/components/` — `ui.ts`(공통 모양), `Dialog`, `ConfirmDialog`, `AmountInput`, `MonthSwitcher`, `BasisToggle` / `accounts/`(결제수단 폼·목록) / `entry/`(입력 폼, 하루 정리, `EntryPanel`) / `list/`(내역 줄·날짜 묶음·수정 창) / `views/`(보기 3종) / `layout/`(`AppShell`, `BottomTabs`, `SideNav`, `QuickEntryPanel`)
+- `src/screens.test.tsx` — 가짜 데이터로 주요 화면을 그려 보는 점검 테스트 (로그인 없이 화면 코드가 오류 없이 그려지는지 확인)
+- `vite.config.ts` — PWA 설정(Supabase 요청은 캐시 안 함), `vitest.config.ts` — 테스트 설정, `vercel.json` — 새로고침 404 방지
 - `public/` — **임시** PWA 아이콘 4종 (정식 아이콘은 단계 12)
 
 ### 14-4. 현재 구조에서 알아둘 점
-- 화면 전환은 아직 React Router 없이 `AppShell` 안의 탭 상태(`activeTab`)로만 한다. 탭별 화면은 `App.tsx`에서 `pages={{ settings: ... }}`로 넘긴다. 지금 채워진 탭은 **설정**뿐이다.
-- 설치된 패키지: react, react-dom, @supabase/supabase-js, tailwindcss(v4, `@tailwindcss/vite`), vite-plugin-pwa, typescript.
-- **아직 설치 안 한 패키지**: React Router, xlsx, papaparse, vitest. 필요한 단계에서 이유를 한 줄 설명하고 확인받은 뒤 설치한다. (vitest는 계산 함수가 처음 생기는 단계 5 전에 필요)
+- 화면 전환은 아직 React Router 없이 `AppShell` 안의 탭 상태(`activeTab`)로만 한다. 탭별 화면은 `App.tsx`에서 `pages={{ list, entry, view, settings }}`로 넘긴다.
+- 내역은 날짜로 자르지 않고 **전부 불러온다**(할부가 이전 달에서 이어지기 때문). 한 번에 1000줄씩 나눠 가져온다. 수만 건이 되면 느려질 수 있으니 그때 범위를 줄이는 방법을 검토한다.
+- 보기 기준 기본값은 "사용일 기준". 선택은 이 기기에만 기억한다(localStorage). 내역·메모 같은 개인 기록은 기기에 저장하지 않는다.
+- 결제수단이 지워진 내역은 "결제수단 없음"으로 표시된다. 현금 이름이 "현금"이 아니면 `현금 · 이름`으로 표시한다.
+- 설치된 패키지: react, react-dom, @supabase/supabase-js, tailwindcss(v4, `@tailwindcss/vite`), vite-plugin-pwa, typescript, **vitest**.
+- **아직 설치 안 한 패키지**: React Router, xlsx, papaparse. 필요한 단계에서 이유를 한 줄 설명하고 확인받은 뒤 설치한다.
 - Tailwind `pc:`(1100px) 기준점은 `src/index.css`에 정의되어 있다.
-- `package.json` 스크립트: `npm run dev` / `npm run build` / `npm run preview` (테스트 스크립트는 vitest 설치 때 추가)
+- `package.json` 스크립트: `npm run dev` / `npm run build` / `npm run preview` / `npm test`
+- Supabase MCP는 쓰기 가능(`read_only=false`)이다. SQL은 실행 전에 보여주고, 구조를 바꾸면 `docs/DATA_MODEL.md`도 함께 고친다.
 
 ### 14-5. 새 컴퓨터(노트북)에서 처음 할 일
 1. Node.js(LTS), Git, VS Code, Claude Code 설치 후 로그인 (`SETUP_GUIDE.md`)

@@ -121,6 +121,7 @@ function AccountForm({ initial, onSubmit, onCancel }: AccountFormProps) {
               value={customIssuer}
               onChange={(e) => setCustomIssuer(e.target.value)}
               maxLength={20}
+              lang="ko"
               placeholder="예) 우리금융캐피탈"
               className={`mt-2 ${inputClass}`}
             />
@@ -138,6 +139,7 @@ function AccountForm({ initial, onSubmit, onCancel }: AccountFormProps) {
           value={name}
           onChange={(e) => setName(e.target.value)}
           maxLength={30}
+          lang="ko"
           placeholder={kind === 'card' ? '예) 생활카드' : kind === 'account' ? '예) 월급통장' : '현금'}
           autoComplete="off"
           className={inputClass}

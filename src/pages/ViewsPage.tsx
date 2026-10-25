@@ -11,16 +11,17 @@ import { currentMonthKey } from '../utils/format.ts'
 
 type ViewKey = 'fixed' | 'period' | 'account'
 
+// 보기 탭 순서: 기간별 → 결제수단별 → 고정지출 (맨 앞이 처음 열리는 화면)
 const VIEWS: { key: ViewKey; label: string }[] = [
-  { key: 'fixed', label: '고정지출' },
   { key: 'period', label: '기간별' },
   { key: 'account', label: '결제수단별' },
+  { key: 'fixed', label: '고정지출' },
 ]
 
-// 보기 화면: 고정지출 / 기간별 / 결제수단별 (카드 실적 탭은 이후 단계에서 추가)
+// 보기 화면: 기간별 / 결제수단별 / 고정지출 (카드 실적 탭은 이후 단계에서 추가)
 function ViewsPage() {
   const { transactions } = useLedger()
-  const [view, setView] = useState<ViewKey>('fixed')
+  const [view, setView] = useState<ViewKey>(VIEWS[0].key)
   const [month, setMonth] = useState(currentMonthKey)
   const [basis, setBasis] = useViewBasis()
 

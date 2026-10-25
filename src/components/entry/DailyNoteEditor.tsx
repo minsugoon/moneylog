@@ -99,6 +99,7 @@ function DailyNoteEditor({ date, autoFocus }: DailyNoteEditorProps) {
         value={text}
         onChange={(e) => handleChange(e.target.value)}
         maxLength={MAX_LENGTH}
+        lang="ko"
         rows={4}
         autoFocus={autoFocus}
         placeholder="오늘 하루는 어땠나요? 쓰다 멈추면 자동으로 저장돼요."

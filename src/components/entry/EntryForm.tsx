@@ -152,6 +152,7 @@ function EntryForm({ date, onDateChange, initial, onDone, onCancel }: EntryFormP
           onChange={(e) => setMerchant(e.target.value)}
           maxLength={100}
           placeholder="예) 편의점"
+          lang="ko"
           autoComplete="off"
           className={inputClass}
         />
@@ -259,6 +260,7 @@ function EntryForm({ date, onDateChange, initial, onDone, onCancel }: EntryFormP
           onChange={(e) => setMemo(e.target.value)}
           maxLength={200}
           placeholder="한 줄 메모"
+          lang="ko"
           autoComplete="off"
           className={inputClass}
         />

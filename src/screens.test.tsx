@@ -4,6 +4,7 @@ import AccountSection from './components/accounts/AccountSection.tsx'
 import EntryPanel from './components/entry/EntryPanel.tsx'
 import { LedgerContext, type LedgerValue } from './hooks/ledgerContext.ts'
 import type { Account, DailyNote, Transaction } from './lib/types.ts'
+import FixedView from './components/views/FixedView.tsx'
 import HistoryPage from './pages/HistoryPage.tsx'
 import ViewsPage from './pages/ViewsPage.tsx'
 import { addMonths, currentMonthKey, todayString } from './utils/format.ts'
@@ -116,6 +117,12 @@ describe('입력 화면', () => {
     expect(html).toContain('inputMode="numeric"')
   })
 
+  it('글을 쓰는 칸(결제명·메모·하루 정리)은 한글로 지정돼 있다', () => {
+    const html = render(<EntryPanel />)
+    // 결제명, 메모, 하루 정리 세 칸
+    expect(html.match(/lang="ko"/g)).toHaveLength(3)
+  })
+
   it('결제수단이 없으면 설정에서 등록하라고 안내한다', () => {
     const none = fakeLedger()
     none.accounts = { ...none.accounts, accounts: [] }
@@ -124,8 +131,21 @@ describe('입력 화면', () => {
 })
 
 describe('보기 화면', () => {
-  it('고정지출: 종류별 소계와 총합', () => {
+  it('탭 순서는 기간별 → 결제수단별 → 고정지출이고, 처음에는 기간별이 열린다', () => {
     const html = render(<ViewsPage />)
+    const period = html.indexOf('>기간별<')
+    const account = html.indexOf('>결제수단별<')
+    const fixed = html.indexOf('>고정지출<')
+    expect(period).toBeGreaterThan(-1)
+    expect(period).toBeLessThan(account)
+    expect(account).toBeLessThan(fixed)
+    // 처음 화면은 기간별: 기간 합계와 월별 합계가 보인다
+    expect(html).toContain('월별 합계')
+    expect(html).not.toContain('고정지출 총합')
+  })
+
+  it('고정지출: 종류별 소계와 총합', () => {
+    const html = render(<FixedView month={thisMonth} basis="usage" />)
     expect(html).toContain('고정지출 총합')
     expect(html).toContain('통신')
     expect(html).toContain('통신비샘플')

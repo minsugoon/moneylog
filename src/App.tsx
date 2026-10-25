@@ -1,7 +1,10 @@
+import EntryPanel from './components/entry/EntryPanel.tsx'
 import AppShell from './components/layout/AppShell.tsx'
 import StatusScreen from './components/StatusScreen.tsx'
 import LedgerProvider from './hooks/LedgerProvider.tsx'
 import { useAuth } from './hooks/useAuth.ts'
+import EntryPage from './pages/EntryPage.tsx'
+import HistoryPage from './pages/HistoryPage.tsx'
 import LoginPage from './pages/LoginPage.tsx'
 import SettingsPage from './pages/SettingsPage.tsx'
 
@@ -36,9 +39,12 @@ function App() {
 
   // LedgerProvider: 로그인한 뒤의 모든 화면이 같은 내 데이터를 나눠 쓰게 한다
   return (
-    <LedgerProvider>
+    <LedgerProvider userId={user.id}>
       <AppShell
+        quickEntry={<EntryPanel />}
         pages={{
+          list: <HistoryPage />,
+          entry: <EntryPage />,
           settings: (
             <SettingsPage
               email={user.email ?? ''}

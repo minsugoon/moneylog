@@ -55,6 +55,12 @@ export function todayString(now: Date = new Date()): string {
   return `${now.getFullYear()}-${pad2(now.getMonth() + 1)}-${pad2(now.getDate())}`
 }
 
+// 날짜를 며칠 앞뒤로 옮긴다. 예) shiftDate('2026-03-01', -1) → '2026-02-28'
+export function shiftDate(date: string, deltaDays: number): string {
+  const [year, month, day] = date.split('-').map(Number)
+  return todayString(new Date(year, month - 1, day + deltaDays))
+}
+
 export function currentMonthKey(now: Date = new Date()): string {
   return todayString(now).slice(0, 7)
 }

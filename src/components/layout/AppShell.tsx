@@ -7,11 +7,13 @@ import QuickEntryPanel from './QuickEntryPanel.tsx'
 interface AppShellProps {
   // 탭마다 보여줄 화면. 아직 없는 탭은 비워 둔다.
   pages: Partial<Record<TabKey, ReactNode>>
+  // PC에서 오른쪽에 항상 보이는 "빠른 입력" 패널의 내용
+  quickEntry?: ReactNode
 }
 
 // 화면 틀: 폭에 따라 배치만 바뀐다 (CSS로만 구분)
 // 모바일: 본문 + 하단 탭 / 태블릿: 사이드바 + 본문 / PC: 사이드바 + 본문 + 빠른 입력
-function AppShell({ pages }: AppShellProps) {
+function AppShell({ pages, quickEntry }: AppShellProps) {
   const [activeTab, setActiveTab] = useState<TabKey>('list')
 
   return (
@@ -28,7 +30,7 @@ function AppShell({ pages }: AppShellProps) {
         </section>
       </main>
 
-      <QuickEntryPanel />
+      <QuickEntryPanel>{quickEntry}</QuickEntryPanel>
       <BottomTabs activeTab={activeTab} onSelect={setActiveTab} />
     </div>
   )

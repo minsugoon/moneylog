@@ -8,6 +8,7 @@ import {
   formatWon,
   monthDiff,
   parseAmount,
+  shiftDate,
   todayString,
 } from './format.ts'
 
@@ -70,6 +71,12 @@ describe('금액 표시·입력', () => {
 describe('날짜 계산', () => {
   it('오늘 날짜는 이 기기 기준 YYYY-MM-DD', () => {
     expect(todayString(new Date(2026, 9, 5))).toBe('2026-10-05')
+  })
+
+  it('날짜를 며칠 옮겨도 달·해가 맞게 넘어간다', () => {
+    expect(shiftDate('2026-03-01', -1)).toBe('2026-02-28')
+    expect(shiftDate('2026-12-31', 1)).toBe('2027-01-01')
+    expect(shiftDate('2026-10-05', 0)).toBe('2026-10-05')
   })
 
   it('달 더하기·빼기는 해를 넘겨도 맞다', () => {

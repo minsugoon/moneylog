@@ -1,5 +1,6 @@
 import AppShell from './components/layout/AppShell.tsx'
 import StatusScreen from './components/StatusScreen.tsx'
+import LedgerProvider from './hooks/LedgerProvider.tsx'
 import { useAuth } from './hooks/useAuth.ts'
 import LoginPage from './pages/LoginPage.tsx'
 import SettingsPage from './pages/SettingsPage.tsx'
@@ -33,18 +34,21 @@ function App() {
 
   const { user } = auth.session
 
+  // LedgerProvider: 로그인한 뒤의 모든 화면이 같은 내 데이터를 나눠 쓰게 한다
   return (
-    <AppShell
-      pages={{
-        settings: (
-          <SettingsPage
-            email={user.email ?? ''}
-            provider={user.app_metadata.provider ?? 'email'}
-            onSignOut={auth.signOut}
-          />
-        ),
-      }}
-    />
+    <LedgerProvider>
+      <AppShell
+        pages={{
+          settings: (
+            <SettingsPage
+              email={user.email ?? ''}
+              provider={user.app_metadata.provider ?? 'email'}
+              onSignOut={auth.signOut}
+            />
+          ),
+        }}
+      />
+    </LedgerProvider>
   )
 }
 

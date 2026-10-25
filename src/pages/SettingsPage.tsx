@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import AccountSection from '../components/accounts/AccountSection.tsx'
 import type { AuthResult } from '../hooks/useAuth.ts'
 
 interface SettingsPageProps {
@@ -7,7 +8,7 @@ interface SettingsPageProps {
   onSignOut: () => Promise<AuthResult>
 }
 
-// 설정 화면. 지금은 계정 정보와 로그아웃만 있다 (결제수단 관리는 단계 3에서 추가)
+// 설정 화면: 결제수단 관리, 계정 정보, 로그아웃
 function SettingsPage({ email, provider, onSignOut }: SettingsPageProps) {
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
@@ -26,6 +27,8 @@ function SettingsPage({ email, provider, onSignOut }: SettingsPageProps) {
   return (
     <div className="mx-auto flex max-w-xl flex-col gap-4">
       <h2 className="text-lg font-bold text-gray-800">설정</h2>
+
+      <AccountSection />
 
       <section className="rounded-2xl bg-white p-5 shadow-sm" aria-labelledby="account-title">
         <h3 id="account-title" className="text-sm font-bold text-gray-500">

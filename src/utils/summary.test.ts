@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { Transaction } from '../lib/types.ts'
-import { buildDayList, entriesForMonth, sumCharges, summarizeDay } from './summary.ts'
+import { buildDayList, entriesForMonth, splitCarried, sumCharges, summarizeDay } from './summary.ts'
 
 // 테스트용 내역을 만든다. 값은 모두 임의로 만든 것이다.
 function makeTx(overrides: Partial<Transaction>): Transaction {
@@ -44,6 +44,31 @@ describe('entriesForMonth / sumCharges', () => {
 
   it('내역이 없는 달은 0원', () => {
     expect(sumCharges(entriesForMonth(txs, '2026-08'))).toBe(0)
+  })
+})
+
+describe('할부와 보기 기준', () => {
+  const installment = makeTx({ id: 'i', used_at: '2026-08-10', amount: 120000, installment_months: 12 })
+  const lump = makeTx({ id: 'l', used_at: '2026-10-03', amount: 5000 })
+  const txs = [lump, installment]
+
+  it('사용일 기준: 10월에는 10월에 쓴 것만', () => {
+    const entries = entriesForMonth(txs, '2026-10', 'usage')
+    expect(entries.map((e) => e.tx.id)).toEqual(['l'])
+    expect(sumCharges(entries)).toBe(5000)
+  })
+
+  it('월 납부액 기준: 8월에 시작한 할부가 10월에는 3회차로 들어온다', () => {
+    const entries = entriesForMonth(txs, '2026-10', 'payment')
+    expect(entries.map((e) => e.tx.id)).toEqual(['l', 'i'])
+    expect(sumCharges(entries)).toBe(15000)
+    expect(entries[1].info).toEqual({ round: 3, total: 12, payment: 10000, balance: 90000 })
+  })
+
+  it('이어진 할부와 이번 달 내역을 나눈다', () => {
+    const { carried, current } = splitCarried(entriesForMonth(txs, '2026-10', 'payment'), '2026-10')
+    expect(carried.map((e) => e.tx.id)).toEqual(['i'])
+    expect(current.map((e) => e.tx.id)).toEqual(['l'])
   })
 })
 

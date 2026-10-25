@@ -1,8 +1,9 @@
 import { useId, useRef, useState, type FormEvent } from 'react'
 import { useLedger } from '../../hooks/useLedger.ts'
 import type { TransactionInput } from '../../hooks/useTransactions.ts'
-import type { Transaction } from '../../lib/types.ts'
+import { FIXED_TYPES, type FixedType, type Transaction } from '../../lib/types.ts'
 import { shiftDate, todayString } from '../../utils/format.ts'
+import { describePayments } from '../../utils/installment.ts'
 import { readSetting, writeSetting } from '../../utils/storage.ts'
 import AmountInput from '../AmountInput.tsx'
 import { chipClass, errorBoxClass, inputClass, labelClass, primaryButtonClass, secondaryButtonClass } from '../ui.ts'
@@ -39,7 +40,10 @@ function EntryForm({ date, onDateChange, initial, onDone, onCancel }: EntryFormP
   const [amount, setAmount] = useState<number | null>(initial?.amount ?? null)
   const [discount, setDiscount] = useState<number | null>(initial && initial.discount > 0 ? initial.discount : null)
   const [isCancel, setIsCancel] = useState(initial?.is_cancel ?? false)
+  const [months, setMonths] = useState(initial?.installment_months ?? 1)
   const [interestFree, setInterestFree] = useState(initial?.interest_free ?? false)
+  const [isFixed, setIsFixed] = useState(initial?.is_fixed ?? false)
+  const [fixedType, setFixedType] = useState<FixedType>(initial?.fixed_type ?? '기타고정')
   const [memo, setMemo] = useState(initial?.memo ?? '')
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
@@ -60,12 +64,13 @@ function EntryForm({ date, onDateChange, initial, onDone, onCancel }: EntryFormP
       merchant: trimmedMerchant,
       amount,
       discount: discount ?? 0,
-      installment_months: initial?.installment_months ?? 1,
-      is_fixed: initial?.is_fixed ?? false,
-      fixed_type: initial?.fixed_type ?? null,
+      installment_months: months,
+      is_fixed: isFixed,
+      fixed_type: isFixed ? fixedType : null,
       memo: memo.trim() || null,
       is_cancel: isCancel,
-      interest_free: interestFree,
+      // 일시불에는 무이자 표시가 의미 없으므로 함께 해제한다
+      interest_free: months > 1 && interestFree,
     }
 
     setBusy(true)
@@ -84,7 +89,10 @@ function EntryForm({ date, onDateChange, initial, onDone, onCancel }: EntryFormP
     setAmount(null)
     setDiscount(null)
     setIsCancel(false)
+    setMonths(1)
     setInterestFree(false)
+    setIsFixed(false)
+    setFixedType('기타고정')
     setMemo('')
     setNotice('저장했어요. 이어서 입력할 수 있어요.')
     merchantRef.current?.focus()
@@ -164,6 +172,31 @@ function EntryForm({ date, onDateChange, initial, onDone, onCancel }: EntryFormP
         </div>
       </div>
 
+      <div>
+        <label htmlFor={`${idPrefix}-months`} className={labelClass}>
+          할부
+        </label>
+        <select
+          id={`${idPrefix}-months`}
+          value={months}
+          onChange={(e) => {
+            const next = Number(e.target.value)
+            setMonths(next)
+            if (next === 1) setInterestFree(false)
+          }}
+          className={inputClass}
+        >
+          {Array.from({ length: 36 }, (_, i) => i + 1).map((m) => (
+            <option key={m} value={m}>
+              {m === 1 ? '일시불' : `${m}개월`}
+            </option>
+          ))}
+        </select>
+        {months > 1 && amount !== null && amount > 0 && (
+          <p className="mt-1 text-xs text-gray-500">{describePayments(amount, discount ?? 0, months)}</p>
+        )}
+      </div>
+
       <div className="flex flex-col">
         <label className="flex min-h-11 items-center gap-3 text-base text-gray-700">
           <input
@@ -174,15 +207,45 @@ function EntryForm({ date, onDateChange, initial, onDone, onCancel }: EntryFormP
           />
           취소 건 (환불·결제 취소)
         </label>
+        {months > 1 && (
+          <label className="flex min-h-11 items-center gap-3 text-base text-gray-700">
+            <input
+              type="checkbox"
+              checked={interestFree}
+              onChange={(e) => setInterestFree(e.target.checked)}
+              className="h-5 w-5 accent-brand"
+            />
+            무이자 할부
+          </label>
+        )}
         <label className="flex min-h-11 items-center gap-3 text-base text-gray-700">
           <input
             type="checkbox"
-            checked={interestFree}
-            onChange={(e) => setInterestFree(e.target.checked)}
+            checked={isFixed}
+            onChange={(e) => setIsFixed(e.target.checked)}
             className="h-5 w-5 accent-brand"
           />
-          무이자 할부
+          고정지출 (매달 나가는 돈)
         </label>
+        {isFixed && (
+          <div className="mt-1">
+            <label htmlFor={`${idPrefix}-fixed`} className="sr-only">
+              고정지출 종류
+            </label>
+            <select
+              id={`${idPrefix}-fixed`}
+              value={fixedType}
+              onChange={(e) => setFixedType(e.target.value as FixedType)}
+              className={inputClass}
+            >
+              {FIXED_TYPES.map((type) => (
+                <option key={type} value={type}>
+                  {type}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
       </div>
 
       <div>

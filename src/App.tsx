@@ -7,6 +7,7 @@ import EntryPage from './pages/EntryPage.tsx'
 import HistoryPage from './pages/HistoryPage.tsx'
 import LoginPage from './pages/LoginPage.tsx'
 import SettingsPage from './pages/SettingsPage.tsx'
+import ViewsPage from './pages/ViewsPage.tsx'
 
 // 로그인 여부에 따라 보여줄 화면을 고른다. 로그인하지 않으면 앱 안으로 들어갈 수 없다.
 function App() {
@@ -45,6 +46,7 @@ function App() {
         pages={{
           list: <HistoryPage />,
           entry: <EntryPage />,
+          view: <ViewsPage />,
           settings: (
             <SettingsPage
               email={user.email ?? ''}

@@ -1,0 +1,16 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["status", "summary", "files_changed", "tests_run", "tests_passed", "concerns"],
+  "properties": {
+    "status": {
+      "type": "string",
+      "enum": ["done", "blocked", "needs_clarification"]
+    },
+    "summary": { "type": "string" },
+    "files_changed": { "type": "array", "items": { "type": "string" } },
+    "tests_run": { "type": "array", "items": { "type": "string" } },
+    "tests_passed": { "type": "boolean" },
+    "concerns": { "type": "array", "items": { "type": "string" } }
+  }
+}

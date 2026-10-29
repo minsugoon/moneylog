@@ -1,7 +1,7 @@
 # Moneylog (moneylog.vibecodelab.dev)
 
-- 문서 세트 버전: v0.6 / 최종 수정: 2026-10-25
-- 이어서 작업할 때는 맨 아래 **14장 "현재 진행 상황"**을 먼저 읽는다.
+- 문서 세트 버전: v0.6 / 최종 수정: 2026-10-29
+- 이어서 작업할 때는 **14장 "현재 진행 상황"**을 먼저 읽는다. Claude Code와 Codex의 협업 규칙은 **15장**에 있다.
 
 ## 0. 먼저 읽을 것
 작업 전 아래 문서를 읽는다. 문서는 모두 `docs/` 폴더에 있다.
@@ -221,3 +221,46 @@ moneylog/
 5. Claude Code에서 Supabase MCP(`.mcp.json`, **쓰기 가능** `read_only=false`) 사용 시 처음 한 번 `/mcp`에서 Supabase 로그인(인증)을 한다. 인증은 노트북 브라우저에서 해야 하고, 한 번 하면 Remote Control(폰)에서도 쓴다. 쓰기 권한이라 SQL은 실행 전에 내용을 보여주고 확인을 받으며, 구조를 바꾸면 `docs/DATA_MODEL.md`도 함께 고친다. 삭제와 RLS 끄기는 하지 않는다.
 6. `.claude/settings.local.json`(권한 허용 목록)과 Claude 메모리는 컴퓨터마다 따로라 옮겨지지 않는다. 필요한 내용은 이 문서에 다 적었다.
 7. `git pull` 로 시작하고 `git push` 로 끝내는 습관: 데스크탑과 노트북을 오갈 때 충돌을 막는다.
+
+## 15. 멀티 에이전트 운영 (Claude Code ↔ Codex) — 2026-10-29 도입
+
+사용자가 자연어로 지시하면 **Claude Code가 설계·위임·검증**을 하고, **Codex CLI가 실제 코딩**을 한다. 아래 규칙은 1~14장을 대체하지 않고 **덧붙인다.** 충돌하면 보안(7장)과 이 장의 승인 규칙이 먼저다.
+
+### 15-1. 역할
+| 역할 | 하는 일 | 하지 않는 일 |
+|------|---------|--------------|
+| 사용자 | 요구 전달, 계획·DB·인증·병합·배포 승인 | |
+| Claude Code (PM·Tech Lead) | 요구 분석, 작업 분할, 명세(TASK.md) 작성, 워크트리 준비, Codex 호출, 독립 검증, 코드 리뷰, 커밋, 보고 | 기능 코드를 직접 쓰지 않는다. **예외: 문서, 설정, 20줄 이하 긴급 수정** |
+| Codex (Senior Engineer) | 지정된 워크트리 안에서 구현과 테스트 | 네트워크, git commit·push, DB·인증·배포, `.env`, 보호 경로 수정 |
+
+Codex가 따르는 규칙은 루트의 `AGENTS.md`다. 프로젝트 규칙의 원본은 이 문서다.
+
+### 15-2. 작업 한 건의 흐름 (도구: `node scripts/agents/agent.mjs`, 설명은 `.agent/README.md`)
+1. 사용자 요구 → Claude가 분석하고 **계획을 보여준다 → 사용자 OK** (3장 1·2번 규칙 그대로)
+2. `new` → TASK.md(목표, 완료 기준, 허용 경로, 크기) 작성 → `start`(격리 워크트리 + `npm ci`)
+3. `delegate`(Codex 구현) → `check`(Claude가 범위·비밀·크기·타입검사·테스트·빌드를 **직접** 재실행)
+4. `review`: 변경분을 읽고 CLAUDE.md 규칙을 점검해 `APPROVE / REQUEST_CHANGES / REJECT`를 기록한다. **테스트 통과와 리뷰 통과는 따로 기록**하고, 둘 다 있어야 `commit`이 된다.
+5. 사용자에게 변경 요약을 보고 → **승인 후에만** `main`에 병합한다. `main` push는 곧 운영 배포(Vercel)다.
+
+### 15-3. 한도 (`.agent/policy.json`)
+- 테스트 실패 시 Codex 수정 **최대 3회**, 리뷰 수정 요청 최대 2회, 작업당 Codex 호출 6회, 1회 20분
+- 같은 실패가 2번 연속이면 진전이 없다고 보고 중단. 한도를 넘으면 더 호출하지 않고 `report`로 실패 보고서를 만든다
+- 변경이 파일 8개·400줄을 넘거나 소스 한 파일이 300줄을 넘으면 거절하고 작업을 쪼갠다
+
+### 15-4. 충돌 방지
+- 작업마다 별도 워크트리(`../MoneyLog-worktrees/<ID>`)와 브랜치(`agent/<ID>`). 두 AI가 같은 파일을 동시에 고치지 않는다.
+- 명세의 허용 경로가 겹치는 작업은 동시에 돌리지 않는다. 공유 파일(`App.tsx`, `types.ts`, `ledgerContext.ts`, `LedgerProvider.tsx`, `ui.ts`)은 한 번에 한 작업만 건드린다.
+- 문서·`CLAUDE.md`·`AGENTS.md`·`.claude/`·`.agent/`·`scripts/agents/`는 Claude만 고친다.
+
+### 15-5. 사용자 승인이 필요한 것 (승인 없이 바꾸지 않는다)
+- 운영 DB(Supabase) 변경, 인증(OAuth) 설정·코드, 비밀키·환경변수, `main` 브랜치 병합·push, 운영 배포
+- 보호 경로 수정(`package.json`·패키지 설치, `vite.config.ts`, `vercel.json`, `.mcp.json` 등. 목록은 `policy.json`의 `protectedPaths`)
+- Supabase MCP의 쓰기 도구(`apply_migration`, `execute_sql` 등)는 `.claude/settings.json`에서 **매번 승인**을 받도록 해 두었다. 읽기 도구는 자동 허용.
+- 위험 명령(강제 push, 배포 명령, `.env` 읽기, Codex 직접 호출·샌드박스 우회)은 `scripts/agents/guard.mjs` 훅이 막는다.
+
+### 15-6. 2장 보고 규칙의 조정
+2장의 "수정한 파일은 전체 내용을 보여준다"는 **Claude가 직접 쓴 코드**에 그대로 적용한다. **Codex가 쓴 코드**는 "변경 요약 + 파일 위치 + 검증 결과"로 보고하고, 전체 내용은 사용자가 요청하면 보여준다. 사용자 보고는 3장의 3가지(쉬운 요약, 직접 확인 방법, 커밋 메시지 제안)를 유지한다.
+
+### 15-7. 현재 상태
+- 1단계(규칙·도구 추가) 완료: `AGENTS.md`, `.agent/`, `scripts/agents/`, `.claude/settings.json` (브랜치 `agent/setup`, main 병합은 승인 대기)
+- 다음: 2단계 시험 운행(작은 작업으로 전체 흐름 확인, 병합 안 함) → 3단계 실제 개발(단계 7 파서부터)

@@ -1,0 +1,85 @@
+{
+  "_설명": "Claude Code(PM)와 Codex(엔지니어)의 협업 규칙. 이 파일은 사람과 Claude만 고친다 (Codex 수정 금지).",
+  "baseBranch": "main",
+  "worktreeRoot": "../MoneyLog-worktrees",
+  "branchPrefix": "agent/",
+  "limits": {
+    "maxCodexCalls": 6,
+    "testFixAttempts": 3,
+    "reviewFixRounds": 2,
+    "sameFailureStop": 2,
+    "codexTimeoutMinutes": 20,
+    "checkTimeoutMinutes": 10,
+    "maxFilesChanged": 8,
+    "maxLinesChanged": 400,
+    "maxFileLines": 300
+  },
+  "protectedPaths": [
+    ".env*",
+    "package.json",
+    "package-lock.json",
+    "vite.config.ts",
+    "vitest.config.ts",
+    "vercel.json",
+    "index.html",
+    "tsconfig*.json",
+    ".mcp.json",
+    ".claude/**",
+    ".agent/**",
+    "scripts/agents/**",
+    "AGENTS.md",
+    "CLAUDE.md",
+    ".gitignore",
+    "docs/**",
+    "public/**",
+    "src/lib/supabase.ts",
+    "src/hooks/useAuth.ts",
+    "src/pages/LoginPage.tsx"
+  ],
+  "sharedFiles": [
+    "src/App.tsx",
+    "src/lib/types.ts",
+    "src/hooks/ledgerContext.ts",
+    "src/hooks/LedgerProvider.tsx",
+    "src/components/ui.ts"
+  ],
+  "secretPatterns": [
+    "eyJ[A-Za-z0-9_-]{20,}\\.[A-Za-z0-9_-]{10,}",
+    "sb_secret_[A-Za-z0-9_-]{8,}",
+    "sb_publishable_[A-Za-z0-9_-]{16,}",
+    "service_role",
+    "access_token=[A-Za-z0-9._-]{20,}",
+    "-----BEGIN [A-Z ]*PRIVATE KEY-----"
+  ],
+  "codePatterns": [
+    {
+      "id": "any",
+      "pattern": "(:\\s*any\\b|\\bas\\s+any\\b|<any>)",
+      "paths": ["src/**"],
+      "exclude": ["**/*.test.*"],
+      "message": "any 사용 (CLAUDE.md 12장: 불가피하면 이유를 주석으로)"
+    },
+    {
+      "id": "console",
+      "pattern": "console\\.(log|debug|info|warn|error)",
+      "paths": ["src/**"],
+      "exclude": ["**/*.test.*"],
+      "message": "콘솔 로그 (CLAUDE.md 7장: 개인 기록 노출 위험)"
+    },
+    {
+      "id": "supabase-outside-hooks",
+      "pattern": "\\bsupabase\\s*\\.\\s*(from|auth|rpc|storage|functions)\\b",
+      "paths": ["src/**"],
+      "exclude": ["src/hooks/**", "**/*.test.*"],
+      "message": "Supabase 호출은 hooks에서만 (CLAUDE.md 12장)"
+    },
+    {
+      "id": "rls-off",
+      "pattern": "disable\\s+row\\s+level\\s+security|service_role",
+      "paths": ["**"],
+      "exclude": [],
+      "message": "RLS 끄기·service_role (CLAUDE.md 7장 절대 금지)"
+    }
+  ],
+  "checks": ["npx tsc -b", "npm test", "npm run build"]
+}

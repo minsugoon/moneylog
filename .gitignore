@@ -25,3 +25,6 @@ Thumbs.db
 
 # Claude Code 개인 권한 설정 (컴퓨터마다 다르므로 올리지 않는다)
 .claude/settings.local.json
+
+# 에이전트 작업 기록 (명세·로그·검사 결과. 올리지 않는다)
+.agent/runs/

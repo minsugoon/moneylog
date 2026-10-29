@@ -49,10 +49,16 @@ function readText(worktree, file) {
   }
 }
 
+function escapeRegExp(text) {
+  return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+}
+
 // 바뀐 파일 안에 키·토큰 같은 문자열이 있는지. 찾은 값은 화면에 드러내지 않고 종류만 알려준다.
 export function scanSecrets(worktree, files, policy) {
   const hits = []
-  const patterns = policy.secretPatterns.map((p) => ({ source: p, re: new RegExp(p) }))
+  // 키 모양(secretPatterns)과, 코드에 나오면 안 되는 단어(forbiddenWords)를 함께 본다
+  const words = (policy.forbiddenWords ?? []).map((word) => escapeRegExp(word))
+  const patterns = [...policy.secretPatterns, ...words].map((source) => ({ source, re: new RegExp(source) }))
   for (const { file, deleted } of files) {
     if (deleted) continue
     const text = readText(worktree, file)
@@ -132,6 +138,11 @@ export function runChecks(worktree, policy) {
 export function failureSignature(testRun) {
   const failed = testRun.results.find((r) => !r.ok)
   if (!failed) return null
-  const lines = failed.tail.split('\n').filter((l) => /error|fail|assert|✗|×/i.test(l)).slice(0, 5)
+  // 소요 시간·줄 번호·시각 같은 숫자는 실행할 때마다 달라지므로 지문에서 뺀다
+  const lines = failed.tail
+    .split('\n')
+    .filter((l) => /error|fail|assert|✗|×/i.test(l))
+    .slice(0, 5)
+    .map((l) => l.replace(/\d+/g, '#').trim())
   return crypto.createHash('sha1').update(`${failed.command}\n${lines.join('\n')}`).digest('hex').slice(0, 12)
 }

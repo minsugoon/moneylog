@@ -4,7 +4,7 @@ import assert from 'node:assert/strict'
 import fs from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
-import { checkScope, scanSecrets } from './checks.mjs'
+import { checkScope, failureSignature, scanSecrets } from './checks.mjs'
 import { evaluateCommand } from './guard.mjs'
 import { loadPolicy, matchesAny } from './lib.mjs'
 
@@ -66,6 +66,17 @@ test('키·토큰 모양을 찾아내고, 평범한 코드는 통과', () => {
   const result = scanSecrets(dir, Object.keys(secrets).map((file) => ({ file })), policy)
   fs.rmSync(dir, { recursive: true, force: true })
   assert.deepEqual([...new Set(result.hits.map((h) => h.file))].sort(), ['a.ts', 'b.ts', 'c.ts', 'd.ts'])
+})
+
+console.log('같은 실패 반복 판정')
+test('소요 시간만 다른 같은 실패는 같은 지문, 다른 오류는 다른 지문', () => {
+  const run = (tail) => ({ results: [{ ok: false, command: 'npm test', tail }] })
+  const a = failureSignature(run('× 일부러 실패 2ms\nAssertionError: expected 1 to be 2'))
+  const b = failureSignature(run('× 일부러 실패 31ms\nAssertionError: expected 1 to be 2'))
+  const c = failureSignature(run('× 일부러 실패 2ms\nTypeError: x is not a function'))
+  assert.equal(a, b)
+  assert.notEqual(a, c)
+  assert.equal(failureSignature({ results: [{ ok: true, command: 'npm test', tail: '' }] }), null)
 })
 
 console.log('위험 명령 차단 (guard)')

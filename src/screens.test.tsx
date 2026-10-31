@@ -1,6 +1,7 @@
 import { renderToString } from 'react-dom/server'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import AccountSection from './components/accounts/AccountSection.tsx'
+import AiSettingsSection from './components/settings/AiSettingsSection.tsx'
 import EntryPanel from './components/entry/EntryPanel.tsx'
 import PasteImport from './components/entry/PasteImport.tsx'
 import AiConsentDialog from './components/entry/AiConsentDialog.tsx'
@@ -62,6 +63,14 @@ function render(node: React.ReactNode, ledger: LedgerValue = fakeLedger()): stri
 }
 
 afterEach(() => vi.unstubAllGlobals())
+
+describe('AI 입력 설정', () => {
+  it('AI 입력 카드와 사용량 또는 불러오기 상태를 보여준다', () => {
+    const html = render(<AiSettingsSection />)
+    expect(html).toContain('AI 입력')
+    expect(html.includes('불러오는 중이에요') || html.includes('이번 달')).toBe(true)
+  })
+})
 
 describe('내역 화면', () => {
   it('이번 달 합계, 날짜별 내역, 메모, 하루 정리를 보여준다', () => {

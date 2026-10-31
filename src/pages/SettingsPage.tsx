@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import AccountSection from '../components/accounts/AccountSection.tsx'
+import AiSettingsSection from '../components/settings/AiSettingsSection.tsx'
 import type { AuthResult } from '../hooks/useAuth.ts'
 
 interface SettingsPageProps {
@@ -29,6 +30,8 @@ function SettingsPage({ email, provider, onSignOut }: SettingsPageProps) {
       <h2 className="text-lg font-bold text-gray-800">설정</h2>
 
       <AccountSection />
+
+      <AiSettingsSection />
 
       <section className="rounded-2xl bg-white p-5 shadow-sm" aria-labelledby="account-title">
         <h3 id="account-title" className="text-sm font-bold text-gray-500">

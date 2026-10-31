@@ -2,10 +2,12 @@ import { renderToString } from 'react-dom/server'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import AccountSection from './components/accounts/AccountSection.tsx'
 import EntryPanel from './components/entry/EntryPanel.tsx'
+import PasteImport from './components/entry/PasteImport.tsx'
 import { LedgerContext, type LedgerValue } from './hooks/ledgerContext.ts'
 import type { Account, DailyNote, Transaction } from './lib/types.ts'
 import FixedView from './components/views/FixedView.tsx'
 import HistoryPage from './pages/HistoryPage.tsx'
+import EntryPage from './pages/EntryPage.tsx'
 import ViewsPage from './pages/ViewsPage.tsx'
 import { addMonths, currentMonthKey, todayString } from './utils/format.ts'
 
@@ -43,7 +45,7 @@ const noteList: DailyNote[] = [{ id: 'n1', note_date: today, body: '샘플 하�
 function fakeLedger(overrides: Partial<LedgerValue> = {}): LedgerValue {
   return {
     accounts: { accounts: accountList, loading: false, error: '', reload: async () => {}, add: ok, update: ok, setActive: ok, remove: ok, move: ok },
-    transactions: { items: txList, loading: false, error: '', reload: async () => {}, add: ok, update: ok, remove: ok },
+    transactions: { items: txList, loading: false, error: '', reload: async () => {}, add: ok, addMany: async () => ({ ok: true as const, saved: 0, skipped: 0 }), update: ok, remove: ok },
     notes: { items: noteList, byDate: new Map(noteList.map((n) => [n.note_date, n])), loading: false, error: '', reload: async () => {}, save: ok, remove: ok },
     ...overrides,
   }
@@ -105,6 +107,25 @@ describe('내역 화면', () => {
 })
 
 describe('입력 화면', () => {
+  it('직접 입력과 문자 붙여넣기 탭을 보여준다', () => {
+    const html = render(<EntryPage />)
+    expect(html).toContain('직접 입력')
+    expect(html).toContain('문자 붙여넣기')
+  })
+
+  it('문자 붙여넣기 안내와 한글 글상자, 읽기 버튼을 보여준다', () => {
+    const html = render(<PasteImport />)
+    expect(html).toContain('카드·통장 문자를 복사해서 붙여넣으세요.')
+    expect(html).toContain('lang="ko"')
+    expect(html).toContain('읽기')
+  })
+
+  it('결제수단이 없으면 등록 안내를 보여준다', () => {
+    const empty = fakeLedger()
+    empty.accounts = { ...empty.accounts, accounts: [] }
+    expect(render(<PasteImport />, empty)).toContain('설정 탭에서 결제수단을 먼저 등록')
+  })
+
   it('결제수단 칩과 입력칸, 할부·고정지출 선택, 하루 정리 카드가 나온다', () => {
     const html = render(<EntryPanel />)
     expect(html).toContain('신한카드 · 생활카드 (5678)')

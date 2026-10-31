@@ -6,7 +6,7 @@ import os from 'node:os'
 import path from 'node:path'
 import { checkScope, failureSignature, scanSecrets } from './checks.mjs'
 import { evaluateCommand } from './guard.mjs'
-import { loadPolicy, matchesAny } from './lib.mjs'
+import { loadPolicy, matchesAny, normalizeDrive } from './lib.mjs'
 
 const policy = loadPolicy()
 let passed = 0
@@ -38,6 +38,13 @@ test('보호 경로 목록에 핵심 파일이 들어 있다', () => {
   assert.ok(!matchesAny('src/utils/parsers/shinhan.ts', policy.protectedPaths))
 })
 
+console.log('경로 표기')
+test('드라이브 글자는 항상 대문자로 맞춘다 (소문자면 vitest가 모듈을 두 벌 불러와 실패)', () => {
+  assert.equal(normalizeDrive('d:\\Vibecode\\MoneyLog-worktrees\\x'), 'D:\\Vibecode\\MoneyLog-worktrees\\x')
+  assert.equal(normalizeDrive('D:\\Vibecode'), 'D:\\Vibecode')
+  assert.equal(normalizeDrive('/tmp/x'), '/tmp/x')
+})
+
 console.log('범위 검사')
 test('허용 경로 안은 통과, 밖과 보호 경로는 위반', () => {
   const task = { allowedPaths: ['src/utils/parsers/**'], approvedProtected: [] }
@@ -53,6 +60,16 @@ test('사용자가 승인한 보호 경로는 허용', () => {
 })
 
 console.log('비밀 문자열 검사')
+test('AI 키(sk-ant-…) 모양도 찾아낸다', () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'agent-selftest-'))
+  fs.writeFileSync(path.join(dir, 'k.ts'), `const key = "${'sk-' + 'ant-'}api03-abcdefghijklmnop1234"`)
+  const result = scanSecrets(dir, [{ file: 'k.ts' }], policy)
+  fs.rmSync(dir, { recursive: true, force: true })
+  assert.equal(result.ok, false)
+})
+test('supabase 폴더는 보호 경로', () => {
+  assert.ok(matchesAny('supabase/functions/parse-capture/index.ts', policy.protectedPaths))
+})
 test('키·토큰 모양을 찾아내고, 평범한 코드는 통과', () => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'agent-selftest-'))
   const secrets = {
@@ -93,6 +110,8 @@ const cases = [
   ['cat .env', 'deny'],
   ['Get-Content .env.local', 'deny'],
   ['node -e "fs.readFileSync(\'.env\')"', 'deny'],
+  ["echo " + 'sk-' + 'ant-api03-abcdefghijklmnop1234', 'deny'],
+  ['supabase secrets ' + 'set ANTHROPIC_API_KEY=x', 'deny'],
   ['echo ok; cat .env', 'deny'],
   ['cat .env && ls', 'deny'],
   ['git check-ignore -q .env && echo ok', 'allow'],

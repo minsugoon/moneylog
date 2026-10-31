@@ -73,7 +73,8 @@ function buildPrompt(id, state) {
   const parts = [
     [
       '당신은 Moneylog 프로젝트의 Senior Software Engineer입니다.',
-      '이 폴더는 격리된 Git 워크트리입니다. 먼저 AGENTS.md와 CLAUDE.md(6·7·8·10·12장)를 읽고 따르세요.',
+      '이 폴더는 격리된 Git 워크트리입니다. 먼저 AGENTS.md를 읽고 따르세요. CLAUDE.md는 통째로 읽지 말고 TASK.md가 가리키는 장만 읽으세요(읽는 양이 곧 비용입니다).',
+      '글쓰기 스타일은 기존 코드(src/utils/format.ts 등)와 똑같이 맞춥니다: 세미콜론 없음, 작은따옴표, 가져오기 경로에 .ts/.tsx 확장자(예: from \'./common.ts\'), 테스트 이름과 주석은 한국어.',
       '아래 TASK 명세 범위 안에서만 작업하세요. git commit·push, 네트워크, 패키지 설치, .env 접근, 허용 경로 밖 수정은 금지입니다.',
       '끝내기 전에 npx tsc -b, npm test, npm run build 를 실행하고, 최종 응답은 지정된 JSON 형식으로만 하세요.',
     ].join('\n'),

@@ -34,17 +34,21 @@
     "public/**",
     "src/lib/supabase.ts",
     "src/hooks/useAuth.ts",
-    "src/pages/LoginPage.tsx"
+    "src/pages/LoginPage.tsx",
+    "supabase/**"
   ],
   "sharedFiles": [
     "src/App.tsx",
     "src/lib/types.ts",
     "src/hooks/ledgerContext.ts",
     "src/hooks/LedgerProvider.tsx",
-    "src/components/ui.ts"
+    "src/components/ui.ts",
+    "src/pages/EntryPage.tsx",
+    "src/hooks/useTransactions.ts"
   ],
   "secretPatterns": [
     "eyJ[A-Za-z0-9_-]{20,}\\.[A-Za-z0-9_-]{10,}",
+    "sk-ant-[A-Za-z0-9_-]{16,}",
     "sb_secret_[A-Za-z0-9_-]{8,}",
     "sb_publishable_[A-Za-z0-9_-]{16,}",
     "access_token=[A-Za-z0-9._-]{20,}",

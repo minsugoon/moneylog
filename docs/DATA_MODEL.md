@@ -1,6 +1,7 @@
 # Moneylog 데이터 구조 (Supabase)
 
-- 버전: v0.6 / 최종 수정: 2026-10-25
+- 버전: v0.7 / 최종 수정: 2026-10-31
+- 변경(v0.7, 2026-10-31): **AI 캡처 입력용 표 2개와 함수 초안(9~11번) 추가.** 단계 7-B에서 적용할 예정이며 **아직 DB에 없다.**
 - 변경(v0.6): 보안 규칙(policy)의 `auth.uid()`를 `(select auth.uid())`로 바꿈. 내역이 많아져도 빠르게 하기 위한 Supabase 권장 방식이고 결과는 같다.
 - 원칙: 모든 표는 `user_id = auth.uid()`인 행만 읽고 쓴다 (RLS). 전체 카드·계좌번호는 저장하지 않는다.
 - DB를 바꾸면 이 문서도 같이 고친다.
@@ -15,6 +16,8 @@
 | card_benefits | 실적 달성 혜택 | 미션 달성 보상 |
 | exclusion_rules | 실적 제외 키워드 사전 | "이 단어가 있으면 실적 제외될 수 있음" 목록 |
 | daily_notes | 날짜별 하루 정리(일기) | 가계부 속 일기장 한 쪽 |
+| user_settings | AI 동의 기록, 플랜, 월 이용 한도 (7-B 예정) | 이용자별 이용 안내서와 한도표 |
+| ai_usage | AI 사용 기록 (시각·모델·토큰만, 내용은 저장 안 함) (7-B 예정) | 사용 횟수 장부 |
 
 ## 2. 실행 순서 (SCHEDULE.md와 연결)
 | 번호 | 내용 | 실행 시점 |
@@ -23,6 +26,7 @@
 | 5 | 하루 정리(일기) 표 + 보안 | 단계 4 |
 | 6~7 | 카드 실적, 혜택 표 + 보안 | 단계 9 |
 | 8 | 제외 키워드 표 + 보안 | 단계 10 |
+| 9~11 | AI 이용 설정·사용 기록 표 + 동의·한도 확인 함수 | **단계 7-B** (사용자 승인 후 적용) |
 
 한 번에 모두 실행해도 문제는 없다. 새 프로젝트에서 **SQL Editor**에 붙여넣고 **Run**.
 
@@ -209,6 +213,58 @@ create policy "own exclusion_rules" on public.exclusion_rules
 - `interest_free`(무이자 할부)는 키워드가 아니라 내역의 체크 칸으로 판단하므로 `category`에 없다.
 - 기본 키워드는 SQL이 아니라 **앱이 첫 로그인 때 자동 등록**한다. (목록 수정이 쉽도록)
 
+### 9) 이용자 설정 (AI 동의·플랜·월 한도) — 7-B 적용 예정, 아직 DB에 없음
+```sql
+create table public.user_settings (
+  user_id uuid primary key default auth.uid() references auth.users(id) on delete cascade,
+  ai_consent_at timestamptz,
+  ai_consent_version int,
+  plan text not null default 'free' check (plan in ('free','plus')),
+  ai_monthly_limit int not null default 20 check (ai_monthly_limit >= 0),
+  created_at timestamptz not null default now()
+);
+
+alter table public.user_settings enable row level security;
+create policy "read own settings" on public.user_settings
+  for select using (user_id = (select auth.uid()));
+-- 쓰기 정책을 일부러 만들지 않는다. 이용자는 플랜·한도를 직접 바꿀 수 없고(조작 방지),
+-- 동의 기록은 11번의 함수로만 남긴다. 한도·플랜 변경은 운영자가 SQL Editor에서 한다.
+```
+
+### 10) AI 사용 기록 (내용은 저장하지 않는다) — 7-B 적용 예정, 아직 DB에 없음
+```sql
+create table public.ai_usage (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null default auth.uid() references auth.users(id) on delete cascade,
+  used_at timestamptz not null default now(),
+  kind text not null default 'capture',
+  image_count int not null default 1 check (image_count between 1 and 5),
+  model text,
+  input_tokens int,
+  output_tokens int,
+  ok boolean not null default false,
+  refunded boolean not null default false
+);
+
+create index ai_usage_user_time_idx on public.ai_usage (user_id, used_at desc);
+
+alter table public.ai_usage enable row level security;
+create policy "read own usage" on public.ai_usage
+  for select using (user_id = (select auth.uid()));
+-- 이것도 쓰기 정책이 없다. 기록은 11번의 함수로만 남는다.
+```
+
+### 11) 동의·한도 확인 함수 (설계 초안, 7-B에서 SQL로 완성) — 아직 DB에 없음
+모두 `security definer`, `set search_path = ''`, 로그인한 사용자(`authenticated`)만 실행할 수 있고 `anon`은 막는다. (Supabase 점검 도구가 "로그인 사용자가 실행 가능한 SECURITY DEFINER 함수" 경고를 내는데, 이 함수들은 의도된 것이다.)
+| 함수 | 하는 일 |
+|------|---------|
+| `accept_ai_consent(p_version int)` | 내 동의를 기록한다 (`user_settings`가 없으면 만든다) |
+| `withdraw_ai_consent()` | 동의를 철회한다 (`ai_consent_at`을 비운다) |
+| `begin_ai_call(p_images int)` | AI를 부르기 **전에** 호출. 동의 여부 → 이번 달 한도(한국 시간 기준 달) → 하루 상한(10장) → 분당 상한(5건)을 차례로 확인하고, 통과하면 `ai_usage`에 행을 만들어 id를 돌려준다. 거절하면 이유 코드(`ai_not_consented`, `ai_limit_month`, `ai_limit_day`, `ai_rate_limit`)로 오류를 낸다 |
+| `finish_ai_call(p_id uuid, p_model text, p_in int, p_out int, p_ok boolean, p_refund boolean default false)` | 호출 뒤 결과를 기록한다. AI를 부르기 전에 실패했다면(이미지 검증 오류 등) `p_refund = true`로 이용자 횟수를 돌려준다 |
+- 한도 확인과 차감을 **서버 함수 안에서** 하므로 앱 코드를 고쳐도 우회할 수 없다. `service_role` 키는 쓰지 않는다.
+- 운영자의 한도·플랜 변경 예: `update public.user_settings set plan = 'plus', ai_monthly_limit = 200 where user_id = '이용자 id';`
+
 ## 4. 칸 설명 (헷갈리기 쉬운 것)
 | 칸 | 의미 |
 |----|------|
@@ -216,7 +272,9 @@ create policy "own exclusion_rules" on public.exclusion_rules
 | transactions.discount | 이용금액에서 빠지는 할인액 |
 | transactions.memo | 그 지출에 남기는 한 줄 메모 (최대 200자). 비워도 됨 |
 | daily_notes.body | 그날의 하루 정리 글 (1~2,000자) |
-| transactions.import_hash | 날짜+결제명+금액+결제수단으로 만든 지문. 같은 내역 중복 저장 방지 |
+| transactions.import_hash | `v1:`로 시작하는 지문 = 결제수단+날짜+시각(있으면)+결제명(정규화)+금액+취소 여부. 같은 지문이 한 번에 여러 건이면 `#2`처럼 순번을 붙인다. 같은 내역 중복 저장 방지 (규칙은 `PARSER_SPEC.md` 6장). 직접 입력한 내역은 비어 있다 |
+| user_settings.ai_monthly_limit | 이번 달 AI 캡처 입력으로 읽을 수 있는 이미지 장수. 기본 20 (무료). 이용자는 못 바꿈 |
+| ai_usage | 호출 시각·모델·토큰 수만 남긴다. **캡처 내용(이미지·읽은 결과)은 저장하지 않는다** |
 | transactions.performance_override | 사용자가 정한 실적 처리. `include`=실적 포함 확정, `exclude`=실적 제외 확정, 비어 있으면 자동 판정 |
 | transactions.interest_free | 무이자 할부 결제 여부 (직접 체크) |
 | card_programs.measure_basis | `previous_month`=지난달 사용액이 이번 달 혜택 결정, `current_month`=이번 달 사용액이 이번 달 혜택 결정 |

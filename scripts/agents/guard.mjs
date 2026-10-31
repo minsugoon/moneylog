@@ -48,6 +48,11 @@ const DENY_RULES = [
     reason: '운영 배포는 사용자 승인 없이 하지 않아요.',
   },
   {
+    id: 'api-key-in-command',
+    test: (c) => /sk-ant-[A-Za-z0-9_-]{16,}/.test(c) || /\bsupabase\s+secrets\s+set\b/i.test(c),
+    reason: 'AI 키는 명령어나 채팅에 쓰지 않아요. 키는 사용자가 Supabase 대시보드(Edge Functions → Secrets)에 직접 넣어요. (SETUP_GUIDE.md 12장)',
+  },
+  {
     id: 'read-env',
     test: readsEnvFile,
     reason: '.env에는 키가 들어 있어서 내용을 읽거나 복사하는 명령은 막아요. (값이 필요하면 사용자가 직접 확인해요)',

@@ -1,6 +1,6 @@
 # Moneylog (moneylog.vibecodelab.dev)
 
-- 문서 세트 버전: v0.6 / 최종 수정: 2026-10-29
+- 문서 세트 버전: v0.6 / 최종 수정: 2026-10-31
 - 이어서 작업할 때는 **14장 "현재 진행 상황"**을 먼저 읽는다. Claude Code와 Codex의 협업 규칙은 **15장**에 있다.
 
 ## 0. 먼저 읽을 것
@@ -72,6 +72,7 @@ moneylog/
 │  ├─ PARSER_SPEC.md
 │  └─ SETUP_GUIDE.md
 ├─ vercel.json
+├─ supabase/functions/  서버 함수 (AI 캡처 읽기 `parse-capture`, 단계 7-B). 배포는 사용자 승인 후 Claude가 한다
 ├─ public/              PWA 아이콘 (pwa-192x192.png, pwa-512x512.png, pwa-maskable-512x512.png, apple-touch-icon.png)
 ├─ .env                 (GitHub에 올리지 않음)
 ├─ .env.example         (빈 값 예시, 올려도 됨)
@@ -91,7 +92,9 @@ moneylog/
 - 화면(UI)과 계산·파싱 로직은 분리한다. 계산 로직은 `utils/`에만 둔다.
 
 ## 7. 절대 규칙 (보안)
-1. 환경변수는 `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY` 두 개만 사용한다.
+1. **비밀 값은 두 종류로 나눈다.**
+   - **브라우저용(공개돼도 안전한 값)**: `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY` 두 개만 쓴다. `VITE_`로 시작하는 값은 앱 코드에 그대로 들어가 공개되므로 **비밀 값에는 절대 `VITE_`를 붙이지 않는다.**
+   - **서버용(공개되면 안 되는 값)**: Supabase **Edge Functions → Secrets**(서버 비밀 금고)에만 둔다. 허용 이름은 `ANTHROPIC_API_KEY`(비밀), `AI_ENABLED`, `AI_MODEL`(비밀 아님) 세 개뿐이다. 키 값은 코드·`.env`·Vercel·문서·채팅(Claude와 Codex에게도) 어디에도 쓰지 않고, **사용자가 대시보드에서 직접** 넣는다. 방법은 `SETUP_GUIDE.md` 12장.
 2. **`service_role` 키는 코드·문서·채팅 어디에도 넣지 않는다.** (모든 보안을 우회하는 마스터키)
 3. `.env`는 `.gitignore`에 반드시 포함한다. 실수로 올라갔다면 즉시 알리고 키 재발급 방법을 안내한다.
 4. 전체 카드번호·계좌번호는 저장하지 않는다. 끝 4자리만 허용한다.
@@ -111,10 +114,11 @@ moneylog/
 
 ## 9. 입력 파서 규칙 (상세는 docs/PARSER_SPEC.md)
 - 파서는 카드사/은행별로 파일을 나눈다. 새 형식이 생기면 기존 파서를 고치지 말고 파일을 추가한다.
-- 모든 파서는 같은 모양의 결과를 돌려준다: `{ date, merchant, amount, installment, isCancel, interestFree, accountHint, raw }`
+- 모든 파서는 같은 모양의 결과(`ParsedRow`, `PARSER_SPEC.md` 2장)를 돌려준다: `status, date, time, merchant, amount, installment, isCancel, interestFree, direction, accountHint, source, raw, failReason`. "오늘"은 인자로 받아 테스트에서 고정한다.
+- 입력 방식: 문자·통장 문자는 텍스트 붙여넣기(규칙 기반, AI 없음), 카드앱은 **화면 캡처 + AI(Claude)**(서버 함수 경유, 첫 사용 때 안내·동의, 이용자별 월 한도). AI 결과도 항상 미리보기·확인을 거친다.
 - 인식 실패한 줄은 버리지 말고 "실패" 표시로 미리보기에 보여준다.
 - 저장 전 항상 **미리보기 → 사용자 확인** 단계를 거친다.
-- 중복 감지: `import_hash` = 날짜 + 결제명 + 금액 + 결제수단으로 만든 지문.
+- 중복 감지: `import_hash` = 결제수단 + 날짜 + **시각(있으면)** + 결제명 + 금액 + 취소 여부로 만든 지문(`v1:`). 같은 지문은 **개수로 비교**하고, 날짜가 ±1일·결제명이 비슷하면 "중복 가능"으로 표시한다. 상세는 `PARSER_SPEC.md` 6장.
 - 통장 문자는 "출금"만 지출로 저장하고 "입금"은 기본 해제 상태로 보여준다.
 - 파서마다 샘플 문자열을 넣은 테스트 파일을 같이 만든다.
 
@@ -168,7 +172,7 @@ moneylog/
 - Supabase 호출은 `hooks/`에만 둔다. 화면 컴포넌트에서 직접 호출하지 않는다.
 
 ## 13. 하지 않는 것 (PRD 범위 밖)
-지출 분류/카테고리, 예산 설정, 은행·카드사 자동 연동(API), 전체 계좌번호 저장, 카드사 실적 조건 자동 수집, 제외 판단의 100% 자동화, 앱스토어 등록용 네이티브 앱(PWA 설치로 대신)
+지출 분류/카테고리, 예산 설정, 은행·카드사 자동 연동(API), 전체 계좌번호 저장, 카드사 실적 조건 자동 수집, 제외 판단의 100% 자동화, 앱스토어 등록용 네이티브 앱(PWA 설치로 대신), 유료 플랜 결제·광고 연동(이번 범위 밖, 이용 한도 구조만 준비), 캡처 이미지의 서버 저장
 
 ## 14. 현재 진행 상황 (2026-10-25 기준)
 
@@ -254,6 +258,7 @@ Codex가 따르는 규칙은 루트의 `AGENTS.md`다. 프로젝트 규칙의 �
 
 ### 15-5. 사용자 승인이 필요한 것 (승인 없이 바꾸지 않는다)
 - 운영 DB(Supabase) 변경, 인증(OAuth) 설정·코드, 비밀키·환경변수, `main` 브랜치 병합·push, 운영 배포
+- **서버 함수(`supabase/functions/`) 배포**, AI 키 등록(사용자가 직접), AI 모델·한도·동의 안내문 변경
 - 보호 경로 수정(`package.json`·패키지 설치, `vite.config.ts`, `vercel.json`, `.mcp.json` 등. 목록은 `policy.json`의 `protectedPaths`)
 - Supabase MCP의 쓰기 도구(`apply_migration`, `execute_sql` 등)는 `.claude/settings.json`에서 **매번 승인**을 받도록 해 두었다. 읽기 도구는 자동 허용.
 - 위험 명령(강제 push, 배포 명령, `.env` 읽기, Codex 직접 호출·샌드박스 우회)은 `scripts/agents/guard.mjs` 훅이 막는다.

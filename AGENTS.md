@@ -14,9 +14,9 @@ Moneylog는 개인용 가계부 PWA(Vite + React + TypeScript + Tailwind, 백엔
 
 ## 절대 금지 (어기면 작업이 거절된다)
 1. `.env`, `.env.*`, `~/.codex`, 홈 폴더의 설정·인증 파일을 읽거나 출력하지 않는다.
-2. 키·토큰·비밀번호 문자열(`sb_publishable_…`, `sb_secret_…`, `eyJ…`, `service_role` 등)을 코드·테스트·로그·문서에 쓰지 않는다.
+2. 키·토큰·비밀번호 문자열(`sb_publishable_…`, `sb_secret_…`, `sk-ant-…`, `eyJ…`, `service_role` 등)을 코드·테스트·로그·문서에 쓰지 않는다. `ANTHROPIC_API_KEY`의 값은 어떤 경우에도 알 수도 쓸 수도 없다. 서버 함수 코드는 `Deno.env.get('ANTHROPIC_API_KEY')`처럼 **이름으로만** 읽는다.
 3. 네트워크를 쓰지 않는다. `npm install`, 패키지 추가·삭제, 외부 호출 금지.
-4. DB·Supabase·인증(OAuth)·배포 설정을 건드리지 않는다. SQL을 실행하지 않는다. RLS를 끄는 코드는 쓰지 않는다.
+4. DB·Supabase·인증(OAuth)·배포 설정을 건드리지 않는다. SQL을 실행하지 않는다. RLS를 끄는 코드는 쓰지 않는다. 서버 함수(`supabase/functions/`)는 명세가 허용한 작업에서만 **파일로 쓰고**, 배포·실행·키 등록은 하지 않는다.
 5. `git commit`, `git push`, 브랜치 변경, 워크트리 조작을 하지 않는다. **파일 변경만 남긴다.** 커밋은 Claude가 한다.
 6. 명세의 "수정해도 되는 경로" 밖의 파일을 고치지 않는다. 보호 경로(`.agent/policy.json`의 `protectedPaths`)는 읽기만 한다.
 7. 실제 이름·카드·계좌 번호·금액을 테스트 샘플에 쓰지 않는다. 모두 임의 값으로 만든다. 메모·하루 정리 내용을 로그로 남기지 않는다.
@@ -28,6 +28,7 @@ Moneylog는 개인용 가계부 PWA(Vite + React + TypeScript + Tailwind, 백엔
 - Supabase 호출은 `src/hooks/`에만 둔다. 계산·파싱 로직은 `src/utils/`에만 둔다. 화면은 로직과 분리한다.
 - 금액은 정수(원). 소수점 계산 금지. 취소 건은 계산할 때 마이너스, DB의 `amount`는 항상 0 이상.
 - **계산·판정·파서 함수는 반드시 테스트 파일과 함께** 만든다. 새 파서는 기존 파서를 고치지 말고 파일을 추가한다.
+- 파서는 `docs/PARSER_SPEC.md` 2장의 `ParsedRow` 모양을 그대로 쓴다. "오늘"이 필요한 함수는 `now`를 인자로 받아 테스트에서 고정한다(테스트의 오늘은 2026-10-31). 테스트 샘플은 PARSER_SPEC 7장의 **임의 값 샘플**을 그대로 쓴다.
 - 버튼은 44px 이상, 입력창 글자 16px 이상. 로딩·빈 화면·오류 문구는 친절한 한국어로 둔다. 삭제는 확인 단계를 둔다.
 
 ## 끝내기 전 반드시 실행한다 (워크트리 안에서)

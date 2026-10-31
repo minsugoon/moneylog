@@ -53,6 +53,16 @@ test('사용자가 승인한 보호 경로는 허용', () => {
 })
 
 console.log('비밀 문자열 검사')
+test('AI 키(sk-ant-…) 모양도 찾아낸다', () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'agent-selftest-'))
+  fs.writeFileSync(path.join(dir, 'k.ts'), `const key = "${'sk-' + 'ant-'}api03-abcdefghijklmnop1234"`)
+  const result = scanSecrets(dir, [{ file: 'k.ts' }], policy)
+  fs.rmSync(dir, { recursive: true, force: true })
+  assert.equal(result.ok, false)
+})
+test('supabase 폴더는 보호 경로', () => {
+  assert.ok(matchesAny('supabase/functions/parse-capture/index.ts', policy.protectedPaths))
+})
 test('키·토큰 모양을 찾아내고, 평범한 코드는 통과', () => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'agent-selftest-'))
   const secrets = {
@@ -93,6 +103,8 @@ const cases = [
   ['cat .env', 'deny'],
   ['Get-Content .env.local', 'deny'],
   ['node -e "fs.readFileSync(\'.env\')"', 'deny'],
+  ["echo " + 'sk-' + 'ant-api03-abcdefghijklmnop1234', 'deny'],
+  ['supabase secrets ' + 'set ANTHROPIC_API_KEY=x', 'deny'],
   ['echo ok; cat .env', 'deny'],
   ['cat .env && ls', 'deny'],
   ['git check-ignore -q .env && echo ok', 'allow'],

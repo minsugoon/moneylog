@@ -213,7 +213,7 @@ create policy "own exclusion_rules" on public.exclusion_rules
 - `interest_free`(무이자 할부)는 키워드가 아니라 내역의 체크 칸으로 판단하므로 `category`에 없다.
 - 기본 키워드는 SQL이 아니라 **앱이 첫 로그인 때 자동 등록**한다. (목록 수정이 쉽도록)
 
-### 9) 이용자 설정 (AI 동의·플랜·월 한도) — 7-B 적용 예정, 아직 DB에 없음
+### 9) 이용자 설정 (AI 동의·플랜·월 한도) — 2026-10-31 적용 완료 (마이그레이션 `step7b_ai_settings_usage_functions`)
 ```sql
 create table public.user_settings (
   user_id uuid primary key default auth.uid() references auth.users(id) on delete cascade,
@@ -231,7 +231,7 @@ create policy "read own settings" on public.user_settings
 -- 동의 기록은 11번의 함수로만 남긴다. 한도·플랜 변경은 운영자가 SQL Editor에서 한다.
 ```
 
-### 10) AI 사용 기록 (내용은 저장하지 않는다) — 7-B 적용 예정, 아직 DB에 없음
+### 10) AI 사용 기록 (내용은 저장하지 않는다) — 2026-10-31 적용 완료
 ```sql
 create table public.ai_usage (
   id uuid primary key default gen_random_uuid(),
@@ -254,7 +254,7 @@ create policy "read own usage" on public.ai_usage
 -- 이것도 쓰기 정책이 없다. 기록은 11번의 함수로만 남는다.
 ```
 
-### 11) 동의·한도 확인 함수 (설계 초안, 7-B에서 SQL로 완성) — 아직 DB에 없음
+### 11) 동의·한도 확인 함수 — 2026-10-31 적용 완료 (SQL 전문은 Supabase 마이그레이션 `step7b_ai_settings_usage_functions`에 있다)
 모두 `security definer`, `set search_path = ''`, 로그인한 사용자(`authenticated`)만 실행할 수 있고 `anon`은 막는다. (Supabase 점검 도구가 "로그인 사용자가 실행 가능한 SECURITY DEFINER 함수" 경고를 내는데, 이 함수들은 의도된 것이다.)
 | 함수 | 하는 일 |
 |------|---------|
@@ -263,6 +263,8 @@ create policy "read own usage" on public.ai_usage
 | `begin_ai_call(p_images int)` | AI를 부르기 **전에** 호출. 동의 여부 → 이번 달 한도(한국 시간 기준 달) → 하루 상한(10장) → 분당 상한(5건)을 차례로 확인하고, 통과하면 `ai_usage`에 행을 만들어 id를 돌려준다. 거절하면 이유 코드(`ai_not_consented`, `ai_limit_month`, `ai_limit_day`, `ai_rate_limit`)로 오류를 낸다 |
 | `finish_ai_call(p_id uuid, p_model text, p_in int, p_out int, p_ok boolean, p_refund boolean default false)` | 호출 뒤 결과를 기록한다. AI를 부르기 전에 실패했다면(이미지 검증 오류 등) `p_refund = true`로 이용자 횟수를 돌려준다 |
 - 한도 확인과 차감을 **서버 함수 안에서** 하므로 앱 코드를 고쳐도 우회할 수 없다. `service_role` 키는 쓰지 않는다.
+- 한도 확인은 이용자 한 명 단위로 줄을 세워(advisory lock) 동시에 눌러도 한도를 넘지 않는다. 월·하루 기준은 한국 시간(Asia/Seoul)이다.
+- 시험(롤백 방식)으로 확인한 동작: 동의 없음 → `ai_not_consented`, 분당 6번째 → `ai_rate_limit`, 6장 → `bad_image_count`, 하루 11번째 → `ai_limit_day`, 철회 후 → `ai_not_consented`. `anon`은 실행 불가.
 - 운영자의 한도·플랜 변경 예: `update public.user_settings set plan = 'plus', ai_monthly_limit = 200 where user_id = '이용자 id';`
 
 ## 4. 칸 설명 (헷갈리기 쉬운 것)

@@ -1,8 +1,11 @@
 import { renderToString } from 'react-dom/server'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import AccountSection from './components/accounts/AccountSection.tsx'
+import AiSettingsSection from './components/settings/AiSettingsSection.tsx'
 import EntryPanel from './components/entry/EntryPanel.tsx'
 import PasteImport from './components/entry/PasteImport.tsx'
+import AiConsentDialog from './components/entry/AiConsentDialog.tsx'
+import CaptureImport from './components/entry/CaptureImport.tsx'
 import { LedgerContext, type LedgerValue } from './hooks/ledgerContext.ts'
 import type { Account, DailyNote, Transaction } from './lib/types.ts'
 import FixedView from './components/views/FixedView.tsx'
@@ -61,6 +64,14 @@ function render(node: React.ReactNode, ledger: LedgerValue = fakeLedger()): stri
 
 afterEach(() => vi.unstubAllGlobals())
 
+describe('AI 입력 설정', () => {
+  it('AI 입력 카드와 사용량 또는 불러오기 상태를 보여준다', () => {
+    const html = render(<AiSettingsSection />)
+    expect(html).toContain('AI 입력')
+    expect(html.includes('불러오는 중이에요') || html.includes('이번 달')).toBe(true)
+  })
+})
+
 describe('내역 화면', () => {
   it('이번 달 합계, 날짜별 내역, 메모, 하루 정리를 보여준다', () => {
     const html = render(<HistoryPage />)
@@ -111,6 +122,21 @@ describe('입력 화면', () => {
     const html = render(<EntryPage />)
     expect(html).toContain('직접 입력')
     expect(html).toContain('문자 붙여넣기')
+    expect(html).toContain('캡처(AI)')
+  })
+
+  it('AI 캡처 동의 안내와 시작 버튼을 보여준다', () => {
+    const html = render(<AiConsentDialog onAgree={() => {}} onCancel={() => {}} busy={false} error="" />)
+    expect(html).toContain('저장하지 않아요')
+    expect(html).toContain('철회')
+    expect(html).toContain('20장')
+    expect(html).toContain('틀릴 수 있어요')
+    expect(html).toContain('동의하고 시작')
+  })
+
+  it('캡처 가져오기가 오류 없이 로딩 안내를 보여준다', () => {
+    const html = render(<CaptureImport />)
+    expect(html).toContain('불러오는 중이에요')
   })
 
   it('문자 붙여넣기 안내와 한글 글상자, 읽기 버튼을 보여준다', () => {

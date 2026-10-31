@@ -174,7 +174,7 @@ moneylog/
 ## 13. 하지 않는 것 (PRD 범위 밖)
 지출 분류/카테고리, 예산 설정, 은행·카드사 자동 연동(API), 전체 계좌번호 저장, 카드사 실적 조건 자동 수집, 제외 판단의 100% 자동화, 앱스토어 등록용 네이티브 앱(PWA 설치로 대신), 유료 플랜 결제·광고 연동(이번 범위 밖, 이용 한도 구조만 준비), 캡처 이미지의 서버 저장
 
-## 14. 현재 진행 상황 (2026-10-25 기준)
+## 14. 현재 진행 상황 (2026-10-31 기준)
 
 ### 14-1. 단계별 상태
 | 단계 | 상태 | 커밋 | 내용 |
@@ -185,12 +185,16 @@ moneylog/
 | 4 | ✅ 완료 (2026-10-25, 직접 확인 완료) | `3ba7dc9` | 입력 폼, 내역 목록, 메모, 하루 정리(자동 저장), PC 빠른 입력 패널. `daily_notes` 표 생성 |
 | 5 | ✅ 완료 (2026-10-25, 직접 확인 완료) | `8e4dd35` | 할부 회차·잔액, 사용일/월 납부액 기준 토글, 고정지출 입력 |
 | 6 | ✅ 완료 (2026-10-25, 직접 확인 완료) | `54abcb9` | 보기 3종(기간별·결제수단별·고정지출) → **MVP 확정** |
-| 7~12 | ⬜ 시작 전 | | 붙여넣기·문자 인식 → 고정지출 자동 인식 → 카드 실적 → 실적 제외 → 파일 업로드 → 마무리 |
+| 7-A | 🔶 코드 완료, **직접 확인·main 병합 대기** (2026-10-31) | 브랜치 `agent/step7a` | 문자·통장 문자 붙여넣기(규칙 기반, AI 없음): 파서 6종, 중복 판정, 미리보기, 저장. Codex 작업 8건 모두 1회 호출로 완료 |
+| 7-B~7-D | ⬜ 시작 전 | | AI 서버 준비(키는 사용자가 금고에 직접 입력) → 캡처 입력 화면 → 정확도 시험·모델 확정 (`docs/SCHEDULE.md` 단계 7) |
+| 8~12 | ⬜ 시작 전 | | 고정지출 자동 인식 → 카드 실적 → 실적 제외 → 파일 업로드 → 마무리 |
 
 단계 3~6은 빌드·테스트·DB 동작 검증에 더해 **사용자가 배포 주소에서 직접 확인을 마쳤다**(2026-10-25). 로그인이 필요한 화면은 Claude가 직접 눌러볼 수 없어서 이 확인이 꼭 필요하다.
 
 ### 14-2. 다음 작업은 여기부터
-- [ ] **단계 7(붙여넣기·문자 인식)**: 계획부터 말하고 OK를 받은 뒤 시작한다. **내 실제 샘플(이름·번호·금액은 임의 값으로 바꾼 것)** 이 필요하다: 카드 1~2개의 앱 내역 복사본, 결제 문자 5건, 은행 출금 문자 3건, 취소 문자 2건 (`docs/PARSER_SPEC.md` 참고). 파서는 카드사/은행별 파일로 나눈다.
+- [ ] **7-A 직접 확인과 병합**: 입력 탭 > "문자 붙여넣기"에 실제 카드·통장 문자를 붙여넣어 보고(읽기 → 미리보기 → 저장), 같은 문자를 다시 붙여넣으면 "중복"으로 뜨는지 확인한다. 문제가 없으면 사용자 승인 후 `agent/step7-prep`과 `agent/step7a`를 `main`에 병합한다(= `agent/step7a` 하나에 둘 다 들어 있다).
+- [ ] **7-B 시작 전 사용자가 할 일**: Anthropic 키를 Supabase **Edge Functions → Secrets**에 `ANTHROPIC_API_KEY`로 직접 넣는다 (`docs/SETUP_GUIDE.md` 12장). 7-B에는 DB 변경(SQL 확인)·서버 함수 배포 승인이 필요하다.
+- 실제 문자에서 인식이 안 되는 형식(다른 카드사, 할부, 해외결제 등)은 미리보기에서 "실패"로 뜬다. 그 문자(이름·번호·금액은 임의 값으로 바꿔서)를 주면 `src/utils/parsers/`에 파일을 추가해 넓힌다.
 - 보류: Supabase "유출된 비밀번호 차단"은 Pro 요금제 이상에서만 켤 수 있어서 보류(무료 요금제 한계). 이메일 가입은 예비 로그인이라 영향이 작다.
 - 완료: 데스크탑 `.env`를 새 Supabase 값으로 교체함
 - 참고(해결됨): 구글 로그인 후 `localhost:3000`으로 돌아가던 문제는 Supabase **Site URL이 기본값**이어서였다. Authentication → URL Configuration에서 Site URL을 `https://moneylog.vibecodelab.dev`로, Redirect URLs에 `https://moneylog.vibecodelab.dev/**`, `http://localhost:5173/**`를 등록해 해결했다. Supabase 프로젝트를 새로 만들면 구글 로그인 설정과 이 주소 등록을 다시 해야 한다.
@@ -202,6 +206,9 @@ moneylog/
 - `src/utils/` — 계산·표시 로직(테스트 파일 동반): `format`(금액·날짜·결제수단 표시), `installment`(실결제액·월 납부액·회차·잔액·기준별 금액), `summary`(월별 내역·날짜별 묶기), `viewStats`(보기 3종 집계), `issuers`(은행·카드사 목록), `storage`(기기에 작은 설정 기억)
 - `src/pages/` — `HistoryPage`(내역), `EntryPage`(입력), `ViewsPage`(보기), `SettingsPage`(결제수단·계정), `LoginPage`
 - `src/components/` — `ui.ts`(공통 모양), `Dialog`, `ConfirmDialog`, `AmountInput`, `MonthSwitcher`, `BasisToggle` / `accounts/`(결제수단 폼·목록) / `entry/`(입력 폼, 하루 정리, `EntryPanel`) / `list/`(내역 줄·날짜 묶음·수정 창) / `views/`(보기 3종) / `layout/`(`AppShell`, `BottomTabs`, `SideNav`, `QuickEntryPanel`)
+- `src/utils/parsers/` — 문자 파서(단계 7-A): `types.ts`(`ParsedRow` 등), `common.ts`(금액·날짜·시각·할부 해석), `splitMessages.ts`(여러 건 분리, 카톡 시간 줄 제거), `samsungCard`·`hanaCard`·`wooriCard`·`shinhanCard`(승인·취소, 공통 `cardApproval.ts`), `samsungAutopay`(자동결제 접수), `hanaBank`(통장), `index.ts`(`smsParsers` 목록, `parseMessages`). **새 형식은 파일을 추가하고 `index.ts`의 `smsParsers`에 등록한다**
+- `src/utils/importHash.ts`·`importMatch.ts`(지문과 중복 판정), `importRows.ts`(미리보기 항목 만들기·재판정·저장 모양), `importFlow.test.ts`(문자 → 저장 전체 흐름 통합 시험)
+- `src/components/import/` — 미리보기 화면(`ImportPreview`, `PreviewRowEditor`), `src/components/entry/PasteImport.tsx`(문자 붙여넣기 탭), `useTransactions.addMany`(중복은 건너뛰고 한꺼번에 저장)
 - `src/screens.test.tsx` — 가짜 데이터로 주요 화면을 그려 보는 점검 테스트 (로그인 없이 화면 코드가 오류 없이 그려지는지 확인)
 - `vite.config.ts` — PWA 설정(Supabase 요청은 캐시 안 함), `vitest.config.ts` — 테스트 설정, `vercel.json` — 새로고침 404 방지
 - `public/` — **임시** PWA 아이콘 4종 (정식 아이콘은 단계 12)

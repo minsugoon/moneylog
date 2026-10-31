@@ -3,6 +3,8 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import AccountSection from './components/accounts/AccountSection.tsx'
 import EntryPanel from './components/entry/EntryPanel.tsx'
 import PasteImport from './components/entry/PasteImport.tsx'
+import AiConsentDialog from './components/entry/AiConsentDialog.tsx'
+import CaptureImport from './components/entry/CaptureImport.tsx'
 import { LedgerContext, type LedgerValue } from './hooks/ledgerContext.ts'
 import type { Account, DailyNote, Transaction } from './lib/types.ts'
 import FixedView from './components/views/FixedView.tsx'
@@ -111,6 +113,21 @@ describe('입력 화면', () => {
     const html = render(<EntryPage />)
     expect(html).toContain('직접 입력')
     expect(html).toContain('문자 붙여넣기')
+    expect(html).toContain('캡처(AI)')
+  })
+
+  it('AI 캡처 동의 안내와 시작 버튼을 보여준다', () => {
+    const html = render(<AiConsentDialog onAgree={() => {}} onCancel={() => {}} busy={false} error="" />)
+    expect(html).toContain('저장하지 않아요')
+    expect(html).toContain('철회')
+    expect(html).toContain('20장')
+    expect(html).toContain('틀릴 수 있어요')
+    expect(html).toContain('동의하고 시작')
+  })
+
+  it('캡처 가져오기가 오류 없이 로딩 안내를 보여준다', () => {
+    const html = render(<CaptureImport />)
+    expect(html).toContain('불러오는 중이에요')
   })
 
   it('문자 붙여넣기 안내와 한글 글상자, 읽기 버튼을 보여준다', () => {

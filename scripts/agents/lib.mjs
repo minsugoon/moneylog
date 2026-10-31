@@ -4,7 +4,13 @@ import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
-export const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..')
+// Windows에서 `d:\폴더`와 `D:\폴더`는 같은 폴더인데, 테스트 도구(vitest)는 서로 다른 폴더로 보고
+// 모듈을 두 벌 불러와 모든 테스트가 실패한다. 그래서 드라이브 글자는 항상 대문자로 맞춘다.
+export function normalizeDrive(p) {
+  return typeof p === 'string' ? p.replace(/^[a-z]:/, (drive) => drive.toUpperCase()) : p
+}
+
+export const REPO_ROOT = normalizeDrive(path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..'))
 export const AGENT_DIR = path.join(REPO_ROOT, '.agent')
 export const RUNS_DIR = path.join(AGENT_DIR, 'runs')
 
@@ -25,7 +31,8 @@ export function assertRunId(id) {
 }
 
 export const runDir = (id) => path.join(RUNS_DIR, id)
-export const worktreeDir = (id, policy = loadPolicy()) => path.resolve(REPO_ROOT, policy.worktreeRoot, id)
+export const worktreeDir = (id, policy = loadPolicy()) =>
+  normalizeDrive(path.resolve(REPO_ROOT, policy.worktreeRoot, id))
 export const branchName = (id, policy = loadPolicy()) => `${policy.branchPrefix}${id}`
 
 export function readJson(file, fallback = null) {
@@ -100,6 +107,7 @@ export const statePath = (id) => path.join(runDir(id), 'state.json')
 export function loadState(id) {
   const state = readJson(statePath(id))
   if (!state) die(`작업 "${id}"를 찾을 수 없어요. 먼저 new 명령으로 만들어 주세요.`)
+  state.worktree = normalizeDrive(state.worktree) // 소문자 드라이브로 저장된 옛 기록도 바로잡는다
   return state
 }
 

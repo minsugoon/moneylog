@@ -6,7 +6,7 @@ import os from 'node:os'
 import path from 'node:path'
 import { checkScope, failureSignature, scanSecrets } from './checks.mjs'
 import { evaluateCommand } from './guard.mjs'
-import { loadPolicy, matchesAny } from './lib.mjs'
+import { loadPolicy, matchesAny, normalizeDrive } from './lib.mjs'
 
 const policy = loadPolicy()
 let passed = 0
@@ -36,6 +36,13 @@ test('보호 경로 목록에 핵심 파일이 들어 있다', () => {
     assert.ok(matchesAny(file, policy.protectedPaths), file)
   }
   assert.ok(!matchesAny('src/utils/parsers/shinhan.ts', policy.protectedPaths))
+})
+
+console.log('경로 표기')
+test('드라이브 글자는 항상 대문자로 맞춘다 (소문자면 vitest가 모듈을 두 벌 불러와 실패)', () => {
+  assert.equal(normalizeDrive('d:\\Vibecode\\MoneyLog-worktrees\\x'), 'D:\\Vibecode\\MoneyLog-worktrees\\x')
+  assert.equal(normalizeDrive('D:\\Vibecode'), 'D:\\Vibecode')
+  assert.equal(normalizeDrive('/tmp/x'), '/tmp/x')
 })
 
 console.log('범위 검사')

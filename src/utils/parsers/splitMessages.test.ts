@@ -14,6 +14,15 @@ describe('splitMessages', () => {
     expect(splitMessages(' \n ')).toEqual([])
   })
 
+  it('카톡 보낸 사람·시각 표시를 줄 앞, 뒤, 한 줄 전체 어디서든 지운다', () => {
+    const result = splitMessages(
+      '[민수_IOS][오전 10:52]\n[Web발신]\n삼성1234승인 홍*동\n31,800원 일시불\n10/18 02:40 SampleApp\n누적184,350원 [민수_IOS] [오전 10:52]\n[Web발신] [오후 3:07]\n삼성1234승인 홍*동\n7,300원 일시불\n10/07 15:07 샘플택시',
+    )
+    expect(result).toHaveLength(2)
+    expect(result.join('\n')).not.toMatch(/민수|IOS|오전|오후/)
+    expect(result[1]).toContain('[Web발신]')
+  })
+
   it('날짜 구분선을 지우고 국제발신 표시는 보존한다', () => {
     expect(splitMessages('2026년 10월 31일 토요일\n[국제발신]\n내용')).toEqual(['[국제발신]\n내용'])
   })

@@ -13,7 +13,7 @@ export function parseCardApproval(message: string, context: ParseContext, issuer
   const amount = toAmount(match[4])
   const date = resolveDate(match[6], context.now)
   const time = normalizeTime(match[7])
-  const merchant = cleanMerchant(match[8].replace(/\s+누적[0-9,]+\s*원\s*$/, ''))
+  const merchant = cleanMerchant(match[8].replace(/\s*누적\s*[0-9,]+.*$/, ''))
   if (amount === null || date === null || time === null || !merchant) {
     return makeFailedRow(message, '금액, 날짜, 시각 또는 결제명이 올바르지 않습니다')
   }

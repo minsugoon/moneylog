@@ -56,23 +56,11 @@ function ImportPreview({
       {items.length === 0 ? (
         <p className="py-6 text-center text-gray-500">읽을 수 있는 문자가 없어요</p>
       ) : (
-        <>
-          <div className="hidden pc:grid pc:grid-cols-[auto_auto_1fr_2fr_1fr_1fr_auto_2fr] pc:gap-3 pc:px-4 pc:text-sm pc:font-bold">
-            <span>체크</span>
-            <span>상태</span>
-            <span>날짜</span>
-            <span>결제명</span>
-            <span>금액</span>
-            <span>할부</span>
-            <span>취소</span>
-            <span>결제수단</span>
-          </div>
-          <ul className="space-y-3">
-            {items.map((item) => (
-              <PreviewRowEditor key={item.id} item={item} accounts={accounts} onEdit={onEdit} onToggle={onToggle} />
-            ))}
-          </ul>
-        </>
+        <ul className="space-y-3">
+          {items.map((item) => (
+            <PreviewRowEditor key={item.id} item={item} accounts={accounts} onEdit={onEdit} onToggle={onToggle} />
+          ))}
+        </ul>
       )}
       <p className="font-bold">
         저장 {summary.save}건 / 제외 {summary.excluded}건 / 실패 {summary.failed}건

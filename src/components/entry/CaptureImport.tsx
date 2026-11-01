@@ -17,7 +17,7 @@ import AiConsentDialog from './AiConsentDialog.tsx'
 
 function CaptureImport() {
   const ai = useAiCapture()
-  const { accounts, transactions } = useLedger()
+  const { accounts, transactions, fixedRules } = useLedger()
   const [showConsent, setShowConsent] = useState(false)
   const [consentBusy, setConsentBusy] = useState(false)
   const [consentError, setConsentError] = useState('')
@@ -73,7 +73,7 @@ function CaptureImport() {
           : '읽을 수 있는 거래가 없어요. 더 선명한 캡처로 다시 시도해 주세요')
         return
       }
-      let nextItems = buildPreviewItems(outcome.rows, activeAccounts, transactions.items)
+      let nextItems = buildPreviewItems(outcome.rows, activeAccounts, transactions.items, fixedRules.items)
       if (accountId) nextItems = applyAccountToAll(nextItems, accountId, transactions.items)
       setItems(nextItems)
       setPreview(true)

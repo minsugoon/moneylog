@@ -13,7 +13,7 @@ import { parseMessages } from '../../utils/parsers/index.ts'
 import { inputClass, primaryButtonClass } from '../ui.ts'
 
 function PasteImport() {
-  const { accounts, transactions } = useLedger()
+  const { accounts, transactions, fixedRules } = useLedger()
   const [text, setText] = useState('')
   const [items, setItems] = useState<PreviewItem[]>([])
   const [preview, setPreview] = useState(false)
@@ -23,7 +23,7 @@ function PasteImport() {
   const activeAccounts = accounts.accounts.filter((account) => account.is_active)
 
   const read = () => {
-    setItems(buildPreviewItems(parseMessages(text, { now: new Date() }), activeAccounts, transactions.items))
+    setItems(buildPreviewItems(parseMessages(text, { now: new Date() }), activeAccounts, transactions.items, fixedRules.items))
     setError('')
     setPreview(true)
   }

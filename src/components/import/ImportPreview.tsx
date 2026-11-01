@@ -12,7 +12,7 @@ export interface ImportPreviewProps {
   error: string
   onEdit: (
     id: string,
-    patch: Partial<Pick<PreviewItem, 'accountId' | 'date' | 'merchant' | 'amount' | 'installment' | 'isCancel'>>,
+    patch: Partial<Pick<PreviewItem, 'accountId' | 'date' | 'merchant' | 'amount' | 'installment' | 'isCancel' | 'isFixed' | 'fixedType'>>,
   ) => void
   onToggle: (id: string) => void
   onApplyAccount: (accountId: string) => void

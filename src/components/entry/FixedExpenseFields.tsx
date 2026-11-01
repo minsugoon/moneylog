@@ -35,12 +35,12 @@ function FixedExpenseFields({ idPrefix, isFixed, onIsFixedChange, fixedType, onF
         <div className="mt-1">
           <label className="flex min-h-11 items-center gap-3 text-base text-gray-700">
             <input type="checkbox" checked={saveRule} onChange={(e) => onSaveRuleChange(e.target.checked)} className="h-5 w-5 accent-brand" />
-            앞으로 이 이름이 들어간 결제는 자동으로 고정지출로 잡기
+            고정 지출 이름 설정하기
           </label>
           {saveRule && (
             <div>
-              <input type="text" value={ruleKeyword} onChange={(e) => onRuleKeywordChange(e.target.value)} className={inputClass} lang="ko" maxLength={50} aria-label="자동으로 잡을 키워드" />
-              <p className="mt-1 text-xs text-gray-500">짧게 줄일수록 더 많은 결제명에 맞아요. 두 글자 이상 입력해 주세요.</p>
+              <input type="text" value={ruleKeyword} onChange={(e) => onRuleKeywordChange(e.target.value)} className={inputClass} lang="ko" maxLength={50} aria-label="고정 지출 이름" />
+              <p className="mt-1 text-xs text-gray-500">이 이름이 들어간 결제는 앞으로 자동으로 고정지출이 돼요. 짧게 줄일수록 더 많은 결제명에 맞고, 두 글자 이상 입력해야 해요.</p>
             </div>
           )}
         </div>

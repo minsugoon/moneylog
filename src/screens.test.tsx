@@ -250,6 +250,6 @@ describe('고정지출 규칙', () => {
   it('자동 적용 안내와 규칙 저장 선택을 보여준다', () => {
     const html = render(<FixedExpenseFields idPrefix="test" isFixed onIsFixedChange={() => {}} fixedType="통신" onFixedTypeChange={() => {}} matchedKeyword="샘플통신" canSaveRule saveRule={false} onSaveRuleChange={() => {}} ruleKeyword="샘플" onRuleKeywordChange={() => {}} />)
     expect(html).toContain('규칙에 따라 고정지출로 잡았어요')
-    expect(html).toContain('앞으로 이 이름이 들어간 결제는 자동으로 고정지출로 잡기')
+    expect(html).toContain('고정 지출 이름 설정하기')
   })
 })

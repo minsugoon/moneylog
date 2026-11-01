@@ -13,6 +13,7 @@ import FixedLoadPanel from './FixedLoadPanel.tsx'
 import { useFixedLoad } from './useFixedLoad.ts'
 import FixedExpenseFields from './FixedExpenseFields.tsx'
 import EntryDateField from './EntryDateField.tsx'
+import FloatingSaveButton from './FloatingSaveButton.tsx'
 
 const LAST_ACCOUNT_KEY = 'moneylog.lastAccountId'
 
@@ -24,10 +25,11 @@ interface EntryFormProps {
   initial?: Transaction
   onDone?: () => void
   onCancel?: () => void
+  floatingSave?: boolean
 }
 
 // 지출 입력 폼. 저장하면 폼을 비우고 이어서 입력할 수 있다.
-function EntryForm({ date, onDateChange, initial, onDone, onCancel }: EntryFormProps) {
+function EntryForm({ date, onDateChange, initial, onDone, onCancel, floatingSave = false }: EntryFormProps) {
   const { accounts, transactions, fixedRules } = useLedger()
   const idPrefix = useId()
   const merchantRef = useRef<HTMLInputElement>(null)
@@ -131,7 +133,8 @@ function EntryForm({ date, onDateChange, initial, onDone, onCancel }: EntryFormP
   }
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-4" noValidate>
+    <form onSubmit={handleSubmit} className={`flex flex-col gap-4 ${floatingSave && !isEdit ? 'pb-20' : ''}`} noValidate>
+      {!isEdit && <FixedLoadPanel options={fixedLoadOptions} onPick={handleFixedLoad} />}
       <div>
         <label htmlFor={`${idPrefix}-merchant`} className={labelClass}>결제명</label>
         <input
@@ -170,8 +173,6 @@ function EntryForm({ date, onDateChange, initial, onDone, onCancel }: EntryFormP
           </>
         )}
       </div>
-
-      {!isEdit && <FixedLoadPanel options={fixedLoadOptions} onPick={handleFixedLoad} />}
 
       <div>
         <label htmlFor={`${idPrefix}-discount`} className={labelClass}>할인 (선택)</label>
@@ -278,6 +279,7 @@ function EntryForm({ date, onDateChange, initial, onDone, onCancel }: EntryFormP
           {busy ? '저장하는 중…' : isEdit ? '수정 저장' : '저장'}
         </button>
       </div>
+      {floatingSave && !isEdit && <FloatingSaveButton busy={busy} />}
     </form>
   )
 }

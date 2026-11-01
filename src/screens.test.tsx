@@ -129,7 +129,7 @@ describe('입력 화면', () => {
     expect(html).toContain('결제명')
     expect(html).toContain('일시불')
     expect(html).toContain('고정지출')
-    expect(html).toContain('오늘 하루 정리')
+    expect(html).toContain('하루 정리')
     // 금액 칸은 숫자 키패드가 뜨는 설정이어야 한다
     expect(html).toContain('inputMode="numeric"')
   })

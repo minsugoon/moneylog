@@ -132,6 +132,27 @@ function EntryForm({ date, onDateChange, initial, onDone, onCancel }: EntryFormP
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-4" noValidate>
+      <div>
+        <label htmlFor={`${idPrefix}-merchant`} className={labelClass}>결제명</label>
+        <input
+          id={`${idPrefix}-merchant`}
+          ref={merchantRef}
+          type="text"
+          value={merchant}
+          onChange={(e) => setMerchant(e.target.value)}
+          maxLength={100}
+          placeholder="예) 편의점"
+          lang="ko"
+          autoComplete="off"
+          className={inputClass}
+        />
+      </div>
+
+      <div>
+        <label htmlFor={`${idPrefix}-amount`} className={labelClass}>금액 (원)</label>
+        <AmountInput id={`${idPrefix}-amount`} value={amount} onChange={setAmount} placeholder="0" size="large" />
+      </div>
+
       <EntryDateField idPrefix={idPrefix} date={date} onDateChange={onDateChange} />
 
       <div>
@@ -153,36 +174,8 @@ function EntryForm({ date, onDateChange, initial, onDone, onCancel }: EntryFormP
       {!isEdit && <FixedLoadPanel options={fixedLoadOptions} onPick={handleFixedLoad} />}
 
       <div>
-        <label htmlFor={`${idPrefix}-merchant`} className={labelClass}>
-          결제명
-        </label>
-        <input
-          id={`${idPrefix}-merchant`}
-          ref={merchantRef}
-          type="text"
-          value={merchant}
-          onChange={(e) => setMerchant(e.target.value)}
-          maxLength={100}
-          placeholder="예) 편의점"
-          lang="ko"
-          autoComplete="off"
-          className={inputClass}
-        />
-      </div>
-
-      <div className="grid grid-cols-2 gap-3">
-        <div>
-          <label htmlFor={`${idPrefix}-amount`} className={labelClass}>
-            금액 (원)
-          </label>
-          <AmountInput id={`${idPrefix}-amount`} value={amount} onChange={setAmount} placeholder="0" />
-        </div>
-        <div>
-          <label htmlFor={`${idPrefix}-discount`} className={labelClass}>
-            할인 (선택)
-          </label>
-          <AmountInput id={`${idPrefix}-discount`} value={discount} onChange={setDiscount} placeholder="0" />
-        </div>
+        <label htmlFor={`${idPrefix}-discount`} className={labelClass}>할인 (선택)</label>
+        <AmountInput id={`${idPrefix}-discount`} value={discount} onChange={setDiscount} placeholder="0" />
       </div>
 
       <div>

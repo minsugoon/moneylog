@@ -1,5 +1,6 @@
 import { formatWon } from '../../utils/format.ts'
 import type { MonthEntry } from '../../utils/summary.ts'
+import Badge from '../Badge.tsx'
 
 interface TransactionRowProps {
   entry: MonthEntry
@@ -23,13 +24,9 @@ function TransactionRow({ entry, accountLabel, onSelect }: TransactionRowProps) 
           {tx.memo && <span className="mt-0.5 block break-words text-xs text-gray-500">{tx.memo}</span>}
           <span className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-gray-500">
             <span>{accountLabel}</span>
-            {tx.is_cancel && <span className="rounded-full bg-red-50 px-2 py-0.5 text-red-700">취소</span>}
-            {tx.interest_free && <span className="rounded-full bg-green-50 px-2 py-0.5 text-green-800">무이자</span>}
-            {tx.is_fixed && (
-              <span className="rounded-full bg-blue-50 px-2 py-0.5 text-blue-800">
-                고정{tx.fixed_type ? ` · ${tx.fixed_type}` : ''}
-              </span>
-            )}
+            {tx.is_cancel && <Badge kind="cancel">취소</Badge>}
+            {tx.interest_free && <Badge kind="free">무이자</Badge>}
+            {tx.is_fixed && <Badge kind="fixed">고정{tx.fixed_type ? ` · ${tx.fixed_type}` : ''}</Badge>}
           </span>
           {tx.installment_months > 1 && (
             <span className="mt-1 block text-xs text-gray-600">

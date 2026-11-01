@@ -28,7 +28,7 @@ function DayGroup({ date, entries, onSelect }: DayGroupProps) {
       <div className="flex items-baseline justify-between gap-3">
         <h3 className="text-base font-bold text-gray-800">{formatDateLabel(date)}</h3>
         {entries.length > 0 && (
-          <span className="text-sm font-bold tabular-nums text-gray-600">{formatWon(sumCharges(entries))}</span>
+          <span className="text-base font-bold tabular-nums text-gray-800">{formatWon(sumCharges(entries))}</span>
         )}
       </div>
 

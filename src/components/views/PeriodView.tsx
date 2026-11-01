@@ -5,6 +5,7 @@ import type { ViewBasis } from '../../utils/installment.ts'
 import { monthRange, monthlyTotals, presetMonths, type PeriodPreset } from '../../utils/viewStats.ts'
 import MonthSwitcher from '../MonthSwitcher.tsx'
 import { cardClass, chipClass } from '../ui.ts'
+import SummaryCard from '../SummaryCard.tsx'
 import BarRow from './BarRow.tsx'
 
 type Choice = PeriodPreset | 'custom'
@@ -59,23 +60,20 @@ function PeriodView({ basis }: { basis: ViewBasis }) {
         </section>
       )}
 
-      <section className={cardClass} aria-label="기간 합계">
-        <p className="text-sm text-gray-500">
-          {months.length === 1
+      <SummaryCard
+        ariaLabel="기간 합계"
+        label={months.length === 1
             ? `${formatMonthLabel(months[0])} 합계`
             : `${formatMonthLabel(months[0])} ~ ${formatMonthLabel(months[months.length - 1])} 합계`}
-        </p>
-        <p className="mt-1 text-3xl font-bold tabular-nums text-gray-800">{formatWon(grandTotal)}</p>
-        {months.length > 1 && (
-          <p className="mt-1 text-sm text-gray-500">월 평균 {formatWon(Math.round(grandTotal / months.length))}</p>
-        )}
-      </section>
+        amount={formatWon(grandTotal)}
+        sub={months.length > 1 ? `월 평균 ${formatWon(Math.round(grandTotal / months.length))}` : undefined}
+      />
 
-      <section className={cardClass} aria-label="월별 합계">
-        <h3 className="text-sm font-bold text-gray-500">월별 합계</h3>
+      <section className={cardClass} aria-label="월별 지출">
+        <h3 className="text-sm font-bold text-gray-500">월별 지출</h3>
         <ul className="mt-1 divide-y divide-gray-100">
           {totals.map((row) => (
-            <BarRow key={row.month} label={formatMonthLabel(row.month)} value={row.total} max={max} valueLabel={formatWon(row.total)} />
+            <BarRow key={row.month} label={formatMonthLabel(row.month)} value={row.total} max={max} valueLabel={formatWon(row.total)} strong={row.month === currentMonthKey()} />
           ))}
         </ul>
       </section>

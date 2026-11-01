@@ -4,6 +4,7 @@ import type { ViewBasis } from '../../utils/installment.ts'
 import { entriesForMonth, sumCharges } from '../../utils/summary.ts'
 import { fixedGroups } from '../../utils/viewStats.ts'
 import { cardClass } from '../ui.ts'
+import SummaryCard from '../SummaryCard.tsx'
 
 interface FixedViewProps {
   month: string
@@ -14,19 +15,12 @@ interface FixedViewProps {
 function FixedView({ month, basis }: FixedViewProps) {
   const { transactions, accounts } = useLedger()
   const entries = entriesForMonth(transactions.items, month, basis)
-  const groups = fixedGroups(entries)
+  const groups = fixedGroups(entries).sort((a, b) => b.total - a.total || a.label.localeCompare(b.label))
   const total = groups.reduce((sum, group) => sum + group.total, 0)
 
   return (
     <div className="flex flex-col gap-4">
-      <section className={cardClass} aria-label="고정지출 총합">
-        <p className="text-sm text-gray-500">{formatMonthLabel(month)} 고정지출 총합</p>
-        <p className="mt-1 text-3xl font-bold tabular-nums text-gray-800">{formatWon(total)}</p>
-        <p className="mt-1 text-sm text-gray-500">
-          전체 지출 {formatWon(sumCharges(entries))} 중{' '}
-          {sumCharges(entries) > 0 ? `${Math.round((total / sumCharges(entries)) * 100)}%` : '0%'}
-        </p>
-      </section>
+      <SummaryCard ariaLabel="고정지출 총합" label={`${formatMonthLabel(month)} 고정지출 총합`} amount={formatWon(total)} sub={`전체 지출 ${formatWon(sumCharges(entries))} 중 ${sumCharges(entries) > 0 ? `${Math.round((total / sumCharges(entries)) * 100)}%` : '0%'}`} />
 
       {groups.length === 0 ? (
         <p className="rounded-2xl bg-white px-4 py-10 text-center text-sm text-gray-500 shadow-sm">

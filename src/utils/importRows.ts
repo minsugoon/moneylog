@@ -1,7 +1,8 @@
-import type { Account } from '../lib/types.ts'
+import type { Account, FixedRule, FixedType } from '../lib/types.ts'
 import type { TransactionInput } from '../hooks/useTransactions.ts'
 import type { AccountHint, ParsedRow } from './parsers/types.ts'
 import { classifyImports, type ExistingTransaction } from './importMatch.ts'
+import { findFixedRule } from './fixedRules.ts'
 
 export type PreviewStatus = 'new' | 'duplicate' | 'possible' | 'income' | 'failed'
 
@@ -15,6 +16,8 @@ export type PreviewItem = {
   amount: number | null
   installment: number
   isCancel: boolean
+  isFixed: boolean
+  fixedType: FixedType
   interestFree: boolean
   direction: 'expense' | 'income'
   status: PreviewStatus
@@ -38,8 +41,10 @@ export function suggestAccountId(hint: AccountHint | null, accounts: Account[]):
   return matches.length === 1 ? matches[0].id : ''
 }
 
-export function buildPreviewItems(rows: ParsedRow[], accounts: Account[], existing: ExistingTransaction[]): PreviewItem[] {
-  return refreshItems(rows.map((row, index) => ({
+export function buildPreviewItems(rows: ParsedRow[], accounts: Account[], existing: ExistingTransaction[], rules: FixedRule[] = []): PreviewItem[] {
+  return refreshItems(rows.map((row, index) => {
+    const fixedRule = findFixedRule(row.merchant, rules)
+    return {
     id: `row-${index}`,
     row,
     accountId: suggestAccountId(row.accountHint, accounts),
@@ -49,6 +54,8 @@ export function buildPreviewItems(rows: ParsedRow[], accounts: Account[], existi
     amount: row.amount,
     installment: row.installment,
     isCancel: row.isCancel,
+    isFixed: Boolean(fixedRule),
+    fixedType: fixedRule?.fixed_type ?? '기타고정',
     interestFree: row.interestFree,
     direction: row.direction,
     status: 'new',
@@ -56,7 +63,7 @@ export function buildPreviewItems(rows: ParsedRow[], accounts: Account[], existi
     error: null,
     selected: false,
     userToggled: false,
-  })), existing)
+  }}), existing)
 }
 
 export function refreshItems(items: PreviewItem[], existing: ExistingTransaction[]): PreviewItem[] {
@@ -112,8 +119,8 @@ export function toImportRecords(items: PreviewItem[], source: ImportRecord['sour
       amount: item.amount,
       discount: 0,
       installment_months: item.installment,
-      is_fixed: false,
-      fixed_type: null,
+      is_fixed: item.isFixed,
+      fixed_type: item.isFixed ? item.fixedType : null,
       memo: null,
       is_cancel: item.isCancel,
       interest_free: item.interestFree,

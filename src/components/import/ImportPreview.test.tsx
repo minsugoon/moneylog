@@ -40,6 +40,8 @@ const makeItem = (id: string, status: PreviewItem['status'], selected = false): 
   amount: 1200,
   installment: 1,
   isCancel: false,
+  isFixed: false,
+  fixedType: '기타고정',
   interestFree: false,
   direction: status === 'income' ? 'income' : 'expense',
   status,
@@ -83,6 +85,7 @@ describe('가져오기 미리보기', () => {
       '저장 1건 / 제외 3건 / 실패 1건',
       '선택 안 함',
       'inputMode="numeric"',
+      '고정지출',
     ])
       expect(html).toContain(text)
   })

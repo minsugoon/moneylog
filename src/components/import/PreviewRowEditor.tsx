@@ -1,5 +1,5 @@
 ﻿import { useId, type ReactNode } from 'react'
-import type { Account } from '../../lib/types.ts'
+import { FIXED_TYPES, type Account } from '../../lib/types.ts'
 import type { PreviewItem } from '../../utils/importRows.ts'
 import AmountInput from '../AmountInput.tsx'
 import { formatAccountLabel } from '../../utils/format.ts'
@@ -10,7 +10,7 @@ interface PreviewRowEditorProps {
   accounts: Account[]
   onEdit: (
     id: string,
-    patch: Partial<Pick<PreviewItem, 'accountId' | 'date' | 'merchant' | 'amount' | 'installment' | 'isCancel'>>,
+    patch: Partial<Pick<PreviewItem, 'accountId' | 'date' | 'merchant' | 'amount' | 'installment' | 'isCancel' | 'isFixed' | 'fixedType'>>,
   ) => void
   onToggle: (id: string) => void
 }
@@ -121,6 +121,19 @@ function PreviewRowEditor({ item, accounts, onEdit, onToggle }: PreviewRowEditor
             ))}
           </select>
         </Field>
+        {item.direction === 'expense' && !failed && (
+          <div className="flex items-center gap-3">
+            <label className="flex min-h-11 items-center gap-2 text-base">
+              <input type="checkbox" checked={item.isFixed} onChange={(e) => onEdit(item.id, { isFixed: e.target.checked })} className="h-5 w-5" />
+              고정지출
+            </label>
+            {item.isFixed && (
+              <select aria-label="고정지출 종류" value={item.fixedType} onChange={(e) => onEdit(item.id, { fixedType: e.target.value as PreviewItem['fixedType'] })} className={inputClass}>
+                {FIXED_TYPES.map((type) => <option key={type} value={type}>{type}</option>)}
+              </select>
+            )}
+          </div>
+        )}
       </div>
       {failed && (
         <div className="mt-2 space-y-1 text-sm text-red-700">

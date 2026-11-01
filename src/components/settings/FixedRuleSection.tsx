@@ -1,11 +1,16 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useLedger } from '../../hooks/useLedger.ts'
 import { FIXED_TYPES, type FixedRule, type FixedType } from '../../lib/types.ts'
+import { listFixedRuleCandidates } from '../../utils/fixedRuleCandidates.ts'
 import ConfirmDialog from '../ConfirmDialog.tsx'
-import { cardClass, errorBoxClass, inputClass, primaryButtonClass, secondaryButtonClass } from '../ui.ts'
+import { cardClass, chipClass, errorBoxClass, inputClass, primaryButtonClass, secondaryButtonClass } from '../ui.ts'
 
 function FixedRuleSection() {
-  const { fixedRules } = useLedger()
+  const { fixedRules, transactions } = useLedger()
+  const candidates = useMemo(
+    () => fixedRules.loading || transactions.loading ? [] : listFixedRuleCandidates(transactions.items, fixedRules.items),
+    [fixedRules.items, fixedRules.loading, transactions.items, transactions.loading],
+  )
   const [keyword, setKeyword] = useState('')
   const [fixedType, setFixedType] = useState<FixedType>('기타고정')
   const [deleting, setDeleting] = useState<FixedRule | null>(null)
@@ -67,6 +72,21 @@ function FixedRuleSection() {
           </ul>
         )}
       </div>
+      {candidates.length > 0 && (
+        <div className="mt-4">
+          <h4 className="text-xs font-bold text-gray-600">이미 입력한 고정지출에서 고르기</h4>
+          <div className="mt-2 max-h-48 overflow-y-auto">
+            <div className="flex flex-wrap gap-2">
+              {candidates.map((candidate) => (
+                <button key={candidate.merchant} type="button" onClick={() => { setKeyword(candidate.merchant); setFixedType(candidate.fixedType) }} className={`${chipClass(false)} flex items-center gap-2`}>
+                  <span>{candidate.merchant}</span>
+                  <span className="text-xs">{candidate.fixedType} · {candidate.count}건</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
       <div className="mt-4 flex flex-col gap-2 sm:flex-row">
         <input type="text" value={keyword} onChange={(e) => setKeyword(e.target.value)} className={inputClass} lang="ko" maxLength={50} aria-label="키워드 추가" placeholder="키워드" />
         <select value={fixedType} onChange={(e) => setFixedType(e.target.value as FixedType)} disabled={adding || busyId !== ''} className={`${inputClass} sm:w-auto`} aria-label="추가할 고정지출 종류">

@@ -236,6 +236,20 @@ describe('설정 화면의 결제수단', () => {
 })
 
 describe('고정지출 규칙', () => {
+  it('규칙에 걸리지 않는 고정지출 후보를 보여준다', () => {
+    const html = render(<FixedRuleSection />)
+    expect(html).toContain('이미 입력한 고정지출에서 고르기')
+    expect(html).toContain('통신비샘플')
+  })
+
+  it('후보가 없으면 고정지출 선택 영역을 숨긴다', () => {
+    const matched = fakeLedger({ fixedRules: { ...fakeLedger().fixedRules, items: [{ id: 'r1', merchant_keyword: '통신비샘플', fixed_type: '통신', created_at: '2026-01-01T00:00:00Z' }] } })
+    expect(render(<FixedRuleSection />, matched)).not.toContain('이미 입력한 고정지출에서 고르기')
+    const empty = fakeLedger()
+    empty.transactions = { ...empty.transactions, items: [] }
+    expect(render(<FixedRuleSection />, empty)).not.toContain('이미 입력한 고정지출에서 고르기')
+  })
+
   it('규칙이 있으면 제목과 키워드를 보여준다', () => {
     const ledger = fakeLedger({ fixedRules: { ...fakeLedger().fixedRules, items: [{ id: 'r1', merchant_keyword: '샘플통신', fixed_type: '통신', created_at: '2026-01-01T00:00:00Z' }] } })
     const html = render(<FixedRuleSection />, ledger)

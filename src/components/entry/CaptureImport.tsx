@@ -12,7 +12,7 @@ import {
 } from '../../utils/importRows.ts'
 import { resizeImageToBase64 } from '../../utils/imageResize.ts'
 import { formatAccountLabel } from '../../utils/format.ts'
-import { inputClass, primaryButtonClass } from '../ui.ts'
+import { chipClass, inputClass, primaryButtonClass } from '../ui.ts'
 import AiConsentDialog from './AiConsentDialog.tsx'
 
 function CaptureImport() {
@@ -22,6 +22,7 @@ function CaptureImport() {
   const [consentBusy, setConsentBusy] = useState(false)
   const [consentError, setConsentError] = useState('')
   const [files, setFiles] = useState<File[]>([])
+  const [kind, setKind] = useState<'capture' | 'receipt'>('capture')
   const [accountId, setAccountId] = useState('')
   const [items, setItems] = useState<PreviewItem[]>([])
   const [preview, setPreview] = useState(false)
@@ -61,13 +62,15 @@ function CaptureImport() {
     setError('')
     try {
       const images = await Promise.all(files.map((file) => resizeImageToBase64(file)))
-      const outcome = await ai.parseCapture(images)
+      const outcome = await ai.parseCapture(images, kind === 'receipt' ? 'receipt' : 'capture')
       if (!outcome.ok) {
         setError(outcome.message)
         return
       }
       if (!outcome.rows.length) {
-        setError('읽을 수 있는 거래가 없어요. 더 선명한 캡처로 다시 시도해 주세요')
+        setError(kind === 'receipt'
+          ? '읽을 수 있는 영수증이 없어요. 영수증 전체가 보이도록 다시 찍어 주세요'
+          : '읽을 수 있는 거래가 없어요. 더 선명한 캡처로 다시 시도해 주세요')
         return
       }
       let nextItems = buildPreviewItems(outcome.rows, activeAccounts, transactions.items)
@@ -132,7 +135,7 @@ function CaptureImport() {
   if (!ai.consented) {
     return (
       <section className="space-y-4">
-        <p className="text-sm text-gray-600">카드앱 이용내역 화면을 캡처해서 올리면 AI가 읽어 줘요</p>
+        <p className="text-sm text-gray-600">카드앱 이용내역 화면 캡처나 영수증 사진을 올리면 AI가 읽어 줘요</p>
         <button type="button" onClick={() => setShowConsent(true)} className={primaryButtonClass}>AI 캡처 읽기 시작하기</button>
         {showConsent && (
           <AiConsentDialog
@@ -150,17 +153,37 @@ function CaptureImport() {
     <section className="space-y-4">
       <p className="text-sm font-bold text-gray-700">이번 달 {ai.used}/{ai.monthlyLimit}장 사용</p>
       {resultMessage && <p role="status" className="text-sm text-green-700">{resultMessage}</p>}
+      <div className="flex gap-2">
+        <button type="button" aria-pressed={kind === 'capture'} className={chipClass(kind === 'capture')} onClick={() => { setKind('capture'); setFiles([]); setError('') }}>카드앱 캡처</button>
+        <button type="button" aria-pressed={kind === 'receipt'} className={chipClass(kind === 'receipt')} onClick={() => { setKind('receipt'); setFiles([]); setError('') }}>영수증</button>
+      </div>
       <div>
-        <label htmlFor="capture-account" className="mb-1 block text-sm font-bold text-gray-600">어느 결제수단의 캡처인가요?</label>
+        <label htmlFor="capture-account" className="mb-1 block text-sm font-bold text-gray-600">{kind === 'receipt' ? '어느 결제수단으로 결제했나요?' : '어느 결제수단의 캡처인가요?'}</label>
         <select id="capture-account" value={accountId} onChange={(event) => setAccountId(event.target.value)} className={inputClass}>
           <option value="">선택 안 함</option>
           {activeAccounts.map((account) => <option key={account.id} value={account.id}>{formatAccountLabel(account)}</option>)}
         </select>
       </div>
-      <label className="flex min-h-11 cursor-pointer items-center rounded-lg border border-gray-300 px-3 text-base text-gray-700">
-        캡처 이미지 선택
-        <input type="file" accept="image/*" multiple onChange={selectFiles} className="sr-only" aria-label="캡처 이미지 선택" />
-      </label>
+      {kind === 'receipt' ? (
+        <>
+          <div className="flex gap-2">
+            <label className="flex min-h-11 flex-1 cursor-pointer items-center rounded-lg border border-gray-300 px-3 text-base text-gray-700">
+              영수증 사진 찍기
+              <input type="file" accept="image/*" capture="environment" onChange={selectFiles} className="sr-only" aria-label="영수증 사진 찍기" />
+            </label>
+            <label className="flex min-h-11 flex-1 cursor-pointer items-center rounded-lg border border-gray-300 px-3 text-base text-gray-700">
+              사진 고르기
+              <input type="file" accept="image/*" multiple onChange={selectFiles} className="sr-only" aria-label="영수증 사진 고르기" />
+            </label>
+          </div>
+          <p className="text-sm text-gray-600">영수증 한 장당 한 건으로 읽어요. 영수증 전체가 보이게 찍어 주세요.</p>
+        </>
+      ) : (
+        <label className="flex min-h-11 cursor-pointer items-center rounded-lg border border-gray-300 px-3 text-base text-gray-700">
+          캡처 이미지 선택
+          <input type="file" accept="image/*" multiple onChange={selectFiles} className="sr-only" aria-label="캡처 이미지 선택" />
+        </label>
+      )}
       {files.length > 0 && (
         <ul className="space-y-2">
           {files.map((file, index) => (

@@ -1,15 +1,26 @@
 import { describe, expect, it, vi } from 'vitest'
 import AccountSection from './components/accounts/AccountSection.tsx'
 import AiSettingsSection from './components/settings/AiSettingsSection.tsx'
+import FixedRuleSection from './components/settings/FixedRuleSection.tsx'
 import UsageBar from './components/UsageBar.tsx'
 import { useAiCapture } from './hooks/useAiCapture.ts'
-import { renderWithLedger as render } from './testing/ledgerFixtures.tsx'
+import { fakeLedger, renderWithLedger as render } from './testing/ledgerFixtures.tsx'
 
 vi.mock('./hooks/useAiCapture.ts', () => ({
   useAiCapture: vi.fn(() => ({ loading: false, error: '', consented: true, monthlyLimit: 20, used: 7, reload: async () => {}, acceptConsent: async () => ({ ok: true as const }), withdrawConsent: async () => ({ ok: true as const }), parseCapture: async () => ({ ok: true as const, rows: [] }) })),
 }))
 
 describe('설정 화면', () => {
+  it('고정지출 후보를 세로 목록으로 표시한다', () => {
+    const html = render(<FixedRuleSection />, fakeLedger())
+
+    expect(html).toContain('이미 입력한 고정지출에서 고르기')
+    expect(html).toContain('<ul class="max-h-64 overflow-y-auto divide-y divide-gray-100">')
+    expect(html).toContain('<li><button type="button" aria-label="통신비샘플, 통신, 1건" aria-pressed="false"')
+    expect(html).toContain('통신 · 1건')
+    expect(html).not.toContain('rounded-full')
+  })
+
   it('결제수단 줄과 순서 변경 버튼을 표시한다', () => {
     const html = render(<AccountSection />)
     expect(html).toContain('bg-gray-50')

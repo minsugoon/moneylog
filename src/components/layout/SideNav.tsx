@@ -1,4 +1,5 @@
 import { NAV_ITEMS, type TabKey } from './navItems.ts'
+import NavIcon from './NavIcon.tsx'
 
 interface SideNavProps {
   activeTab: TabKey
@@ -26,7 +27,7 @@ function SideNav({ activeTab, onSelect }: SideNavProps) {
                   isActive ? 'bg-brand/10 font-bold text-brand' : 'text-gray-600 hover:bg-gray-100'
                 }`}
               >
-                <span aria-hidden="true">{item.icon}</span>
+                <NavIcon name={item.key} size={22} />
                 {item.label}
               </button>
             </li>

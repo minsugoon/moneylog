@@ -23,7 +23,7 @@ export const errorBoxClass = 'rounded-lg bg-red-50 px-3 py-2 text-sm text-red-70
 
 // 켜고 끄는 선택 버튼 (칩)
 export function chipClass(selected: boolean, compact = false): string {
-  return `${compact ? 'min-h-11 w-full rounded-full border px-2 text-[15px]' : 'min-h-11 rounded-full border px-4 text-base'} ${
+  return `${compact ? 'min-h-11 w-full whitespace-nowrap rounded-full border px-1 text-sm' : 'min-h-11 rounded-full border px-4 text-base'} ${
     selected ? 'border-brand bg-brand font-bold text-white' : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50'
   }`
 }

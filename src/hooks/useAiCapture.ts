@@ -64,12 +64,12 @@ export function useAiCapture() {
     return { ok: true }
   }, [reload])
 
-  const parseCapture = useCallback(async (images: ResizedImage[]): Promise<ParseCaptureResult> => {
+  const parseCapture = useCallback(async (images: ResizedImage[], kind: 'capture' | 'receipt' = 'capture'): Promise<ParseCaptureResult> => {
     const client = supabase
     if (!client) return { ok: false, code: null, message: NOT_CONFIGURED_MESSAGE }
     try {
       const { data, error: invokeError } = await client.functions.invoke('parse-capture', {
-        body: { images: images.map((image) => ({ mediaType: image.mediaType, data: image.data })) },
+        body: { images: images.map((image) => ({ mediaType: image.mediaType, data: image.data })), kind },
       })
       if (invokeError) {
         let code: string | null = null

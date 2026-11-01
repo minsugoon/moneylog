@@ -20,7 +20,7 @@ const ERROR_MESSAGES: Record<ErrorCode, string> = {
   ai_limit_day: '오늘 AI 입력 한도를 모두 썼어요. 내일 다시 시도해 주세요.',
   ai_rate_limit: '너무 빠르게 요청했어요. 잠시 뒤에 다시 시도해 주세요.',
   ai_failed: 'AI가 응답하지 못했어요. 잠시 뒤에 다시 시도해 주세요. (이번 횟수는 차감되지 않아요)',
-  ai_bad_output: '캡처 내용을 읽지 못했어요. 더 선명한 캡처로 다시 시도해 주세요. (이번 횟수는 차감되지 않아요)',
+  ai_bad_output: '내용을 읽지 못했어요. 더 선명한 캡처나 사진으로 다시 시도해 주세요. (이번 횟수는 차감되지 않아요)',
 }
 
 export function friendlyAiError(code: string | null | undefined, fallback = '잠시 뒤에 다시 시도해 주세요.'): string {

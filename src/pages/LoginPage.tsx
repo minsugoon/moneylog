@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react'
 import type { AuthResult } from '../hooks/useAuth.ts'
 import GoogleLogo from '../components/GoogleLogo.tsx'
+import LoginPreview from '../components/LoginPreview.tsx'
 
 type Mode = 'signin' | 'signup'
 
@@ -87,19 +88,22 @@ function LoginPage({ onGoogle, onEmailSignIn, onEmailSignUp }: LoginPageProps) {
   }
 
   return (
-    <div className="flex min-h-dvh items-center justify-center px-4 pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]">
-      <main className="w-full max-w-sm py-8">
-        <h1 className="text-center text-3xl font-bold text-brand">Moneylog</h1>
-        <p className="mt-2 text-center text-sm text-gray-500">붙여넣기만 하면 정리되는 가계부</p>
+    <div className="flex min-h-dvh flex-col px-4 pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]">
+      <main className="mx-auto flex w-full max-w-sm flex-1 flex-col pt-[72px]">
+        <header className="text-center">
+          <h1 className="text-[32px] font-bold text-brand">Moneylog</h1>
+          <p className="mt-2 text-sm text-gray-600">붙여넣기만 하면 정리되는 가계부</p>
+        </header>
+        <LoginPreview />
 
-        <div className="mt-8 rounded-2xl bg-white p-6 shadow-sm">
+        <div className="mt-auto rounded-2xl bg-white p-5 shadow-sm">
           <h2 className="text-lg font-bold text-gray-800">{isSignUp ? '회원가입' : '로그인'}</h2>
 
           <button
             type="button"
             onClick={handleGoogle}
             disabled={busy}
-            className="mt-4 flex min-h-12 w-full items-center justify-center gap-3 rounded-lg border border-gray-300 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+            className="mt-4 flex min-h-12 w-full items-center justify-center gap-3 rounded-lg border border-gray-300 bg-white text-base font-bold text-gray-700 hover:bg-gray-50 disabled:bg-gray-200 disabled:text-gray-500"
           >
             <GoogleLogo />
             구글로 {isSignUp ? '가입하기' : '계속하기'}
@@ -112,7 +116,7 @@ function LoginPage({ onGoogle, onEmailSignIn, onEmailSignUp }: LoginPageProps) {
           </div>
 
           <form onSubmit={handleSubmit} className="flex flex-col gap-3" noValidate>
-            <label className="flex flex-col gap-1 text-sm text-gray-600">
+            <label className="flex flex-col gap-1 text-sm font-bold text-gray-600">
               이메일
               <input
                 type="email"
@@ -123,7 +127,7 @@ function LoginPage({ onGoogle, onEmailSignIn, onEmailSignUp }: LoginPageProps) {
                 className={inputClass}
               />
             </label>
-            <label className="flex flex-col gap-1 text-sm text-gray-600">
+            <label className="flex flex-col gap-1 text-sm font-bold text-gray-600">
               비밀번호
               <input
                 type="password"
@@ -134,7 +138,7 @@ function LoginPage({ onGoogle, onEmailSignIn, onEmailSignUp }: LoginPageProps) {
               />
             </label>
             {isSignUp && (
-              <label className="flex flex-col gap-1 text-sm text-gray-600">
+              <label className="flex flex-col gap-1 text-sm font-bold text-gray-600">
                 비밀번호 확인
                 <input
                   type="password"
@@ -160,13 +164,13 @@ function LoginPage({ onGoogle, onEmailSignIn, onEmailSignUp }: LoginPageProps) {
             <button
               type="submit"
               disabled={busy}
-              className="mt-1 min-h-12 w-full rounded-lg bg-brand text-base font-bold text-white hover:bg-brand/90 disabled:opacity-50"
+              className="mt-1 min-h-12 w-full rounded-lg bg-brand text-base font-bold text-white hover:bg-brand/90 disabled:bg-gray-200 disabled:text-gray-500"
             >
               {busy ? '잠시만요…' : isSignUp ? '이메일로 가입하기' : '이메일로 로그인'}
             </button>
           </form>
 
-          <p className="mt-5 text-center text-sm text-gray-500">
+          <p className="mt-3 text-center text-sm text-gray-500">
             {isSignUp ? '이미 계정이 있나요?' : '처음이신가요?'}
             <button
               type="button"

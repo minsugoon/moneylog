@@ -95,11 +95,6 @@ function AccountSection() {
                 busy={busyId !== ''}
                 onMove={(direction) => void runAction(account.id, () => store.move(account.id, direction))}
                 onEdit={() => setFormState({ mode: 'edit', account })}
-                onToggleActive={() => void runAction(account.id, () => store.setActive(account.id, !account.is_active))}
-                onDelete={() => {
-                  setDeleteError('')
-                  setDeleting(account)
-                }}
               />
             ))}
           </ul>
@@ -113,6 +108,26 @@ function AccountSection() {
             onSubmit={handleSubmit}
             onCancel={() => setFormState(null)}
           />
+          {formState.mode === 'edit' && (
+            <div className="mt-4 flex items-center justify-between gap-2 border-t border-gray-100 pt-4">
+              <button
+                type="button"
+                disabled={busyId !== ''}
+                onClick={() => void runAction(formState.account.id, () => store.setActive(formState.account.id, !formState.account.is_active)).then(() => setFormState(null))}
+                className={secondaryButtonClass}
+              >
+                {formState.account.is_active ? '사용중지' : '다시 사용'}
+              </button>
+              <button
+                type="button"
+                disabled={busyId !== ''}
+                onClick={() => { setDeleteError(''); setFormState(null); setDeleting(formState.account) }}
+                className="min-h-11 px-3 text-base text-red-700"
+              >
+                삭제
+              </button>
+            </div>
+          )}
         </Dialog>
       )}
 

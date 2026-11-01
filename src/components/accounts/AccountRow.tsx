@@ -8,36 +8,28 @@ interface AccountRowProps {
   busy: boolean
   onMove: (direction: -1 | 1) => void
   onEdit: () => void
-  onToggleActive: () => void
-  onDelete: () => void
 }
 
 const smallButton =
   'min-h-11 min-w-11 rounded-lg border border-gray-300 bg-white px-3 text-sm text-gray-700 hover:bg-gray-50 disabled:opacity-40'
 
-// 등록된 결제수단 한 줄. 순서 바꾸기·수정·사용중지·삭제 버튼이 붙어 있다.
-function AccountRow({ account, isFirst, isLast, busy, onMove, onEdit, onToggleActive, onDelete }: AccountRowProps) {
+// 등록된 결제수단 한 줄. 순서 바꾸기와 수정 버튼을 표시한다.
+function AccountRow({ account, isFirst, isLast, busy, onMove, onEdit }: AccountRowProps) {
   const label = formatAccountLabel(account)
 
   return (
-    <li className="flex flex-col gap-2 rounded-xl border border-gray-200 p-3">
-      <div className="flex flex-wrap items-center gap-2">
-        <span className="min-w-0 break-words text-base font-bold text-gray-800">{label}</span>
-        <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-600">
-          {ACCOUNT_KIND_LABEL[account.kind]}
-        </span>
-        {!account.is_active && (
-          <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs text-amber-800">사용중지</span>
-        )}
+    <li className="flex min-h-14 items-center gap-2 rounded-xl bg-gray-50 p-3">
+      <div className="min-w-0 flex-1">
+        <p className="break-words text-base font-bold text-gray-800">{label}</p>
+        <p className="text-xs text-gray-500">{ACCOUNT_KIND_LABEL[account.kind]} · {account.is_active ? '사용 중' : '사용중지'}</p>
       </div>
-
-      <div className="flex flex-wrap gap-2">
+      <div className="flex shrink-0 items-center gap-1">
         <button
           type="button"
           onClick={() => onMove(-1)}
           disabled={busy || isFirst}
           aria-label={`${label} 위로 옮기기`}
-          className={smallButton}
+          className={`${smallButton} px-2`}
         >
           ▲
         </button>
@@ -46,18 +38,12 @@ function AccountRow({ account, isFirst, isLast, busy, onMove, onEdit, onToggleAc
           onClick={() => onMove(1)}
           disabled={busy || isLast}
           aria-label={`${label} 아래로 옮기기`}
-          className={smallButton}
+          className={`${smallButton} px-2`}
         >
           ▼
         </button>
         <button type="button" onClick={onEdit} disabled={busy} className={smallButton}>
           수정
-        </button>
-        <button type="button" onClick={onToggleActive} disabled={busy} className={smallButton}>
-          {account.is_active ? '사용중지' : '다시 사용'}
-        </button>
-        <button type="button" onClick={onDelete} disabled={busy} className={`${smallButton} text-red-700`}>
-          삭제
         </button>
       </div>
     </li>

@@ -32,7 +32,7 @@ function AiSettingsSection() {
           <p className="mt-3 text-sm text-gray-600">
             {ai.consented
               ? 'AI 입력을 사용 중이에요'
-              : 'AI 입력을 사용하지 않아요. 입력 탭의 캡처(AI)에서 안내를 확인하고 시작할 수 있어요.'}
+              : 'AI 입력을 사용하지 않아요. 입력 탭의 사진 입력에서 안내를 확인하고 시작할 수 있어요.'}
           </p>
           {ai.consented && (
             <button type="button" onClick={() => { setError(''); setConfirming(true) }} className={`mt-4 ${secondaryButtonClass}`}>
@@ -44,7 +44,7 @@ function AiSettingsSection() {
       {confirming && (
         <ConfirmDialog
           title="AI 입력 동의를 철회할까요?"
-          message="철회하면 캡처(AI) 입력을 쓸 수 없어요. 이미 저장한 내역은 그대로예요. 나중에 다시 동의할 수 있어요."
+          message="철회하면 사진 입력을 쓸 수 없어요. 이미 저장한 내역은 그대로예요. 나중에 다시 동의할 수 있어요."
           confirmLabel="철회"
           danger
           busy={busy}

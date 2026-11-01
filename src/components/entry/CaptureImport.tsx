@@ -154,7 +154,7 @@ function CaptureImport() {
       <p className="text-sm font-bold text-gray-700">이번 달 {ai.used}/{ai.monthlyLimit}장 사용</p>
       {resultMessage && <p role="status" className="text-sm text-green-700">{resultMessage}</p>}
       <div className="flex gap-2">
-        <button type="button" aria-pressed={kind === 'capture'} className={chipClass(kind === 'capture')} onClick={() => { setKind('capture'); setFiles([]); setError('') }}>카드앱 캡처</button>
+        <button type="button" aria-pressed={kind === 'capture'} className={chipClass(kind === 'capture')} onClick={() => { setKind('capture'); setFiles([]); setError('') }}>카드사 앱 캡처</button>
         <button type="button" aria-pressed={kind === 'receipt'} className={chipClass(kind === 'receipt')} onClick={() => { setKind('receipt'); setFiles([]); setError('') }}>영수증</button>
       </div>
       <div>

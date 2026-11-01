@@ -127,7 +127,7 @@ describe('입력 화면', () => {
     const html = render(<EntryPage />)
     expect(html).toContain('직접 입력')
     expect(html).toContain('문자 붙여넣기')
-    expect(html).toContain('캡처(AI)')
+    expect(html).toContain('사진 입력')
   })
 
   it('AI 캡처 동의 안내와 시작 버튼을 보여준다', () => {
@@ -149,7 +149,7 @@ describe('입력 화면', () => {
   it('동의한 화면에 종류 선택이 나오고 영수증 선택 시 사진 입력을 보여준다', () => {
     vi.mocked(useAiCapture).mockReturnValue({ loading: false, error: '', consented: true, monthlyLimit: 20, used: 0, reload: async () => {}, acceptConsent: async () => ({ ok: true }), withdrawConsent: async () => ({ ok: true }), parseCapture: async () => ({ ok: true, rows: [] }) })
     const html = render(<CaptureImport />)
-    expect(html).toContain('카드앱 캡처')
+    expect(html).toContain('카드사 앱 캡처')
     expect(html).toContain('영수증')
     expect(html).toContain('어느 결제수단의 캡처인가요?')
     expect(html).toContain('캡처 이미지 선택')

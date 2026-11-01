@@ -21,7 +21,7 @@ function AccountRow({ account, isFirst, isLast, busy, onMove, onEdit }: AccountR
     <li className="flex min-h-14 items-center gap-2 rounded-xl bg-gray-50 p-3">
       <div className="min-w-0 flex-1">
         <p className="break-words text-base font-bold text-gray-800">{label}</p>
-        <p className="text-xs text-gray-500">{ACCOUNT_KIND_LABEL[account.kind]} · {account.is_active ? '사용 중' : '사용중지'}</p>
+        <p className="text-xs text-gray-600">{ACCOUNT_KIND_LABEL[account.kind]} · {account.is_active ? '사용 중' : '사용중지'}</p>
       </div>
       <div className="flex shrink-0 items-center gap-1">
         <button

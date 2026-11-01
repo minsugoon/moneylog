@@ -48,16 +48,16 @@ function FixedRuleSection() {
 
   return (
     <section className={cardClass} aria-labelledby="fixed-rules-title">
-      <h3 id="fixed-rules-title" className="text-sm font-bold text-gray-500">고정지출 규칙</h3>
-      <p className="mt-1 text-xs text-gray-500">결제명에 이 키워드가 들어 있으면 입력할 때 고정지출로 자동으로 잡아 줘요. 규칙을 지워도 이미 저장한 내역은 바뀌지 않아요.</p>
+      <h3 id="fixed-rules-title" className="text-sm font-bold text-gray-600">고정지출 규칙</h3>
+      <p className="mt-1 text-xs text-gray-600">결제명에 이 키워드가 들어 있으면 입력할 때 고정지출로 자동으로 잡아 줘요. 규칙을 지워도 이미 저장한 내역은 바뀌지 않아요.</p>
       {actionError && <p className={`mt-3 ${errorBoxClass}`} role="alert">{actionError}</p>}
       <div className="mt-4">
         {fixedRules.loading ? (
-          <p className="text-sm text-gray-500">규칙을 불러오고 있어요…</p>
+          <p className="text-sm text-gray-600">규칙을 불러오고 있어요…</p>
         ) : fixedRules.error ? (
           <div className="flex flex-col items-start gap-2"><p className={errorBoxClass} role="alert">{fixedRules.error}</p><button type="button" onClick={() => void fixedRules.reload()} className={secondaryButtonClass}>다시 불러오기</button></div>
         ) : fixedRules.items.length === 0 ? (
-          <p className="rounded-xl bg-gray-50 px-4 py-6 text-center text-sm text-gray-500">아직 등록한 규칙이 없어요. 아래에서 추가하거나, 직접 입력할 때 ‘앞으로 자동으로’를 체크해 보세요.</p>
+          <p className="rounded-xl bg-gray-50 px-4 py-6 text-center text-sm text-gray-600">아직 등록한 규칙이 없어요. 아래에서 추가하거나, 직접 입력할 때 ‘앞으로 자동으로’를 체크해 보세요.</p>
         ) : (
           <ul className="flex flex-col gap-2">
             {fixedRules.items.map((rule) => (

@@ -18,7 +18,7 @@ function BarRow({ label, value, max, valueLabel, sub, strong = false }: BarRowPr
         <span className={`min-w-0 break-words text-sm text-gray-700${strong ? ' font-bold' : ''}`}>{label}</span>
         <span className="shrink-0 text-sm font-bold tabular-nums text-gray-800">
           {valueLabel}
-          {sub && <span className="ml-2 text-xs font-normal text-gray-500">{sub}</span>}
+          {sub && <span className="ml-2 text-xs font-normal text-gray-600">{sub}</span>}
         </span>
       </div>
       {/* 막대: 바닥에서 시작하고 끝만 둥글게. 배경 줄은 아주 옅게 둔다 */}

@@ -23,7 +23,7 @@ function FixedView({ month, basis }: FixedViewProps) {
       <SummaryCard ariaLabel="고정지출 총합" label={`${formatMonthLabel(month)} 고정지출 총합`} amount={formatWon(total)} sub={`전체 지출 ${formatWon(sumCharges(entries))} 중 ${sumCharges(entries) > 0 ? `${Math.round((total / sumCharges(entries)) * 100)}%` : '0%'}`} />
 
       {groups.length === 0 ? (
-        <p className="rounded-2xl bg-white px-4 py-10 text-center text-sm text-gray-500 shadow-sm">
+        <p className="rounded-2xl bg-white px-4 py-10 text-center text-sm text-gray-600 shadow-sm">
           이 달에는 고정지출로 표시한 내역이 없어요. 입력할 때 “고정지출”을 켜면 여기에 모여요.
         </p>
       ) : (
@@ -38,7 +38,7 @@ function FixedView({ month, basis }: FixedViewProps) {
                 <li key={entry.tx.id} className="flex items-start justify-between gap-3 py-2">
                   <span className="min-w-0">
                     <span className="block break-words text-sm text-gray-800">{entry.tx.merchant}</span>
-                    <span className="block text-xs text-gray-500">
+                    <span className="block text-xs text-gray-600">
                       {formatAccountLabel(accounts.accounts.find((a) => a.id === entry.tx.account_id))}
                     </span>
                   </span>

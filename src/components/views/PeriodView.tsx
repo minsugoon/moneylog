@@ -56,7 +56,7 @@ function PeriodView({ basis }: { basis: ViewBasis }) {
             <p className="mb-1 text-sm font-bold text-gray-600">끝 달</p>
             <MonthSwitcher month={customEnd} onChange={setCustomEnd} />
           </div>
-          <p className="text-xs text-gray-500">최대 36개월까지 보여요.</p>
+          <p className="text-xs text-gray-600">최대 36개월까지 보여요.</p>
         </section>
       )}
 
@@ -70,7 +70,7 @@ function PeriodView({ basis }: { basis: ViewBasis }) {
       />
 
       <section className={cardClass} aria-label="월별 지출">
-        <h3 className="text-sm font-bold text-gray-500">월별 지출</h3>
+        <h3 className="text-sm font-bold text-gray-600">월별 지출</h3>
         <ul className="mt-1 divide-y divide-gray-100">
           {totals.map((row) => (
             <BarRow key={row.month} label={formatMonthLabel(row.month)} value={row.total} max={max} valueLabel={formatWon(row.total)} strong={row.month === currentMonthKey()} />

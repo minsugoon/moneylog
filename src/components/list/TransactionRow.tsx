@@ -21,8 +21,8 @@ function TransactionRow({ entry, accountLabel, onSelect }: TransactionRowProps) 
       >
         <span className="min-w-0 flex-1">
           <span className="block break-words text-base text-gray-800">{tx.merchant}</span>
-          {tx.memo && <span className="mt-0.5 block break-words text-xs text-gray-500">{tx.memo}</span>}
-          <span className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-gray-500">
+          {tx.memo && <span className="mt-0.5 block break-words text-xs text-gray-600">{tx.memo}</span>}
+          <span className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-gray-600">
             <span>{accountLabel}</span>
             {tx.is_cancel && <Badge kind="cancel">취소</Badge>}
             {tx.interest_free && <Badge kind="free">무이자</Badge>}

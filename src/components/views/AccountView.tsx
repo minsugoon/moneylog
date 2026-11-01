@@ -28,12 +28,12 @@ function AccountView({ month, basis }: AccountViewProps) {
       <SummaryCard ariaLabel="결제수단별 합계" label={`${formatMonthLabel(month)} 합계`} amount={formatWon(total)} />
 
       {groups.length === 0 ? (
-        <p className="rounded-2xl bg-white px-4 py-10 text-center text-sm text-gray-500 shadow-sm">
+        <p className="rounded-2xl bg-white px-4 py-10 text-center text-sm text-gray-600 shadow-sm">
           이 달에는 입력한 지출이 없어요.
         </p>
       ) : (
         <section className={cardClass} aria-label="결제수단별">
-          <h3 className="text-sm font-bold text-gray-500">결제수단별</h3>
+          <h3 className="text-sm font-bold text-gray-600">결제수단별</h3>
           <ul className="mt-1 divide-y divide-gray-100">
               {[...groups.flatMap((group) => group.items)].sort((a, b) => b.total - a.total || a.label.localeCompare(b.label)).map((item) => (
                 <BarRow

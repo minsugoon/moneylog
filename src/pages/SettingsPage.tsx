@@ -37,7 +37,7 @@ function SettingsPage({ email, provider, onSignOut }: SettingsPageProps) {
       <AiSettingsSection />
 
       <section className="rounded-2xl bg-white p-5 shadow-sm" aria-labelledby="account-title">
-        <h3 id="account-title" className="text-sm font-bold text-gray-500">
+        <h3 id="account-title" className="text-sm font-bold text-gray-600">
           내 계정
         </h3>
         <p className="mt-2 break-all text-base text-gray-800">{email}</p>
@@ -57,7 +57,7 @@ function SettingsPage({ email, provider, onSignOut }: SettingsPageProps) {
         >
           {busy ? '로그아웃하는 중…' : '로그아웃'}
         </button>
-        <p className="mt-2 text-xs text-gray-400">이 기기에서만 로그아웃돼요.</p>
+        <p className="mt-2 text-xs text-gray-500">이 기기에서만 로그아웃돼요.</p>
       </section>
     </div>
   )

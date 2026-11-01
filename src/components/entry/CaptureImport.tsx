@@ -173,7 +173,7 @@ function CaptureImport() {
         </select>
       </div>
       <PhotoPickArea files={files} kind={kind} onSelect={selectFiles} onRemove={(index) => setFiles((current) => current.filter((_, fileIndex) => fileIndex !== index))} />
-      <p className="text-xs text-gray-500">AI가 읽은 결과는 틀릴 수 있어요. 읽은 내용은 저장하기 전에 미리보기에서 한 번 더 확인해요.</p>
+      <p className="text-xs text-gray-600">AI가 읽은 결과는 틀릴 수 있어요. 읽은 내용은 저장하기 전에 미리보기에서 한 번 더 확인해요.</p>
       {overLimit && <p className="text-sm text-red-700">이번 달 한도를 넘어서 읽을 수 없어요</p>}
       {error && <p role="alert" className="text-sm text-red-700">{error}</p>}
       {reading && <p role="status">읽는 중이에요… 몇 초 걸려요</p>}

@@ -37,7 +37,7 @@ function ImportPreview({
     <section className={`${cardClass} space-y-4`}>
       <div>
         <h3 className="text-base font-bold">읽은 내용 확인</h3>
-        {items.length > 0 && <p className="text-xs text-gray-500">{items.length}건을 읽었어요. 저장할 것만 남겨 주세요.</p>}
+        {items.length > 0 && <p className="text-xs text-gray-600">{items.length}건을 읽었어요. 저장할 것만 남겨 주세요.</p>}
       </div>
       <div>
         <label htmlFor={accountId} className="mb-1 block text-sm font-bold text-gray-600">
@@ -58,7 +58,7 @@ function ImportPreview({
         </select>
       </div>
       {items.length === 0 ? (
-        <p className="py-6 text-center text-gray-500">읽을 수 있는 문자가 없어요</p>
+        <p className="py-6 text-center text-gray-600">읽을 수 있는 문자가 없어요</p>
       ) : (
         <ul className="space-y-4">
           {items.map((item) => (

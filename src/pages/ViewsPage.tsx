@@ -47,7 +47,7 @@ function ViewsPage() {
       <BasisToggle basis={basis} onChange={setBasis} />
 
       {transactions.loading ? (
-        <p className="py-8 text-center text-sm text-gray-500">내역을 불러오고 있어요…</p>
+        <p className="py-8 text-center text-sm text-gray-600">내역을 불러오고 있어요…</p>
       ) : transactions.error ? (
         <div className="flex flex-col items-start gap-2">
           <p className={errorBoxClass} role="alert">

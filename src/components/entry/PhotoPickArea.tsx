@@ -37,7 +37,7 @@ function PhotoPickArea({ files, kind, onSelect, onRemove, disabled = false }: Ph
               <path d="M4 8h3l2-3h6l2 3h3v11H4z" />
               <circle cx="12" cy="13" r="3.5" />
             </svg>
-            <p className="text-sm text-gray-500">{kind === 'capture' ? '카드사 앱 캡처 화면을 골라 주세요 (최대 5장)' : '영수증 전체가 보이게 찍거나 골라 주세요 (최대 5장)'}</p>
+            <p className="text-sm text-gray-600">{kind === 'capture' ? '카드사 앱 캡처 화면을 골라 주세요 (최대 5장)' : '영수증 전체가 보이게 찍거나 골라 주세요 (최대 5장)'}</p>
           </div>
         ) : files.length === 1 ? (
           <div className="relative flex justify-center">

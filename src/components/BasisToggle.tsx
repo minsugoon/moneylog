@@ -18,7 +18,7 @@ function BasisToggle({ basis, onChange }: BasisToggleProps) {
           월 납부액 기준
         </button>
       </div>
-      <p className="text-xs text-gray-500">
+      <p className="text-xs text-gray-600">
         {basis === 'usage'
           ? '쓴 달에 결제 금액 전체를 계산해요.'
           : '할부는 매달 낼 금액으로 나눠서 계산해요. 이전 달에 시작한 할부도 들어와요.'}

@@ -105,7 +105,7 @@ function DailyNoteEditor({ date, autoFocus }: DailyNoteEditorProps) {
         placeholder="오늘 하루는 어땠나요?"
         className="min-h-[88px] w-full resize-y rounded-lg border border-gray-300 bg-white px-3 py-2 text-base leading-relaxed text-gray-800 focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/30"
       />
-      <div className="flex items-center justify-between gap-2 text-xs text-gray-500">
+      <div className="flex items-center justify-between gap-2 text-xs text-gray-600">
         <span role="status" aria-live="polite">
           {status === 'saving' && '저장하는 중…'}
           {status === 'saved' && '저장했어요'}

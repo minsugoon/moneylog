@@ -158,12 +158,12 @@ function EntryForm({ date, onDateChange, initial, onDone, onCancel }: EntryFormP
       <div>
         <span className={labelClass}>결제수단</span>
         {accounts.loading ? (
-          <p className="text-sm text-gray-500">결제수단을 불러오고 있어요…</p>
+          <p className="text-sm text-gray-600">결제수단을 불러오고 있어요…</p>
         ) : (
           <>
             <AccountPicker idPrefix={idPrefix} accounts={choices} selectedId={accountId} onSelect={setAccountChoice} />
             {choices.length === 0 && (
-              <p className="mt-2 text-xs text-gray-500">
+              <p className="mt-2 text-xs text-gray-600">
                 설정 탭에서 카드·통장·현금을 먼저 등록하면 여기서 고를 수 있어요.
               </p>
             )}
@@ -199,7 +199,7 @@ function EntryForm({ date, onDateChange, initial, onDone, onCancel }: EntryFormP
           ))}
         </select>
         {months > 1 && amount !== null && amount > 0 && (
-          <p className="mt-1 text-xs text-gray-500">{describePayments(amount, discount ?? 0, months)}</p>
+          <p className="mt-1 text-xs text-gray-600">{describePayments(amount, discount ?? 0, months)}</p>
         )}
       </div>
 
@@ -254,7 +254,7 @@ function EntryForm({ date, onDateChange, initial, onDone, onCancel }: EntryFormP
           autoComplete="off"
           className={inputClass}
         />
-        <p className="mt-1 text-right text-xs text-gray-400">{memo.length} / 200</p>
+        <p className="mt-1 text-right text-xs text-gray-500">{memo.length} / 200</p>
       </div>
 
       {error && (

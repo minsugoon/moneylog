@@ -38,7 +38,7 @@ function HistoryPage() {
       <SummaryCard label={`${formatMonthLabel(month)} 합계`} amount={formatWon(sumCharges(entries))} sub={`지출 ${entries.length}건${carried.length > 0 ? ` (이어진 할부 ${carried.length}건 포함)` : ''}`} ariaLabel="월 합계" />
 
       {transactions.loading ? (
-        <p className="py-8 text-center text-sm text-gray-500">내역을 불러오고 있어요…</p>
+        <p className="py-8 text-center text-sm text-gray-600">내역을 불러오고 있어요…</p>
       ) : transactions.error ? (
         <div className="flex flex-col items-start gap-2">
           <p className={errorBoxClass} role="alert">
@@ -52,7 +52,7 @@ function HistoryPage() {
         <>
           {carried.length > 0 && <CarriedGroup entries={carried} onSelect={setSelected} />}
           {days.length === 0 && carried.length === 0 ? (
-            <p className="rounded-2xl bg-white px-4 py-10 text-center text-sm text-gray-500 shadow-sm">
+            <p className="rounded-2xl bg-white px-4 py-10 text-center text-sm text-gray-600 shadow-sm">
               이 달에는 입력한 지출이 없어요. “입력” 탭에서 첫 지출을 추가해 보세요.
             </p>
           ) : (

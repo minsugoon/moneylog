@@ -13,9 +13,9 @@ function DailyNoteCard({ date }: { date: string }) {
     <section className={cardClass} aria-labelledby="daily-note-title">
       <div className="flex items-center justify-between gap-2">
         <h3 id="daily-note-title" className="text-base font-bold text-gray-800">하루 정리</h3>
-        <span className="text-xs text-gray-500">{formatDateLabel(date)}</span>
+        <span className="text-xs text-gray-600">{formatDateLabel(date)}</span>
       </div>
-      <p className="mt-1 text-sm text-gray-500">
+      <p className="mt-1 text-sm text-gray-600">
         {count === 0 ? '이 날 입력한 지출이 아직 없어요.' : `지출 ${count}건 · 합계 ${formatWon(total)}`}
       </p>
       <div className="mt-3">

@@ -99,7 +99,7 @@ function PasteImport() {
           className="w-full rounded-lg border border-gray-300 bg-white p-3 text-base leading-[1.6] text-gray-800 focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/30 min-h-[280px] resize-none"
           aria-label="문자 붙여넣기"
         />
-        <p className="text-xs text-gray-500">문자를 그대로 붙여넣으면 사용일·결제명·금액을 읽어 줘요. 저장하기 전에 한 번 더 확인할 수 있어요.</p>
+        <p className="text-xs text-gray-600">문자를 그대로 붙여넣으면 사용일·결제명·금액을 읽어 줘요. 저장하기 전에 한 번 더 확인할 수 있어요.</p>
         <button
           type="button"
           disabled={!text.trim() || accounts.loading || transactions.loading}

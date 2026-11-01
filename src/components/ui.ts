@@ -11,7 +11,7 @@ export const inputLargeClass =
 export const labelClass = 'mb-1 block text-sm font-bold text-gray-600'
 
 export const primaryButtonClass =
-  'min-h-11 rounded-lg bg-brand px-4 text-base font-bold text-white enabled:hover:opacity-90 disabled:bg-gray-200 disabled:text-gray-500'
+  'min-h-11 rounded-lg bg-brand px-4 text-base font-bold text-white enabled:hover:opacity-90 disabled:bg-gray-200 disabled:text-gray-600'
 
 export const secondaryButtonClass =
   'min-h-11 rounded-lg border border-gray-300 bg-white px-4 text-base text-gray-700 hover:bg-gray-50 disabled:opacity-50'

@@ -103,13 +103,13 @@ function LoginPage({ onGoogle, onEmailSignIn, onEmailSignUp }: LoginPageProps) {
             type="button"
             onClick={handleGoogle}
             disabled={busy}
-            className="mt-4 flex min-h-12 w-full items-center justify-center gap-3 rounded-lg border border-gray-300 bg-white text-base font-bold text-gray-700 hover:bg-gray-50 disabled:bg-gray-200 disabled:text-gray-500"
+            className="mt-4 flex min-h-12 w-full items-center justify-center gap-3 rounded-lg border border-gray-300 bg-white text-base font-bold text-gray-700 hover:bg-gray-50 disabled:bg-gray-200 disabled:text-gray-600"
           >
             <GoogleLogo />
             구글로 {isSignUp ? '가입하기' : '계속하기'}
           </button>
 
-          <div className="my-5 flex items-center gap-3 text-sm text-gray-400">
+          <div className="my-5 flex items-center gap-3 text-sm text-gray-500">
             <span className="h-px flex-1 bg-gray-200" />
             또는 이메일로
             <span className="h-px flex-1 bg-gray-200" />
@@ -164,13 +164,13 @@ function LoginPage({ onGoogle, onEmailSignIn, onEmailSignUp }: LoginPageProps) {
             <button
               type="submit"
               disabled={busy}
-              className="mt-1 min-h-12 w-full rounded-lg bg-brand text-base font-bold text-white hover:bg-brand/90 disabled:bg-gray-200 disabled:text-gray-500"
+              className="mt-1 min-h-12 w-full rounded-lg bg-brand text-base font-bold text-white hover:bg-brand/90 disabled:bg-gray-200 disabled:text-gray-600"
             >
               {busy ? '잠시만요…' : isSignUp ? '이메일로 가입하기' : '이메일로 로그인'}
             </button>
           </form>
 
-          <p className="mt-3 text-center text-sm text-gray-500">
+          <p className="mt-3 text-center text-sm text-gray-600">
             {isSignUp ? '이미 계정이 있나요?' : '처음이신가요?'}
             <button
               type="button"

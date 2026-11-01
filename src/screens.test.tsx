@@ -176,8 +176,8 @@ describe('보기 화면', () => {
     expect(period).toBeGreaterThan(-1)
     expect(period).toBeLessThan(account)
     expect(account).toBeLessThan(fixed)
-    // 처음 화면은 기간별: 기간 합계와 월별 합계가 보인다
-    expect(html).toContain('월별 합계')
+    // 처음 화면은 기간별: 기간 합계와 월별 지출이 보인다
+    expect(html).toContain('월별 지출')
     expect(html).not.toContain('고정지출 총합')
   })
 

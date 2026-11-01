@@ -104,7 +104,7 @@ describe('입력 화면', () => {
     expect(html).toContain('카드사 앱 캡처')
     expect(html).toContain('영수증')
     expect(html).toContain('어느 결제수단의 캡처인가요?')
-    expect(html).toContain('캡처 이미지 선택')
+    expect(html).toContain('이미지 고르기')
   })
 
   it('문자 붙여넣기 안내와 한글 글상자, 읽기 버튼을 보여준다', () => {

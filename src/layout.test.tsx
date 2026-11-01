@@ -20,3 +20,24 @@ describe('앱 레이아웃', () => {
     expect(html).not.toContain('⚙️')
   })
 })
+
+describe('PC 3단 배치', () => {
+  const html = renderToString(<AppShell pages={{}} quickEntry={<p>빠른 입력 내용</p>} />).replaceAll('<!-- -->', '')
+
+  it('사이드바는 768px 이상에서만, 224px 폭으로 보인다', () => {
+    expect(html).toMatch(/<nav[^>]*hidden[^>]*w-56[^>]*md:flex/)
+  })
+
+  it('빠른 입력 패널은 1100px(pc) 이상에서만, 384px 폭으로 보이고 내용이 들어간다', () => {
+    expect(html).toMatch(/<aside[^>]*hidden[^>]*w-96[^>]*pc:block/)
+    expect(html).toContain('빠른 입력 내용')
+  })
+
+  it('하단 탭은 768px 이상에서 숨는다', () => {
+    expect(html).toMatch(/<nav[^>]*fixed[^>]*md:hidden/)
+  })
+
+  it('본문은 768px 이상에서 안쪽 여백 24px를 쓴다', () => {
+    expect(html).toContain('md:p-6')
+  })
+})

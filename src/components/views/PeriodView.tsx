@@ -4,7 +4,7 @@ import { addMonths, currentMonthKey, formatMonthLabel, formatWon } from '../../u
 import type { ViewBasis } from '../../utils/installment.ts'
 import { monthRange, monthlyTotals, presetMonths, type PeriodPreset } from '../../utils/viewStats.ts'
 import MonthSwitcher from '../MonthSwitcher.tsx'
-import { cardClass, chipClass } from '../ui.ts'
+import { cardClass } from '../ui.ts'
 import SummaryCard from '../SummaryCard.tsx'
 import BarRow from './BarRow.tsx'
 
@@ -32,14 +32,14 @@ function PeriodView({ basis }: { basis: ViewBasis }) {
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex flex-wrap gap-2" role="group" aria-label="기간">
+      <div className="flex flex-nowrap gap-1 overflow-x-auto rounded-lg bg-gray-100 p-1" role="group" aria-label="기간">
         {PRESETS.map((preset) => (
           <button
             key={preset.key}
             type="button"
             aria-pressed={choice === preset.key}
             onClick={() => setChoice(preset.key)}
-            className={chipClass(choice === preset.key)}
+            className={`min-h-9 whitespace-nowrap rounded-md px-2.5 text-[13px] ${choice === preset.key ? 'bg-white font-bold text-brand shadow-sm' : 'bg-transparent text-gray-600'}`}
           >
             {preset.label}
           </button>

@@ -13,6 +13,11 @@ import HistoryPage from './pages/HistoryPage.tsx'
 import EntryPage from './pages/EntryPage.tsx'
 import ViewsPage from './pages/ViewsPage.tsx'
 import { addMonths, currentMonthKey, todayString } from './utils/format.ts'
+import { useAiCapture } from './hooks/useAiCapture.ts'
+
+vi.mock('./hooks/useAiCapture.ts', () => ({
+  useAiCapture: vi.fn(() => ({ loading: true, error: '', consented: false, monthlyLimit: 20, used: 0, reload: async () => {}, acceptConsent: async () => ({ ok: true as const }), withdrawConsent: async () => ({ ok: true as const }), parseCapture: async () => ({ ok: true as const, rows: [] }) })),
+}))
 
 // 화면 점검 테스트: 가짜 데이터를 넣고 화면을 한 번 그려서, 오류 없이 그려지고 핵심 글자가 보이는지 확인한다.
 // 샘플은 모두 임의로 만든 값이다 (실제 카드·내역 아님).
@@ -122,7 +127,7 @@ describe('입력 화면', () => {
     const html = render(<EntryPage />)
     expect(html).toContain('직접 입력')
     expect(html).toContain('문자 붙여넣기')
-    expect(html).toContain('캡처(AI)')
+    expect(html).toContain('사진 입력')
   })
 
   it('AI 캡처 동의 안내와 시작 버튼을 보여준다', () => {
@@ -132,11 +137,22 @@ describe('입력 화면', () => {
     expect(html).toContain('20장')
     expect(html).toContain('틀릴 수 있어요')
     expect(html).toContain('동의하고 시작')
+    expect(html).toContain('영수증 사진')
   })
 
   it('캡처 가져오기가 오류 없이 로딩 안내를 보여준다', () => {
+    vi.mocked(useAiCapture).mockReturnValue({ loading: true, error: '', consented: false, monthlyLimit: 20, used: 0, reload: async () => {}, acceptConsent: async () => ({ ok: true }), withdrawConsent: async () => ({ ok: true }), parseCapture: async () => ({ ok: true, rows: [] }) })
     const html = render(<CaptureImport />)
     expect(html).toContain('불러오는 중이에요')
+  })
+
+  it('동의한 화면에 종류 선택이 나오고 영수증 선택 시 사진 입력을 보여준다', () => {
+    vi.mocked(useAiCapture).mockReturnValue({ loading: false, error: '', consented: true, monthlyLimit: 20, used: 0, reload: async () => {}, acceptConsent: async () => ({ ok: true }), withdrawConsent: async () => ({ ok: true }), parseCapture: async () => ({ ok: true, rows: [] }) })
+    const html = render(<CaptureImport />)
+    expect(html).toContain('카드사 앱 캡처')
+    expect(html).toContain('영수증')
+    expect(html).toContain('어느 결제수단의 캡처인가요?')
+    expect(html).toContain('캡처 이미지 선택')
   })
 
   it('문자 붙여넣기 안내와 한글 글상자, 읽기 버튼을 보여준다', () => {

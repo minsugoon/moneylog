@@ -1,5 +1,5 @@
 import { useLedger } from '../../hooks/useLedger.ts'
-import { formatDateLabel, formatWon, todayString } from '../../utils/format.ts'
+import { formatDateLabel, formatWon } from '../../utils/format.ts'
 import { summarizeDay } from '../../utils/summary.ts'
 import { cardClass } from '../ui.ts'
 import DailyNoteEditor from './DailyNoteEditor.tsx'
@@ -8,14 +8,14 @@ import DailyNoteEditor from './DailyNoteEditor.tsx'
 function DailyNoteCard({ date }: { date: string }) {
   const { transactions } = useLedger()
   const { count, total } = summarizeDay(transactions.items, date)
-  const isToday = date === todayString()
 
   return (
     <section className={cardClass} aria-labelledby="daily-note-title">
-      <h3 id="daily-note-title" className="text-base font-bold text-gray-800">
-        {isToday ? '오늘 하루 정리' : '하루 정리'} · {formatDateLabel(date)}
-      </h3>
-      <p className="mt-1 text-sm text-gray-500">
+      <div className="flex items-center justify-between gap-2">
+        <h3 id="daily-note-title" className="text-base font-bold text-gray-800">하루 정리</h3>
+        <span className="text-xs text-gray-600">{formatDateLabel(date)}</span>
+      </div>
+      <p className="mt-1 text-sm text-gray-600">
         {count === 0 ? '이 날 입력한 지출이 아직 없어요.' : `지출 ${count}건 · 합계 ${formatWon(total)}`}
       </p>
       <div className="mt-3">

@@ -29,14 +29,14 @@ function ViewsPage() {
     <div className="mx-auto flex max-w-xl flex-col gap-4">
       <h2 className="text-lg font-bold text-gray-800">보기</h2>
 
-      <div className="flex flex-wrap gap-2" role="group" aria-label="보기 종류">
+      <div className="grid grid-cols-3 gap-2" role="group" aria-label="보기 종류">
         {VIEWS.map((item) => (
           <button
             key={item.key}
             type="button"
             aria-pressed={view === item.key}
             onClick={() => setView(item.key)}
-            className={chipClass(view === item.key)}
+            className={chipClass(view === item.key, true)}
           >
             {item.label}
           </button>
@@ -47,7 +47,7 @@ function ViewsPage() {
       <BasisToggle basis={basis} onChange={setBasis} />
 
       {transactions.loading ? (
-        <p className="py-8 text-center text-sm text-gray-500">내역을 불러오고 있어요…</p>
+        <p className="py-8 text-center text-sm text-gray-600">내역을 불러오고 있어요…</p>
       ) : transactions.error ? (
         <div className="flex flex-col items-start gap-2">
           <p className={errorBoxClass} role="alert">

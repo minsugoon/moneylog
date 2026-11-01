@@ -4,7 +4,8 @@ import { addMonths, currentMonthKey, formatMonthLabel, formatWon } from '../../u
 import type { ViewBasis } from '../../utils/installment.ts'
 import { monthRange, monthlyTotals, presetMonths, type PeriodPreset } from '../../utils/viewStats.ts'
 import MonthSwitcher from '../MonthSwitcher.tsx'
-import { cardClass, chipClass } from '../ui.ts'
+import { cardClass } from '../ui.ts'
+import SummaryCard from '../SummaryCard.tsx'
 import BarRow from './BarRow.tsx'
 
 type Choice = PeriodPreset | 'custom'
@@ -31,14 +32,14 @@ function PeriodView({ basis }: { basis: ViewBasis }) {
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex flex-wrap gap-2" role="group" aria-label="기간">
+      <div className="flex flex-nowrap gap-1 overflow-x-auto rounded-lg bg-gray-100 p-1" role="group" aria-label="기간">
         {PRESETS.map((preset) => (
           <button
             key={preset.key}
             type="button"
             aria-pressed={choice === preset.key}
             onClick={() => setChoice(preset.key)}
-            className={chipClass(choice === preset.key)}
+            className={`min-h-9 whitespace-nowrap rounded-md px-2.5 text-[13px] ${choice === preset.key ? 'bg-white font-bold text-brand shadow-sm' : 'bg-transparent text-gray-600'}`}
           >
             {preset.label}
           </button>
@@ -55,27 +56,24 @@ function PeriodView({ basis }: { basis: ViewBasis }) {
             <p className="mb-1 text-sm font-bold text-gray-600">끝 달</p>
             <MonthSwitcher month={customEnd} onChange={setCustomEnd} />
           </div>
-          <p className="text-xs text-gray-500">최대 36개월까지 보여요.</p>
+          <p className="text-xs text-gray-600">최대 36개월까지 보여요.</p>
         </section>
       )}
 
-      <section className={cardClass} aria-label="기간 합계">
-        <p className="text-sm text-gray-500">
-          {months.length === 1
+      <SummaryCard
+        ariaLabel="기간 합계"
+        label={months.length === 1
             ? `${formatMonthLabel(months[0])} 합계`
             : `${formatMonthLabel(months[0])} ~ ${formatMonthLabel(months[months.length - 1])} 합계`}
-        </p>
-        <p className="mt-1 text-3xl font-bold tabular-nums text-gray-800">{formatWon(grandTotal)}</p>
-        {months.length > 1 && (
-          <p className="mt-1 text-sm text-gray-500">월 평균 {formatWon(Math.round(grandTotal / months.length))}</p>
-        )}
-      </section>
+        amount={formatWon(grandTotal)}
+        sub={months.length > 1 ? `월 평균 ${formatWon(Math.round(grandTotal / months.length))}` : undefined}
+      />
 
-      <section className={cardClass} aria-label="월별 합계">
-        <h3 className="text-sm font-bold text-gray-500">월별 합계</h3>
+      <section className={cardClass} aria-label="월별 지출">
+        <h3 className="text-sm font-bold text-gray-600">월별 지출</h3>
         <ul className="mt-1 divide-y divide-gray-100">
           {totals.map((row) => (
-            <BarRow key={row.month} label={formatMonthLabel(row.month)} value={row.total} max={max} valueLabel={formatWon(row.total)} />
+            <BarRow key={row.month} label={formatMonthLabel(row.month)} value={row.total} max={max} valueLabel={formatWon(row.total)} strong={row.month === currentMonthKey()} />
           ))}
         </ul>
       </section>

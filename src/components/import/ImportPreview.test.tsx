@@ -76,6 +76,8 @@ describe('가져오기 미리보기', () => {
       makeItem('failed', 'failed'),
     ])
     for (const text of [
+      '읽은 내용 확인',
+      '5건을 읽었어요. 저장할 것만 남겨 주세요.',
       '중복',
       '중복 가능',
       '입금',
@@ -86,8 +88,18 @@ describe('가져오기 미리보기', () => {
       '선택 안 함',
       'inputMode="numeric"',
       '고정지출',
+      'bg-red-600',
+      'bg-amber-100',
+      '이미 저장된 내역과 같아 보여요. 기본으로 빼 두었어요.',
     ])
       expect(html).toContain(text)
+  })
+  it('하단 고정 영역에 요약과 동작 버튼을 둔다', () => {
+    const html = render([makeItem('new', 'new', true)])
+    const sticky = html.slice(html.indexOf('sticky'))
+    expect(sticky).toContain('저장 1건 / 제외 0건 / 실패 0건')
+    expect(sticky).toContain('저장</button>')
+    expect(sticky).toContain('다시 붙여넣기')
   })
   it('항목이 없으면 안내하고 저장 중 문구를 보인다', () => {
     expect(render([])).toContain('읽을 수 있는 문자가 없어요')

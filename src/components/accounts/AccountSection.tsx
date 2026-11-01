@@ -53,14 +53,14 @@ function AccountSection() {
   return (
     <section className={cardClass} aria-labelledby="accounts-title">
       <div className="flex items-center justify-between gap-3">
-        <h3 id="accounts-title" className="text-sm font-bold text-gray-500">
+        <h3 id="accounts-title" className="text-sm font-bold text-gray-600">
           결제수단
         </h3>
         <button type="button" onClick={() => setFormState({ mode: 'add' })} className={primaryButtonClass}>
           + 추가
         </button>
       </div>
-      <p className="mt-1 text-xs text-gray-500">카드·통장·현금을 등록해 두면 지출을 입력할 때 버튼으로 고를 수 있어요.</p>
+      <p className="mt-1 text-xs text-gray-600">카드·통장·현금을 등록해 두면 지출을 입력할 때 버튼으로 고를 수 있어요.</p>
 
       {actionError && (
         <p className={`mt-3 ${errorBoxClass}`} role="alert">
@@ -70,7 +70,7 @@ function AccountSection() {
 
       <div className="mt-4">
         {loading ? (
-          <p className="text-sm text-gray-500">결제수단을 불러오고 있어요…</p>
+          <p className="text-sm text-gray-600">결제수단을 불러오고 있어요…</p>
         ) : error ? (
           <div className="flex flex-col items-start gap-2">
             <p className={errorBoxClass} role="alert">
@@ -81,7 +81,7 @@ function AccountSection() {
             </button>
           </div>
         ) : accounts.length === 0 ? (
-          <p className="rounded-xl bg-gray-50 px-4 py-6 text-center text-sm text-gray-500">
+          <p className="rounded-xl bg-gray-50 px-4 py-6 text-center text-sm text-gray-600">
             아직 등록한 결제수단이 없어요. 위의 “+ 추가”를 눌러 카드나 통장, 현금을 등록해 보세요.
           </p>
         ) : (
@@ -95,11 +95,6 @@ function AccountSection() {
                 busy={busyId !== ''}
                 onMove={(direction) => void runAction(account.id, () => store.move(account.id, direction))}
                 onEdit={() => setFormState({ mode: 'edit', account })}
-                onToggleActive={() => void runAction(account.id, () => store.setActive(account.id, !account.is_active))}
-                onDelete={() => {
-                  setDeleteError('')
-                  setDeleting(account)
-                }}
               />
             ))}
           </ul>
@@ -113,6 +108,26 @@ function AccountSection() {
             onSubmit={handleSubmit}
             onCancel={() => setFormState(null)}
           />
+          {formState.mode === 'edit' && (
+            <div className="mt-4 flex items-center justify-between gap-2 border-t border-gray-100 pt-4">
+              <button
+                type="button"
+                disabled={busyId !== ''}
+                onClick={() => void runAction(formState.account.id, () => store.setActive(formState.account.id, !formState.account.is_active)).then(() => setFormState(null))}
+                className={secondaryButtonClass}
+              >
+                {formState.account.is_active ? '사용중지' : '다시 사용'}
+              </button>
+              <button
+                type="button"
+                disabled={busyId !== ''}
+                onClick={() => { setDeleteError(''); setFormState(null); setDeleting(formState.account) }}
+                className="min-h-11 px-3 text-base text-red-700"
+              >
+                삭제
+              </button>
+            </div>
+          )}
         </Dialog>
       )}
 

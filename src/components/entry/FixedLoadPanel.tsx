@@ -16,7 +16,7 @@ function FixedLoadPanel({ options, onPick, defaultOpen = false }: FixedLoadPanel
   const panelId = `${useId()}-fixed-load`
 
   if (options.length === 0) {
-    return <p className="text-xs text-gray-500">아직 고정지출로 저장한 내역이 없어요. 고정지출로 저장하면 여기서 불러올 수 있어요.</p>
+    return <p className="text-xs text-gray-600">아직 고정지출로 저장한 내역이 없어요. 고정지출로 저장하면 여기서 불러올 수 있어요.</p>
   }
 
   return (
@@ -45,7 +45,7 @@ function FixedLoadPanel({ options, onPick, defaultOpen = false }: FixedLoadPanel
                     <span className="min-w-0 truncate font-bold">{option.merchant}</span>
                     <span className="shrink-0 text-right tabular-nums">{formatWon(option.amount)}</span>
                   </span>
-                  <span className="text-xs text-gray-500">{option.usedAt} · {option.fixedType}</span>
+                  <span className="text-xs text-gray-600">{option.usedAt} · {option.fixedType}</span>
                 </button>
               </li>
             ))}

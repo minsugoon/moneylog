@@ -5,10 +5,13 @@ export const cardClass = 'rounded-2xl bg-white p-5 shadow-sm'
 export const inputClass =
   'min-h-11 w-full rounded-lg border border-gray-300 bg-white px-3 text-base text-gray-800 focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/30'
 
+export const inputLargeClass =
+  'min-h-14 w-full rounded-lg border border-gray-300 bg-white px-3 text-2xl font-bold tabular-nums text-gray-800 focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/30'
+
 export const labelClass = 'mb-1 block text-sm font-bold text-gray-600'
 
 export const primaryButtonClass =
-  'min-h-11 rounded-lg bg-brand px-4 text-base font-bold text-white hover:opacity-90 disabled:opacity-50'
+  'min-h-11 rounded-lg bg-brand px-4 text-base font-bold text-white enabled:hover:opacity-90 disabled:bg-gray-200 disabled:text-gray-600'
 
 export const secondaryButtonClass =
   'min-h-11 rounded-lg border border-gray-300 bg-white px-4 text-base text-gray-700 hover:bg-gray-50 disabled:opacity-50'
@@ -19,8 +22,8 @@ export const dangerButtonClass =
 export const errorBoxClass = 'rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700'
 
 // 켜고 끄는 선택 버튼 (칩)
-export function chipClass(selected: boolean): string {
-  return `min-h-11 rounded-full border px-4 text-base ${
+export function chipClass(selected: boolean, compact = false): string {
+  return `${compact ? 'min-h-11 w-full whitespace-nowrap rounded-full border px-1 text-sm' : 'min-h-11 rounded-full border px-4 text-base'} ${
     selected ? 'border-brand bg-brand font-bold text-white' : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50'
   }`
 }

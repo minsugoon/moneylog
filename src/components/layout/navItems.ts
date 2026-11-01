@@ -4,12 +4,11 @@ export type TabKey = 'list' | 'entry' | 'view' | 'settings'
 export interface NavItem {
   key: TabKey
   label: string
-  icon: string
 }
 
 export const NAV_ITEMS: NavItem[] = [
-  { key: 'list', label: '내역', icon: '📋' },
-  { key: 'entry', label: '입력', icon: '✏️' },
-  { key: 'view', label: '보기', icon: '📊' },
-  { key: 'settings', label: '설정', icon: '⚙️' },
+  { key: 'list', label: '내역' },
+  { key: 'entry', label: '입력' },
+  { key: 'view', label: '보기' },
+  { key: 'settings', label: '설정' },
 ]

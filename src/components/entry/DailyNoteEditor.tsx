@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useLedger } from '../../hooks/useLedger.ts'
 import ConfirmDialog from '../ConfirmDialog.tsx'
-import { errorBoxClass, inputClass, secondaryButtonClass } from '../ui.ts'
+import { errorBoxClass, secondaryButtonClass } from '../ui.ts'
 
 const MAX_LENGTH = 2000
 const SAVE_DELAY_MS = 800
@@ -100,16 +100,16 @@ function DailyNoteEditor({ date, autoFocus }: DailyNoteEditorProps) {
         onChange={(e) => handleChange(e.target.value)}
         maxLength={MAX_LENGTH}
         lang="ko"
-        rows={4}
+        rows={3}
         autoFocus={autoFocus}
-        placeholder="오늘 하루는 어땠나요? 쓰다 멈추면 자동으로 저장돼요."
-        className={`${inputClass} resize-y py-2 leading-relaxed`}
+        placeholder="오늘 하루는 어땠나요?"
+        className="min-h-[88px] w-full resize-y rounded-lg border border-gray-300 bg-white px-3 py-2 text-base leading-relaxed text-gray-800 focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/30"
       />
-      <div className="flex items-center justify-between gap-2 text-xs text-gray-500">
+      <div className="flex items-center justify-between gap-2 text-xs text-gray-600">
         <span role="status" aria-live="polite">
           {status === 'saving' && '저장하는 중…'}
           {status === 'saved' && '저장했어요'}
-          {status === 'idle' && dirtyRef.current && '쓰는 중…'}
+          {status === 'idle' && (dirtyRef.current ? '쓰는 중…' : '쓰면 자동으로 저장돼요.')}
         </span>
         <span>
           {text.length} / {MAX_LENGTH}

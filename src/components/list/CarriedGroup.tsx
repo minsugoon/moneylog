@@ -18,7 +18,7 @@ function CarriedGroup({ entries, onSelect }: CarriedGroupProps) {
     <section className={cardClass} aria-label="이전 달에서 이어진 할부">
       <div className="flex items-baseline justify-between gap-3">
         <h3 className="text-base font-bold text-gray-800">이전 달에서 이어진 할부</h3>
-        <span className="text-sm font-bold tabular-nums text-gray-600">{formatWon(sumCharges(entries))}</span>
+        <span className="text-base font-bold tabular-nums text-gray-800">{formatWon(sumCharges(entries))}</span>
       </div>
       <ul className="mt-2 divide-y divide-gray-100">
         {entries.map((entry) => (

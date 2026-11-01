@@ -12,8 +12,10 @@ import {
 } from '../../utils/importRows.ts'
 import { resizeImageToBase64 } from '../../utils/imageResize.ts'
 import { formatAccountLabel } from '../../utils/format.ts'
-import { chipClass, inputClass, primaryButtonClass } from '../ui.ts'
+import { cardClass, chipClass, inputClass, primaryButtonClass } from '../ui.ts'
 import AiConsentDialog from './AiConsentDialog.tsx'
+import PhotoPickArea from './PhotoPickArea.tsx'
+import UsageBar from '../UsageBar.tsx'
 
 function CaptureImport() {
   const ai = useAiCapture()
@@ -130,13 +132,15 @@ function CaptureImport() {
   }
 
   // 처음 불러올 때만 로딩 문구를 보인다. 읽는 도중 사용량을 다시 불러올 때 화면이 깜빡이지 않게 한다.
-  if (ai.loading && !ai.consented) return <p>불러오는 중이에요</p>
+  if (ai.loading && !ai.consented) return <div className={cardClass}><p>불러오는 중이에요</p></div>
 
   if (!ai.consented) {
     return (
-      <section className="space-y-4">
+      <section className={cardClass}>
+        <div className="space-y-4">
         <p className="text-sm text-gray-600">카드앱 이용내역 화면 캡처나 영수증 사진을 올리면 AI가 읽어 줘요</p>
         <button type="button" onClick={() => setShowConsent(true)} className={primaryButtonClass}>AI 캡처 읽기 시작하기</button>
+        </div>
         {showConsent && (
           <AiConsentDialog
             onAgree={() => void acceptConsent()}
@@ -150,12 +154,16 @@ function CaptureImport() {
   }
 
   return (
-    <section className="space-y-4">
-      <p className="text-sm font-bold text-gray-700">이번 달 {ai.used}/{ai.monthlyLimit}장 사용</p>
+    <section className={cardClass}>
+      <div className="space-y-4">
+      <UsageBar label="사진 읽기 사용량" used={ai.used} limit={ai.monthlyLimit} />
       {resultMessage && <p role="status" className="text-sm text-green-700">{resultMessage}</p>}
-      <div className="flex gap-2">
-        <button type="button" aria-pressed={kind === 'capture'} className={chipClass(kind === 'capture')} onClick={() => { setKind('capture'); setFiles([]); setError('') }}>카드사 앱 캡처</button>
-        <button type="button" aria-pressed={kind === 'receipt'} className={chipClass(kind === 'receipt')} onClick={() => { setKind('receipt'); setFiles([]); setError('') }}>영수증</button>
+      <div>
+        <p className="mb-2 text-sm font-bold text-gray-600">무엇을 읽을까요?</p>
+        <div className="grid grid-cols-2 gap-2">
+          <button type="button" aria-pressed={kind === 'capture'} className={chipClass(kind === 'capture', true)} onClick={() => { setKind('capture'); setFiles([]); setError('') }}>카드사 앱 캡처</button>
+          <button type="button" aria-pressed={kind === 'receipt'} className={chipClass(kind === 'receipt', true)} onClick={() => { setKind('receipt'); setFiles([]); setError('') }}>영수증</button>
+        </div>
       </div>
       <div>
         <label htmlFor="capture-account" className="mb-1 block text-sm font-bold text-gray-600">{kind === 'receipt' ? '어느 결제수단으로 결제했나요?' : '어느 결제수단의 캡처인가요?'}</label>
@@ -164,41 +172,13 @@ function CaptureImport() {
           {activeAccounts.map((account) => <option key={account.id} value={account.id}>{formatAccountLabel(account)}</option>)}
         </select>
       </div>
-      {kind === 'receipt' ? (
-        <>
-          <div className="flex gap-2">
-            <label className="flex min-h-11 flex-1 cursor-pointer items-center rounded-lg border border-gray-300 px-3 text-base text-gray-700">
-              영수증 사진 찍기
-              <input type="file" accept="image/*" capture="environment" onChange={selectFiles} className="sr-only" aria-label="영수증 사진 찍기" />
-            </label>
-            <label className="flex min-h-11 flex-1 cursor-pointer items-center rounded-lg border border-gray-300 px-3 text-base text-gray-700">
-              사진 고르기
-              <input type="file" accept="image/*" multiple onChange={selectFiles} className="sr-only" aria-label="영수증 사진 고르기" />
-            </label>
-          </div>
-          <p className="text-sm text-gray-600">영수증 한 장당 한 건으로 읽어요. 영수증 전체가 보이게 찍어 주세요.</p>
-        </>
-      ) : (
-        <label className="flex min-h-11 cursor-pointer items-center rounded-lg border border-gray-300 px-3 text-base text-gray-700">
-          캡처 이미지 선택
-          <input type="file" accept="image/*" multiple onChange={selectFiles} className="sr-only" aria-label="캡처 이미지 선택" />
-        </label>
-      )}
-      {files.length > 0 && (
-        <ul className="space-y-2">
-          {files.map((file, index) => (
-            <li key={`${file.name}-${index}`} className="flex items-center justify-between gap-2 text-sm">
-              <span className="break-all">{file.name}</span>
-              <button type="button" className="min-h-11 px-3" onClick={() => setFiles((current) => current.filter((_, fileIndex) => fileIndex !== index))}>빼기</button>
-            </li>
-          ))}
-        </ul>
-      )}
-      <p className="text-sm text-gray-600">AI가 읽은 결과는 틀릴 수 있어요. 저장 전에 꼭 확인하세요.</p>
+      <PhotoPickArea files={files} kind={kind} onSelect={selectFiles} onRemove={(index) => setFiles((current) => current.filter((_, fileIndex) => fileIndex !== index))} />
+      <p className="text-xs text-gray-600">AI가 읽은 결과는 틀릴 수 있어요. 읽은 내용은 저장하기 전에 미리보기에서 한 번 더 확인해요.</p>
       {overLimit && <p className="text-sm text-red-700">이번 달 한도를 넘어서 읽을 수 없어요</p>}
       {error && <p role="alert" className="text-sm text-red-700">{error}</p>}
       {reading && <p role="status">읽는 중이에요… 몇 초 걸려요</p>}
       <button type="button" disabled={!files.length || reading || overLimit} onClick={() => void read()} className={primaryButtonClass}>읽기</button>
+      </div>
     </section>
   )
 }

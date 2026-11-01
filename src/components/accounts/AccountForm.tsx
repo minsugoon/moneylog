@@ -162,7 +162,7 @@ function AccountForm({ initial, onSubmit, onCancel }: AccountFormProps) {
             autoComplete="off"
             className={inputClass}
           />
-          <p className="mt-1 text-xs text-gray-500">
+          <p className="mt-1 text-xs text-gray-600">
             전체 카드번호·계좌번호는 입력하지 마세요. 구분용으로 끝 4자리만 저장해요.
           </p>
         </div>

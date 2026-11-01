@@ -10,7 +10,7 @@ import {
   type PreviewItem,
 } from '../../utils/importRows.ts'
 import { parseMessages } from '../../utils/parsers/index.ts'
-import { inputClass, primaryButtonClass } from '../ui.ts'
+import { cardClass, primaryButtonClass } from '../ui.ts'
 
 function PasteImport() {
   const { accounts, transactions, fixedRules } = useLedger()
@@ -87,22 +87,28 @@ function PasteImport() {
           {result.saved}건 저장했어요. {result.skipped}건은 이미 있어서 건너뛰었어요.
         </p>
       )}
-      <textarea
-        lang="ko"
-        rows={8}
-        value={text}
-        onChange={(event) => setText(event.target.value)}
-        className={inputClass}
-        aria-label="문자 붙여넣기"
-      />
-      <button
-        type="button"
-        disabled={!text.trim() || accounts.loading || transactions.loading}
-        onClick={read}
-        className={primaryButtonClass}
-      >
-        읽기
-      </button>
+      <div className={`${cardClass} space-y-4`}>
+        <label htmlFor="paste-import-text" className="block text-sm font-bold text-gray-600">
+          카드 승인 문자
+        </label>
+        <textarea
+          id="paste-import-text"
+          lang="ko"
+          value={text}
+          onChange={(event) => setText(event.target.value)}
+          className="w-full rounded-lg border border-gray-300 bg-white p-3 text-base leading-[1.6] text-gray-800 focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/30 min-h-[280px] resize-none"
+          aria-label="문자 붙여넣기"
+        />
+        <p className="text-xs text-gray-600">문자를 그대로 붙여넣으면 사용일·결제명·금액을 읽어 줘요. 저장하기 전에 한 번 더 확인할 수 있어요.</p>
+        <button
+          type="button"
+          disabled={!text.trim() || accounts.loading || transactions.loading}
+          onClick={read}
+          className={`w-full ${primaryButtonClass}`}
+        >
+          읽기
+        </button>
+      </div>
     </section>
   )
 }

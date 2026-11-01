@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import AccountSection from '../components/accounts/AccountSection.tsx'
 import AiSettingsSection from '../components/settings/AiSettingsSection.tsx'
+import FixedRuleSection from '../components/settings/FixedRuleSection.tsx'
 import type { AuthResult } from '../hooks/useAuth.ts'
 
 interface SettingsPageProps {
@@ -30,6 +31,8 @@ function SettingsPage({ email, provider, onSignOut }: SettingsPageProps) {
       <h2 className="text-lg font-bold text-gray-800">설정</h2>
 
       <AccountSection />
+
+      <FixedRuleSection />
 
       <AiSettingsSection />
 

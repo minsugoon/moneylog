@@ -1,13 +1,16 @@
-import { useId, useRef, useState, type FormEvent } from 'react'
+import { useId, useMemo, useRef, useState, type FormEvent } from 'react'
 import { useLedger } from '../../hooks/useLedger.ts'
 import type { TransactionInput } from '../../hooks/useTransactions.ts'
 import { type FixedType, type Transaction } from '../../lib/types.ts'
 import { findFixedRule, isValidRuleKeyword } from '../../utils/fixedRules.ts'
 import { describePayments } from '../../utils/installment.ts'
+import { listFixedLoadOptions } from '../../utils/fixedLoadOptions.ts'
 import { readSetting, writeSetting } from '../../utils/storage.ts'
 import AmountInput from '../AmountInput.tsx'
 import { errorBoxClass, inputClass, labelClass, primaryButtonClass, secondaryButtonClass } from '../ui.ts'
-import AccountChips from './AccountChips.tsx'
+import AccountPicker from './AccountPicker.tsx'
+import FixedLoadPanel from './FixedLoadPanel.tsx'
+import { useFixedLoad } from './useFixedLoad.ts'
 import FixedExpenseFields from './FixedExpenseFields.tsx'
 import EntryDateField from './EntryDateField.tsx'
 
@@ -37,6 +40,7 @@ function EntryForm({ date, onDateChange, initial, onDone, onCancel }: EntryFormP
   const [accountChoice, setAccountChoice] = useState<string | null>(initial ? (initial.account_id ?? '') : null)
   const defaultId = choices.find((a) => a.id === remembered)?.id ?? choices[0]?.id ?? ''
   const accountId = accountChoice ?? defaultId
+  const fixedLoadOptions = useMemo(() => listFixedLoadOptions(transactions.items, 10), [transactions.items])
 
   const [merchant, setMerchant] = useState(initial?.merchant ?? '')
   const [amount, setAmount] = useState<number | null>(initial?.amount ?? null)
@@ -59,6 +63,7 @@ function EntryForm({ date, onDateChange, initial, onDone, onCancel }: EntryFormP
   const shownFixedType = matched ? matched.fixed_type : fixedType
   const canSaveRule = !isEdit && shownIsFixed && !matched
   const ruleKeyword = ruleKeywordEdit ?? merchant.trim()
+  const handleFixedLoad = useFixedLoad({ choices, setMerchant, setAmount, setDiscount, setMonths, setInterestFree, setIsCancel, setIsFixed, setFixedType, setFixedTouched, setAccountChoice, setSaveRule, setRuleKeywordEdit, setError, setNotice })
   async function handleSubmit(event: FormEvent) {
     event.preventDefault()
     setNotice('')
@@ -135,15 +140,17 @@ function EntryForm({ date, onDateChange, initial, onDone, onCancel }: EntryFormP
           <p className="text-sm text-gray-500">결제수단을 불러오고 있어요…</p>
         ) : (
           <>
-            <AccountChips accounts={choices} selectedId={accountId} onSelect={setAccountChoice} />
+            <AccountPicker idPrefix={idPrefix} accounts={choices} selectedId={accountId} onSelect={setAccountChoice} />
             {choices.length === 0 && (
               <p className="mt-2 text-xs text-gray-500">
-                설정 탭에서 카드·통장·현금을 먼저 등록하면 여기서 버튼으로 고를 수 있어요.
+                설정 탭에서 카드·통장·현금을 먼저 등록하면 여기서 고를 수 있어요.
               </p>
             )}
           </>
         )}
       </div>
+
+      {!isEdit && <FixedLoadPanel options={fixedLoadOptions} onPick={handleFixedLoad} />}
 
       <div>
         <label htmlFor={`${idPrefix}-merchant`} className={labelClass}>

@@ -4,6 +4,7 @@ import AccountSection from './components/accounts/AccountSection.tsx'
 import AiSettingsSection from './components/settings/AiSettingsSection.tsx'
 import FixedRuleSection from './components/settings/FixedRuleSection.tsx'
 import FixedExpenseFields from './components/entry/FixedExpenseFields.tsx'
+import FixedLoadPanel from './components/entry/FixedLoadPanel.tsx'
 import EntryPanel from './components/entry/EntryPanel.tsx'
 import PasteImport from './components/entry/PasteImport.tsx'
 import AiConsentDialog from './components/entry/AiConsentDialog.tsx'
@@ -173,6 +174,8 @@ describe('입력 화면', () => {
 
   it('결제수단 칩과 입력칸, 할부·고정지출 선택, 하루 정리 카드가 나온다', () => {
     const html = render(<EntryPanel />)
+    expect(html).toContain('aria-label="결제수단"')
+    expect(html).toContain('🔽 펼치기')
     expect(html).toContain('신한카드 · 생활카드 (5678)')
     expect(html).toContain('카카오뱅크 · 월급통장 (1234)')
     expect(html).toContain('결제명')
@@ -181,6 +184,26 @@ describe('입력 화면', () => {
     expect(html).toContain('오늘 하루 정리')
     // 금액 칸은 숫자 키패드가 뜨는 설정이어야 한다
     expect(html).toContain('inputMode="numeric"')
+  })
+
+  it('고정지출 내역이 있으면 불러오기 버튼을, 없으면 안내를 보여준다', () => {
+    expect(render(<EntryPanel />)).toContain('고정지출 불러오기')
+    const empty = fakeLedger()
+    empty.transactions = { ...empty.transactions, items: [] }
+    expect(render(<EntryPanel />, empty)).toContain('아직 고정지출로 저장한 내역이 없어요')
+  })
+
+  it('같은 결제명의 서로 다른 금액과 날짜를 고정지출 목록에 보여준다', () => {
+    const options = [
+      { key: 'sample:20000', merchant: '샘플기부', amount: 20000, discount: 0, accountId: 'a1', fixedType: '기부' as const, usedAt: '2026-10-20', count: 1 },
+      { key: 'sample:31000', merchant: '샘플기부', amount: 31000, discount: 0, accountId: 'a1', fixedType: '기부' as const, usedAt: '2026-10-21', count: 1 },
+    ]
+    const html = render(<FixedLoadPanel options={options} onPick={() => {}} defaultOpen />)
+    expect(html).toContain('샘플기부')
+    expect(html).toContain('20,000원')
+    expect(html).toContain('31,000원')
+    expect(html).toContain('2026-10-20')
+    expect(html).toContain('2026-10-21')
   })
 
   it('글을 쓰는 칸(결제명·메모·하루 정리)은 한글로 지정돼 있다', () => {

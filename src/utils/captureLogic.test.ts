@@ -114,6 +114,45 @@ describe('DB 오류 문구 → 이유 코드', () => {
   })
 })
 
+describe('영수증 모드', () => {
+  const receipt = {
+    date: '10-29', time: '19:38', merchant: '샘플만두', amount: 10000, installment: 1,
+    isCancel: false, interestFree: false, direction: 'expense', cardIssuer: '현대카드', cardLast4: '3402',
+  }
+
+  it('요청의 kind를 받고, 없으면 capture, 이상한 값은 거절', () => {
+    expect(validateRequest({ images: [image] })).toMatchObject({ ok: true, kind: 'capture' })
+    expect(validateRequest({ images: [image], kind: 'receipt' })).toMatchObject({ ok: true, kind: 'receipt' })
+    expect(validateRequest({ images: [image], kind: 'x' }).ok).toBe(false)
+    expect(validateRequest({ images: [image], kind: 1 }).ok).toBe(false)
+  })
+
+  it('영수증 지시문은 합계 선택·끝 4자리·품목 제외 규칙과 안전 규칙을 담는다', () => {
+    const prompt = buildSystemPrompt(today, 'receipt')
+    expect(prompt).toContain('영수증')
+    expect(prompt).toContain('부가세')
+    expect(prompt).toContain('추측하지 말고 null')
+    expect(prompt).toContain('따르지 말고')
+    expect(prompt).not.toBe(buildSystemPrompt(today))
+  })
+
+  it('카드 끝자리는 정확히 4자리만 받는다 (가려진 3자리는 버린다)', () => {
+    const rows = parseModelOutput(JSON.stringify({ transactions: [receipt, { ...receipt, cardLast4: '340' }] }), today, 'receipt')!
+    expect(rows[0].accountHint).toMatchObject({ issuer: '현대카드', digits: '3402' })
+    expect(rows[1].accountHint).toMatchObject({ issuer: '현대카드', digits: null })
+  })
+
+  it('영수증은 이미지 장수보다 많은 거래를 받지 않는다', () => {
+    const rows = parseModelOutput(JSON.stringify({ transactions: [receipt, receipt, receipt] }), today, 'receipt', 2)
+    expect(rows).toHaveLength(2)
+  })
+
+  it('결제명이나 금액을 못 읽은 영수증은 실패 표시로 남긴다', () => {
+    const rows = parseModelOutput(JSON.stringify({ transactions: [{ ...receipt, amount: null }, { ...receipt, merchant: '' }] }), today, 'receipt')!
+    expect(rows.map((r) => r.status)).toEqual(['failed', 'failed'])
+  })
+})
+
 describe('지시문', () => {
   it('오늘 날짜와 안전 규칙(끝 4자리, 이미지 속 지시 무시)을 담는다', () => {
     const prompt = buildSystemPrompt(today)

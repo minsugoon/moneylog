@@ -77,7 +77,7 @@ Deno.serve(async (req) => {
       {
         model,
         max_tokens: 4000,
-        system: buildSystemPrompt(today),
+        system: buildSystemPrompt(today, request.kind),
         messages: [
           {
             role: 'user',
@@ -86,7 +86,12 @@ Deno.serve(async (req) => {
                 type: 'image' as const,
                 source: { type: 'base64' as const, media_type: image.mediaType, data: image.data },
               })),
-              { type: 'text' as const, text: '위 캡처의 거래 내역을 읽어 JSON으로 출력하세요.' },
+              {
+                type: 'text' as const,
+                text: request.kind === 'receipt'
+                  ? '위 영수증을 읽어 JSON으로 출력하세요.'
+                  : '위 캡처의 거래 내역을 읽어 JSON으로 출력하세요.',
+              },
             ],
           },
         ],
@@ -99,7 +104,7 @@ Deno.serve(async (req) => {
 
     // 6) 결과 검증
     const text = response.content.map((block) => (block.type === 'text' ? block.text : '')).join('')
-    const rows = parseModelOutput(text, today)
+    const rows = parseModelOutput(text, today, request.kind, request.kind === 'receipt' ? request.images.length : undefined)
     if (!rows) return await finish(supabase, callId, model, inputTokens, outputTokens, false, true, () => fail('ai_bad_output'))
 
     ok = true

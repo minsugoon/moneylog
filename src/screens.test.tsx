@@ -55,6 +55,7 @@ function fakeLedger(overrides: Partial<LedgerValue> = {}): LedgerValue {
     accounts: { accounts: accountList, loading: false, error: '', reload: async () => {}, add: ok, update: ok, setActive: ok, remove: ok, move: ok },
     transactions: { items: txList, loading: false, error: '', reload: async () => {}, add: ok, addMany: async () => ({ ok: true as const, saved: 0, skipped: 0 }), update: ok, remove: ok },
     notes: { items: noteList, byDate: new Map(noteList.map((n) => [n.note_date, n])), loading: false, error: '', reload: async () => {}, save: ok, remove: ok },
+    fixedRules: { items: [], loading: false, error: '', reload: async () => {}, add: ok, update: ok, remove: ok },
     ...overrides,
   }
 }

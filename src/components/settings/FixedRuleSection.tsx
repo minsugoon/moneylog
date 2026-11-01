@@ -3,7 +3,7 @@ import { useLedger } from '../../hooks/useLedger.ts'
 import { FIXED_TYPES, type FixedRule, type FixedType } from '../../lib/types.ts'
 import { listFixedRuleCandidates } from '../../utils/fixedRuleCandidates.ts'
 import ConfirmDialog from '../ConfirmDialog.tsx'
-import { cardClass, chipClass, errorBoxClass, inputClass, primaryButtonClass, secondaryButtonClass } from '../ui.ts'
+import { cardClass, errorBoxClass, inputClass, primaryButtonClass, secondaryButtonClass } from '../ui.ts'
 
 function FixedRuleSection() {
   const { fixedRules, transactions } = useLedger()
@@ -75,15 +75,24 @@ function FixedRuleSection() {
       {candidates.length > 0 && (
         <div className="mt-4">
           <h4 className="text-xs font-bold text-gray-600">이미 입력한 고정지출에서 고르기</h4>
-          <div className="mt-2 max-h-48 overflow-y-auto">
-            <div className="flex flex-wrap gap-2">
+          <div className="mt-2 overflow-hidden rounded-xl border border-gray-200 bg-white">
+            <ul className="max-h-64 overflow-y-auto divide-y divide-gray-100">
               {candidates.map((candidate) => (
-                <button key={candidate.merchant} type="button" onClick={() => { setKeyword(candidate.merchant); setFixedType(candidate.fixedType) }} className={`${chipClass(false)} flex items-center gap-2`}>
-                  <span>{candidate.merchant}</span>
-                  <span className="text-xs">{candidate.fixedType} · {candidate.count}건</span>
-                </button>
+                <li key={candidate.merchant}>
+                  <button
+                    type="button"
+                    aria-label={`${candidate.merchant}, ${candidate.fixedType}, ${candidate.count}건`}
+                    aria-pressed={keyword === candidate.merchant}
+                    onClick={() => { setKeyword(candidate.merchant); setFixedType(candidate.fixedType) }}
+                    className={`flex min-h-[52px] w-full items-center gap-3 px-3 py-2 text-left hover:bg-gray-50 ${keyword === candidate.merchant ? 'bg-brand/10' : ''}`}
+                  >
+                    <span className={`min-w-0 flex-1 break-words text-base ${keyword === candidate.merchant ? 'font-bold text-brand' : 'text-gray-800'}`}>{candidate.merchant}</span>
+                    <span className="shrink-0 text-xs text-gray-600 tabular-nums">{candidate.fixedType} · {candidate.count}건</span>
+                    {keyword === candidate.merchant && <span aria-hidden="true" className="text-brand">✓</span>}
+                  </button>
+                </li>
               ))}
-            </div>
+            </ul>
           </div>
         </div>
       )}

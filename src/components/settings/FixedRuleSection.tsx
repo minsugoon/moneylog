@@ -61,8 +61,8 @@ function FixedRuleSection() {
         ) : (
           <ul className="flex flex-col gap-2">
             {fixedRules.items.map((rule) => (
-              <li key={rule.id} className="flex flex-wrap items-center gap-2 rounded-xl bg-gray-50 p-3">
-                <span className="min-w-0 flex-1 break-all text-sm text-gray-800">{rule.merchant_keyword}</span>
+              <li key={rule.id} className="flex min-h-14 flex-wrap items-center gap-2 rounded-xl bg-gray-50 p-3">
+                <span className="min-w-0 flex-1 break-all text-base text-gray-800">{rule.merchant_keyword}</span>
                 <select aria-label={`${rule.merchant_keyword} 고정지출 종류`} value={rule.fixed_type} disabled={busyId !== '' || adding} onChange={(e) => void handleUpdate(rule, e.target.value as FixedType)} className={`${inputClass} w-auto min-w-28 flex-1`}>
                   {FIXED_TYPES.map((type) => <option key={type} value={type}>{type}</option>)}
                 </select>

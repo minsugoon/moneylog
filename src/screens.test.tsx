@@ -195,8 +195,10 @@ describe('설정 화면의 결제수단', () => {
     const html = render(<AccountSection />)
     expect(html).toContain('카카오뱅크 · 월급통장 (1234)')
     expect(html).toContain('현금')
-    expect(html).toContain('사용중지')
-    expect(html).toContain('삭제')
+    expect(html).toContain('카드 · 사용 중')
+    expect(html).toContain('수정')
+    expect(html).toContain('위로 옮기기')
+    expect(html).toContain('아래로 옮기기')
   })
 
   it('하나도 없으면 안내 문구', () => {

@@ -41,7 +41,7 @@ function SettingsPage({ email, provider, onSignOut }: SettingsPageProps) {
           내 계정
         </h3>
         <p className="mt-2 break-all text-base text-gray-800">{email}</p>
-        <p className="mt-1 text-sm text-gray-500">{provider === 'google' ? '구글 계정으로 로그인' : '이메일로 로그인'}</p>
+        <p className="mt-1 text-sm text-gray-600">{provider === 'google' ? '구글 계정으로 로그인' : '이메일로 로그인'}</p>
 
         {error && (
           <p className="mt-3 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700" role="alert">

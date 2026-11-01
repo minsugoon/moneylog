@@ -4,6 +4,7 @@ import type { PreviewItem } from '../../utils/importRows.ts'
 import AmountInput from '../AmountInput.tsx'
 import { formatAccountLabel } from '../../utils/format.ts'
 import { inputClass, labelClass } from '../ui.ts'
+import Badge from '../Badge.tsx'
 
 interface PreviewRowEditorProps {
   item: PreviewItem
@@ -15,8 +16,6 @@ interface PreviewRowEditorProps {
   onToggle: (id: string) => void
 }
 
-const statusLabels = { duplicate: '중복', possible: '중복 가능', income: '입금', failed: '실패' } as const
-
 // 상태별 카드 바탕·테두리 (옅게) — 글자로도 구분하므로 색만으로 알리지 않는다
 const cardTones = {
   new: 'border-gray-200 bg-white',
@@ -26,13 +25,7 @@ const cardTones = {
   failed: 'border-red-400 bg-red-50',
 } as const
 
-// 상태 뱃지: 중복은 붉은 색으로 강조, 중복 가능은 옅은 주황
-const badgeTones = {
-  duplicate: 'bg-red-600 text-white',
-  possible: 'bg-amber-100 text-amber-800',
-  income: 'bg-gray-100 text-gray-700',
-  failed: 'bg-red-100 text-red-700',
-} as const
+const statusKinds = { duplicate: 'dup', possible: 'maybe', income: 'income', failed: 'fail' } as const
 
 function PreviewRowEditor({ item, accounts, onEdit, onToggle }: PreviewRowEditorProps) {
   const id = useId()
@@ -48,16 +41,13 @@ function PreviewRowEditor({ item, accounts, onEdit, onToggle }: PreviewRowEditor
               checked={item.selected}
               disabled={failed}
               onChange={() => onToggle(item.id)}
-              className="h-5 w-5"
+              className="h-5 w-5 accent-brand"
             />
             <span className="text-sm font-bold">저장 대상</span>
           </label>
-          {item.status !== 'new' && (
-            <span className={`rounded-full px-3 py-1 text-sm font-bold ${badgeTones[item.status]}`}>
-              {statusLabels[item.status]}
-            </span>
-          )}
+          {item.status !== 'new' && <Badge kind={statusKinds[item.status]}>{({ duplicate: '중복', possible: '중복 가능', income: '입금', failed: '실패' })[item.status]}</Badge>}
         </div>
+        {item.status === 'duplicate' && <p className="text-xs text-gray-600">이미 저장된 내역과 같아 보여요. 기본으로 빼 두었어요.</p>}
         <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)] gap-3">
           <Field id={`${id}-date`} label="사용일">
             <input

@@ -4,10 +4,11 @@ import { secondaryButtonClass } from './ui.ts'
 interface MonthSwitcherProps {
   month: string
   onChange: (month: string) => void
+  showThisMonth?: boolean
 }
 
 // 달 이동: 이전 달 / 다음 달 / 이번 달로 돌아가기
-function MonthSwitcher({ month, onChange }: MonthSwitcherProps) {
+function MonthSwitcher({ month, onChange, showThisMonth = true }: MonthSwitcherProps) {
   const thisMonth = currentMonthKey()
 
   return (
@@ -31,7 +32,7 @@ function MonthSwitcher({ month, onChange }: MonthSwitcherProps) {
       >
         ›
       </button>
-      {month !== thisMonth && (
+      {showThisMonth && month !== thisMonth && (
         <button type="button" onClick={() => onChange(thisMonth)} className={`${secondaryButtonClass} px-3 text-sm`}>
           이번 달
         </button>

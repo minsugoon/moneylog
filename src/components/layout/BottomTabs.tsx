@@ -1,4 +1,5 @@
 import { NAV_ITEMS, type TabKey } from './navItems.ts'
+import NavIcon from './NavIcon.tsx'
 
 interface BottomTabsProps {
   activeTab: TabKey
@@ -21,13 +22,11 @@ function BottomTabs({ activeTab, onSelect }: BottomTabsProps) {
                 type="button"
                 onClick={() => onSelect(item.key)}
                 aria-current={isActive ? 'page' : undefined}
-                className={`flex h-16 w-full flex-col items-center justify-center gap-0.5 text-sm ${
+                className={`flex h-16 w-full flex-col items-center justify-center gap-0.5 text-[13px] ${
                   isActive ? 'font-bold text-brand' : 'text-gray-500'
                 }`}
               >
-                <span aria-hidden="true" className="text-lg leading-none">
-                  {item.icon}
-                </span>
+                <NavIcon name={item.key} size={24} />
                 {item.label}
               </button>
             </li>

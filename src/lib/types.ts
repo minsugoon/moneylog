@@ -43,3 +43,10 @@ export interface DailyNote {
   body: string
   updated_at: string
 }
+
+export interface FixedRule {
+  id: string
+  merchant_keyword: string
+  fixed_type: FixedType
+  created_at: string
+}

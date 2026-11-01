@@ -2,6 +2,7 @@ import { useMemo, type ReactNode } from 'react'
 import { LedgerContext } from './ledgerContext.ts'
 import { useAccounts } from './useAccounts.ts'
 import { useDailyNotes } from './useDailyNotes.ts'
+import { useFixedRules } from './useFixedRules.ts'
 import { useTransactions } from './useTransactions.ts'
 
 interface LedgerProviderProps {
@@ -15,7 +16,8 @@ function LedgerProvider({ userId, children }: LedgerProviderProps) {
   const accounts = useAccounts()
   const transactions = useTransactions()
   const notes = useDailyNotes(userId)
-  const value = useMemo(() => ({ accounts, transactions, notes }), [accounts, transactions, notes])
+  const fixedRules = useFixedRules(userId)
+  const value = useMemo(() => ({ accounts, transactions, notes, fixedRules }), [accounts, transactions, notes, fixedRules])
   return <LedgerContext.Provider value={value}>{children}</LedgerContext.Provider>
 }
 

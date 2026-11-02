@@ -3,6 +3,7 @@ import EntryPage from './pages/EntryPage.tsx'
 import EntryPanel from './components/entry/EntryPanel.tsx'
 import FixedLoadPanel from './components/entry/FixedLoadPanel.tsx'
 import { listFixedLoadOptions } from './utils/fixedLoadOptions.ts'
+import { todayString } from './utils/format.ts'
 import { fakeLedger, renderWithLedger, txList } from './testing/ledgerFixtures.tsx'
 
 describe('입력 화면 시안', () => {
@@ -67,6 +68,6 @@ describe('입력 화면 시안', () => {
     expect(html).toContain('bg-gray-50')
     expect(html).toContain('통신비')
     expect(html).toContain('55,000원')
-    expect(html).toContain('2026-11-01')
+    expect(html).toContain(todayString())
   })
 })

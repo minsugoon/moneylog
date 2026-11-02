@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { convertToKrw, formatFxInput, minorToAmount, parseFxMinor, rateFromKrw } from './currency.ts'
+import { CURRENCIES, DEFAULT_FX_CODES, FX_CURRENCIES, convertToKrw, currencyDecimals, formatFxInput, minorToAmount, parseFxMinor, rateFromKrw } from './currency.ts'
 
 describe('외화 입력 정리와 최소 단위 변환', () => {
   it('숫자만 남기고 첫 소수점과 자릿수 제한을 적용한다', () => {
@@ -59,5 +59,35 @@ describe('원화 환산', () => {
     const converted = convertToKrw(20000, 'VND', rate ?? 0)
     expect(converted.ok && Math.abs(converted.krw - 1050)).toBeLessThanOrEqual(1)
     expect(rateFromKrw(0, 20000, 'VND')).toBeNull()
+  })
+})
+
+describe('통화 목록', () => {
+  it('사용자가 정한 순서와 이름, 소수 자리를 가진다', () => {
+    expect(CURRENCIES.map((c) => [c.code, c.label, c.name, c.decimals])).toEqual([
+      ['KRW', '원', '원', 0],
+      ['USD', '달러', '달러', 2],
+      ['EUR', '유로', '유로', 2],
+      ['JPY', '엔', '엔', 0],
+      ['TWD', '대만', '대만 달러', 2],
+      ['VND', '베트남', '동', 0],
+      ['CNY', '중국', '위안', 2],
+      ['MNT', '몽골', '투그릭', 2],
+      ['PHP', '필리핀', '페소', 2],
+      ['GBP', '영국', '파운드', 2],
+    ])
+  })
+
+  it('태국 바트는 목록에 없고, 기본 외화는 9개가 같은 순서로 들어 있다', () => {
+    expect(CURRENCIES.some((c) => c.code === 'THB')).toBe(false)
+    expect(DEFAULT_FX_CODES).toEqual(['USD', 'EUR', 'JPY', 'TWD', 'VND', 'CNY', 'MNT', 'PHP', 'GBP'])
+    expect(FX_CURRENCIES).toHaveLength(9)
+  })
+
+  it('소수 자리: 엔·동은 0, 파운드는 2, 모르는 코드는 2', () => {
+    expect(currencyDecimals('JPY')).toBe(0)
+    expect(currencyDecimals('VND')).toBe(0)
+    expect(currencyDecimals('GBP')).toBe(2)
+    expect(currencyDecimals('XXX')).toBe(2)
   })
 })

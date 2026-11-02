@@ -18,7 +18,7 @@ describe('통화 설정', () => {
     expect(html).toContain('통화')
     expect(html).toContain('입력 탭에서 외화로 입력할 때 보여 줄 자주 쓰는 통화를 골라요. 원화는 항상 보여요.')
     const readableHtml = html.replace(/<!-- -->/g, '')
-    for (const label of ['동 · VND', '달러 · USD', '엔 · JPY', '유로 · EUR', '위안 · CNY', '바트 · THB']) expect(readableHtml).toContain(label)
+    for (const label of ['달러 · USD', '유로 · EUR', '엔 · JPY', '대만 · TWD', '베트남 · VND', '중국 · CNY', '몽골 · MNT', '필리핀 · PHP', '영국 · GBP']) expect(readableHtml).toContain(label)
     expect(html).toContain('aria-pressed="true"')
     expect(html).toContain('aria-pressed="false"')
   })

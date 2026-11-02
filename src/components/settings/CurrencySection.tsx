@@ -21,7 +21,7 @@ function CurrencySection() {
           const selected = codes.includes(currency.code)
           return (
             <button key={currency.code} type="button" aria-pressed={selected} onClick={() => toggle(currency.code)} className={chipClass(selected)}>
-              {currency.name} · {currency.code}
+              {currency.label} · {currency.code}
             </button>
           )
         })}

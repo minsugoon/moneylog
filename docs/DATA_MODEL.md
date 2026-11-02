@@ -1,6 +1,7 @@
 # Moneylog 데이터 구조 (Supabase)
 
-- 버전: v0.7 / 최종 수정: 2026-10-31
+- 버전: v0.8 / 최종 수정: 2026-11-02
+- 변경(v0.8, 2026-11-02): **통화 칸 5개(12번) 추가** — 외화 입력(단계 4-1). 적용은 사용자가 SQL Editor에서 직접 한다.
 - 변경(v0.7, 2026-10-31): **AI 캡처 입력용 표 2개와 함수 초안(9~11번) 추가.** 단계 7-B에서 적용할 예정이며 **아직 DB에 없다.**
 - 변경(v0.6): 보안 규칙(policy)의 `auth.uid()`를 `(select auth.uid())`로 바꿈. 내역이 많아져도 빠르게 하기 위한 Supabase 권장 방식이고 결과는 같다.
 - 원칙: 모든 표는 `user_id = auth.uid()`인 행만 읽고 쓴다 (RLS). 전체 카드·계좌번호는 저장하지 않는다.
@@ -27,6 +28,7 @@
 | 6~7 | 카드 실적, 혜택 표 + 보안 | 단계 9 |
 | 8 | 제외 키워드 표 + 보안 | 단계 10 |
 | 9~11 | AI 이용 설정·사용 기록 표 + 동의·한도 확인 함수 | **단계 7-B** (사용자 승인 후 적용) |
+| 12 | 내역에 통화 칸 5개 추가 (외화 입력) | 단계 4-1 (**사용자가 SQL Editor에서 직접 적용**) |
 
 한 번에 모두 실행해도 문제는 없다. 새 프로젝트에서 **SQL Editor**에 붙여넣고 **Run**.
 
@@ -267,6 +269,27 @@ create policy "read own usage" on public.ai_usage
 - 시험(롤백 방식)으로 확인한 동작: 동의 없음 → `ai_not_consented`, 분당 6번째 → `ai_rate_limit`, 6장 → `bad_image_count`, 하루 11번째 → `ai_limit_day`, 철회 후 → `ai_not_consented`. `anon`은 실행 불가.
 - 운영자의 한도·플랜 변경 예: `update public.user_settings set plan = 'plus', ai_monthly_limit = 200 where user_id = '이용자 id';`
 
+### 12) 통화 칸 5개 (외화 입력, 단계 4-1) — **아직 DB에 없다. 사용자가 SQL Editor에서 직접 적용한다**
+해외에서 현지 통화로 쓴 금액을 입력하면 원화로 바꿔 `amount`에 저장하고, 외화 정보는 아래 보조 칸에 함께 저장한다. **기존 내역은 모두 원화(KRW)·확정(true)이 되고 금액은 그대로**다. 여러 번 실행해도 안전하다.
+```sql
+alter table public.transactions
+  add column if not exists currency text not null default 'KRW'
+    check (currency ~ '^[A-Z]{3}$'),
+  add column if not exists original_amount numeric(14,2)
+    check (original_amount is null or original_amount >= 0),
+  add column if not exists exchange_rate numeric(18,8)
+    check (exchange_rate is null or exchange_rate > 0),
+  add column if not exists rate_at timestamptz,
+  add column if not exists krw_confirmed boolean not null default true;
+
+-- 외화 내역은 외화 금액과 환율이 꼭 있어야 한다 (다시 실행해도 오류 없게 지우고 만든다)
+alter table public.transactions drop constraint if exists transactions_fx_chk;
+alter table public.transactions
+  add constraint transactions_fx_chk
+  check (currency = 'KRW' or (original_amount is not null and exchange_rate is not null));
+```
+- 코드는 새 칸이 없어도 동작하도록 만들어서(읽을 때 원화·확정으로 채움, 원화 입력은 새 칸을 보내지 않음) **원화 입력은 SQL 적용 전에도 그대로 된다.** 외화로 저장하려면 이 SQL을 먼저 적용해야 한다.
+
 ## 4. 칸 설명 (헷갈리기 쉬운 것)
 | 칸 | 의미 |
 |----|------|
@@ -279,6 +302,11 @@ create policy "read own usage" on public.ai_usage
 | ai_usage | 호출 시각·모델·토큰 수만 남긴다. **캡처 내용(이미지·읽은 결과)은 저장하지 않는다** |
 | transactions.performance_override | 사용자가 정한 실적 처리. `include`=실적 포함 확정, `exclude`=실적 제외 확정, 비어 있으면 자동 판정 |
 | transactions.interest_free | 무이자 할부 결제 여부 (직접 체크) |
+| transactions.currency | 통화 코드. 기본 `KRW`(원화). 외화 입력은 `VND`·`USD`·`JPY`·`EUR`·`CNY`·`THB` 같은 3글자 대문자 |
+| transactions.original_amount | 입력한 외화 금액(예: 85000, 9.99). 원화 내역은 비어 있음 |
+| transactions.exchange_rate | 외화 1단위당 원화 환율. **입력 당시 값을 그대로 저장**해서 나중에 환율이 바뀌어도 이미 적은 금액은 변하지 않음. 카드 청구액으로 고치면 `청구액 ÷ 외화 금액`으로 다시 계산 |
+| transactions.rate_at | 그 환율을 받은 시각 (환율 서버 오류로 받아 둔 값을 썼다면 그 값을 받은 시각) |
+| transactions.krw_confirmed | 원화 금액이 확정인가. `true`=원화 입력 또는 카드 청구액으로 확정, `false`=환율로 계산한 추정 금액(화면에 `≈` 표시). **금액(`amount`)은 항상 원화이고 합계·할부·실적 계산은 원화만 쓴다** |
 | card_programs.measure_basis | `previous_month`=지난달 사용액이 이번 달 혜택 결정, `current_month`=이번 달 사용액이 이번 달 혜택 결정 |
 | card_programs.installment_mode | `full`=사용한 달에 할부 전액 인정, `monthly`=월 납부액만 인정 |
 | card_programs.period_start_day | 실적 집계 시작일. 1이면 달력 기준 |
@@ -303,3 +331,5 @@ alter table public.transactions
 - **Table Editor**에서 표 7개가 보이는지 확인
 - 각 표 옆에 RLS 표시(자물쇠)가 켜져 있는지 확인
 - 다른 계정으로 로그인했을 때 내 데이터가 보이지 않는지 확인 (단계 12 보안 점검)
+- (외화 입력, 12번 적용 후) `transactions` 표에 `currency`, `original_amount`, `exchange_rate`, `rate_at`, `krw_confirmed` 칸이 보이고, 기존 내역은 모두 `KRW`·`krw_confirmed = true`인지 확인
+- (같은 확인) SQL Editor에서 `select count(*) from public.transactions where currency <> 'KRW' and (original_amount is null or exchange_rate is null);` 결과가 0인지 확인

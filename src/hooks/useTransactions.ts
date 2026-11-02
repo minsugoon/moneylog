@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { fetchAllPages } from '../lib/fetchAllPages.ts'
 import { supabase } from '../lib/supabase.ts'
 import { NOT_CONFIGURED, toKoreanDbMessage, type ActionResult } from '../lib/errors.ts'
-import type { FixedType, Transaction } from '../lib/types.ts'
+import { normalizeTransaction, type FixedType, type Transaction } from '../lib/types.ts'
 import type { ImportRecord } from '../utils/importRows.ts'
 
 export type AddManyResult = { ok: true; saved: number; skipped: number } | { ok: false; message: string }
@@ -20,6 +20,11 @@ export interface TransactionInput {
   memo: string | null
   is_cancel: boolean
   interest_free: boolean
+  currency?: string
+  original_amount?: number | null
+  exchange_rate?: number | null
+  rate_at?: string | null
+  krw_confirmed?: boolean
 }
 
 // 사용일이 최근인 것부터, 같은 날이면 나중에 입력한 것부터
@@ -52,7 +57,7 @@ export function useTransactions() {
     if (result.error) {
       setError(toKoreanDbMessage(result.error))
     } else {
-      setItems(sortTransactions(result.data))
+      setItems(sortTransactions(result.data.map(normalizeTransaction)))
       setError('')
     }
     setLoading(false)
@@ -70,7 +75,7 @@ export function useTransactions() {
       .select()
       .single()
     if (dbError) return { ok: false, message: toKoreanDbMessage(dbError) }
-    setItems((current) => sortTransactions([...current, data as Transaction]))
+    setItems((current) => sortTransactions([...current, normalizeTransaction(data as Transaction)]))
     return { ok: true }
   }, [])
 
@@ -82,7 +87,7 @@ export function useTransactions() {
       const { data, error: dbError } = await supabase.from('transactions')
         .upsert(records.slice(index, index + 200), { onConflict: 'user_id,import_hash', ignoreDuplicates: true }).select()
       if (dbError) return { ok: false, message: toKoreanDbMessage(dbError) }
-      const inserted = (data ?? []) as Transaction[]
+      const inserted = ((data ?? []) as Transaction[]).map(normalizeTransaction)
       saved += inserted.length
       setItems((current) => sortTransactions([...current, ...inserted]))
     }
@@ -93,7 +98,7 @@ export function useTransactions() {
     if (!supabase) return NOT_CONFIGURED
     const { data, error: dbError } = await supabase.from('transactions').update(input).eq('id', id).select().single()
     if (dbError) return { ok: false, message: toKoreanDbMessage(dbError) }
-    setItems((current) => sortTransactions(current.map((t) => (t.id === id ? (data as Transaction) : t))))
+    setItems((current) => sortTransactions(current.map((t) => (t.id === id ? normalizeTransaction(data as Transaction) : t))))
     return { ok: true }
   }, [])
 

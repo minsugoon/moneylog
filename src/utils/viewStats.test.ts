@@ -1,11 +1,12 @@
 import { describe, expect, it } from 'vitest'
-import type { Account, Transaction } from '../lib/types.ts'
+import { KRW_DEFAULTS, type Account, type Transaction } from '../lib/types.ts'
 import { entriesForMonth } from './summary.ts'
 import { accountGroups, fixedGroups, monthRange, monthlyTotals, presetMonths } from './viewStats.ts'
 
 // 샘플은 모두 임의로 만든 값이다
 function makeTx(overrides: Partial<Transaction>): Transaction {
   return {
+    ...KRW_DEFAULTS,
     id: 'id',
     account_id: null,
     used_at: '2026-10-05',
@@ -28,6 +29,7 @@ function makeTx(overrides: Partial<Transaction>): Transaction {
 
 function makeAccount(overrides: Partial<Account>): Account {
   return {
+    ...KRW_DEFAULTS,
     id: 'acc',
     name: '별칭',
     kind: 'card',

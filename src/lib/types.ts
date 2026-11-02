@@ -35,6 +35,18 @@ export interface Transaction {
   interest_free: boolean
   performance_override: 'include' | 'exclude' | null
   created_at: string
+  currency: string
+  original_amount: number | null
+  exchange_rate: number | null
+  rate_at: string | null
+  krw_confirmed: boolean
+}
+
+export const KRW_DEFAULTS = { currency: 'KRW', original_amount: null, exchange_rate: null, rate_at: null, krw_confirmed: true } as const
+
+export function normalizeTransaction(row: Partial<Transaction> & Pick<Transaction, 'id'>): Transaction {
+  // DB 행에 새 통화 칸이 없어도 기본값을 채우므로 반환 타입을 단언한다.
+  return { ...KRW_DEFAULTS, ...row, currency: row.currency || KRW_DEFAULTS.currency } as Transaction
 }
 
 export interface DailyNote {

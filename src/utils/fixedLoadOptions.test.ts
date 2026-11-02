@@ -1,9 +1,10 @@
 import { describe, expect, it } from 'vitest'
-import type { Transaction } from '../lib/types.ts'
+import { KRW_DEFAULTS, type Transaction } from '../lib/types.ts'
 import { listFixedLoadOptions } from './fixedLoadOptions.ts'
 
 function transaction(overrides: Partial<Transaction> = {}): Transaction {
   return {
+    ...KRW_DEFAULTS,
     id: 't1', account_id: null, used_at: '2026-10-01', merchant: '샘플기부', amount: 20000, discount: 0,
     installment_months: 1, is_fixed: true, fixed_type: '기타고정', source: 'manual', import_hash: null,
     memo: null, is_cancel: false, interest_free: false, performance_override: null,

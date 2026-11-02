@@ -1,5 +1,5 @@
-import { getCurrency } from '../../utils/currency.ts'
-import { chipClass } from '../ui.ts'
+import { useId, type ReactNode } from 'react'
+import CurrencySlider from './CurrencySlider.tsx'
 
 interface CurrencyToggleProps {
   expanded: boolean
@@ -7,25 +7,25 @@ interface CurrencyToggleProps {
   codes: string[]
   onToggle: () => void
   onSelect: (code: string) => void
+  children: ReactNode
 }
 
-function CurrencyToggle({ expanded, selected, codes, onToggle, onSelect }: CurrencyToggleProps) {
-  const linkText = !expanded ? '통화 변경 · 외화로 입력 ▾' : selected === 'KRW' ? '접기 ▴' : '접고 원화로 입력 ▴'
+function CurrencyToggle({ expanded, selected, codes, onToggle, onSelect, children }: CurrencyToggleProps) {
+  const id = useId()
 
   return (
-    <div>
-      <button type="button" aria-expanded={expanded} onClick={onToggle} className="min-h-11 text-sm font-bold text-brand">{linkText}</button>
+    <section aria-label="통화 변경" className="rounded-lg border border-gray-200 bg-gray-50">
+      <button type="button" aria-expanded={expanded} aria-controls={id} onClick={onToggle} className="flex min-h-12 w-full items-center justify-between px-3 text-left">
+        <span className="text-sm font-bold text-brand">통화 변경 · 외화로 입력</span>
+        <span aria-hidden="true">{expanded ? '🔼' : '🔽'}</span>
+      </button>
       {expanded && (
-        <div className="mt-2 flex flex-wrap gap-2" role="group" aria-label="입력 통화">
-          {['KRW', ...codes].map((code) => {
-            const currency = getCurrency(code)
-            if (!currency) return null
-            return <button key={code} type="button" aria-pressed={selected === code} onClick={() => onSelect(code)} className={chipClass(selected === code)}>{currency.name}{code !== 'KRW' && ` · ${code}`}</button>
-          })}
-          {codes.length === 0 && <p className="text-xs text-gray-600">설정 → 통화에서 자주 쓰는 통화를 고를 수 있어요.</p>}
+        <div id={id} className="space-y-3 border-t border-gray-200 px-3 pb-3 pt-3">
+          <CurrencySlider selected={selected} codes={codes} onSelect={onSelect} />
+          <div className="min-h-[13rem]">{children}</div>
         </div>
       )}
-    </div>
+    </section>
   )
 }
 

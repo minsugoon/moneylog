@@ -1,10 +1,11 @@
 import { describe, expect, it } from 'vitest'
-import type { Transaction } from '../lib/types.ts'
+import { KRW_DEFAULTS, type Transaction } from '../lib/types.ts'
 import { buildDayList, entriesForMonth, splitCarried, sumCharges, summarizeDay } from './summary.ts'
 
 // 테스트용 내역을 만든다. 값은 모두 임의로 만든 것이다.
 function makeTx(overrides: Partial<Transaction>): Transaction {
   return {
+    ...KRW_DEFAULTS,
     id: 'id',
     account_id: null,
     used_at: '2026-10-05',

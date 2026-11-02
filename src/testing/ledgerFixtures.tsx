@@ -1,7 +1,7 @@
 import { renderToString } from 'react-dom/server'
 import type { ReactNode } from 'react'
 import { LedgerContext, type LedgerValue } from '../hooks/ledgerContext.ts'
-import type { Account, DailyNote, Transaction } from '../lib/types.ts'
+import { KRW_DEFAULTS, type Account, type DailyNote, type Transaction } from '../lib/types.ts'
 import { addMonths, currentMonthKey, todayString } from '../utils/format.ts'
 
 // 화면 점검 테스트: 가짜 데이터를 넣고 화면을 한 번 그려서, 오류 없이 그려지고 핵심 글자가 보이는지 확인한다.
@@ -19,6 +19,7 @@ export const accountList: Account[] = [
 
 export function tx(overrides: Partial<Transaction>): Transaction {
   return {
+    ...KRW_DEFAULTS,
     id: 't', account_id: 'a1', used_at: today, merchant: '샘플 가게', amount: 10000, discount: 0,
     installment_months: 1, is_fixed: false, fixed_type: null, source: 'manual', import_hash: null,
     memo: null, is_cancel: false, interest_free: false, performance_override: null,

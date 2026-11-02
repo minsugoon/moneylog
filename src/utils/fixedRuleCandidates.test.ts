@@ -1,9 +1,10 @@
 import { describe, expect, it } from 'vitest'
-import type { FixedRule, Transaction } from '../lib/types.ts'
+import { KRW_DEFAULTS, type FixedRule, type Transaction } from '../lib/types.ts'
 import { listFixedRuleCandidates } from './fixedRuleCandidates.ts'
 
 function transaction(overrides: Partial<Transaction> = {}): Transaction {
   return {
+    ...KRW_DEFAULTS,
     id: 't1', account_id: null, used_at: '2026-10-01', merchant: '통신비샘플', amount: 1000, discount: 0,
     installment_months: 1, is_fixed: true, fixed_type: '통신', source: 'manual', import_hash: null,
     memo: null, is_cancel: false, interest_free: false, performance_override: null,

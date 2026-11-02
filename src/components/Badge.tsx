@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 
-type BadgeKind = 'cancel' | 'free' | 'fixed' | 'dup' | 'maybe' | 'income' | 'fail' | 'perf'
+type BadgeKind = 'cancel' | 'free' | 'fixed' | 'dup' | 'maybe' | 'income' | 'fail' | 'perf' | 'fx' | 'confirmed'
 
 interface BadgeProps {
   kind: BadgeKind
@@ -16,6 +16,8 @@ const badgeClasses: Record<BadgeKind, string> = {
   income: 'px-3 py-1 text-sm font-bold bg-gray-100 text-gray-700',
   fail: 'px-3 py-1 text-sm font-bold bg-red-100 text-red-700',
   perf: 'px-2 py-0.5 text-xs bg-amber-100 text-amber-800',
+  fx: 'px-2 py-0.5 text-xs bg-gray-100 text-gray-700',
+  confirmed: 'px-2 py-0.5 text-xs bg-green-50 text-green-800',
 }
 
 function Badge({ kind, children }: BadgeProps) {

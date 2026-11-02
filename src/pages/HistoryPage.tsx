@@ -11,6 +11,7 @@ import { useViewBasis } from '../hooks/useViewBasis.ts'
 import type { Transaction } from '../lib/types.ts'
 import { currentMonthKey, formatMonthLabel, formatWon, toMonthKey } from '../utils/format.ts'
 import { buildDayList, entriesForMonth, splitCarried, sumCharges } from '../utils/summary.ts'
+import { fxMonthNote, summarizeFx } from '../utils/fxDisplay.ts'
 
 // 내역 화면(홈): 달 이동, 월 합계, 날짜별 목록, 하루 정리
 function HistoryPage() {
@@ -23,6 +24,7 @@ function HistoryPage() {
   const { carried, current } = splitCarried(entries, month)
   const noteDates = notes.items.map((n) => n.note_date).filter((date) => toMonthKey(date) === month)
   const days = buildDayList(current, noteDates)
+  const monthFxNote = fxMonthNote(summarizeFx(entries.map((e) => e.tx)))
 
   return (
     <div className="mx-auto flex max-w-xl flex-col gap-4">
@@ -36,6 +38,7 @@ function HistoryPage() {
       <BasisToggle basis={basis} onChange={setBasis} />
 
       <SummaryCard label={`${formatMonthLabel(month)} 합계`} amount={formatWon(sumCharges(entries))} sub={`지출 ${entries.length}건${carried.length > 0 ? ` (이어진 할부 ${carried.length}건 포함)` : ''}`} ariaLabel="월 합계" />
+      {monthFxNote !== null && <p className="text-xs text-gray-600" role="note">{monthFxNote}</p>}
 
       {transactions.loading ? (
         <p className="py-8 text-center text-sm text-gray-600">내역을 불러오고 있어요…</p>

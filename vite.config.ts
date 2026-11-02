@@ -35,6 +35,8 @@ export default defineConfig({
         runtimeCaching: [
           // 내역과 로그인 정보는 기기에 캐시하지 않는다
           { urlPattern: ({ url }) => url.hostname.endsWith('.supabase.co'), handler: 'NetworkOnly' },
+          // 환율 서비스 응답도 기기에 캐시하지 않는다 (앱이 직접 1시간 동안만 재사용)
+          { urlPattern: ({ url }) => url.hostname === 'open.er-api.com', handler: 'NetworkOnly' },
         ],
       },
     }),

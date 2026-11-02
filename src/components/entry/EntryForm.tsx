@@ -15,6 +15,8 @@ import FloatingSaveButton from './FloatingSaveButton.tsx'
 import FxAmountSection from './FxAmountSection.tsx'
 import InstallmentFields from './InstallmentFields.tsx'
 import { useFxEntry } from '../../hooks/useFxEntry.ts'
+import { buildFxEditFields } from '../../utils/fxEntry.ts'
+import FxEditNotice from './FxEditNotice.tsx'
 
 const LAST_ACCOUNT_KEY = 'moneylog.lastAccountId'
 
@@ -35,6 +37,7 @@ function EntryForm({ date, onDateChange, initial, onDone, onCancel, floatingSave
   const idPrefix = useId()
   const merchantRef = useRef<HTMLInputElement>(null)
   const isEdit = Boolean(initial)
+  const initialFx = Boolean(initial && initial.currency !== 'KRW')
 
   // 고를 수 있는 결제수단: 사용 중인 것 + (고치는 내역이 쓰던 것)
   const choices = accounts.accounts.filter((a) => a.is_active || a.id === initial?.account_id)
@@ -86,11 +89,19 @@ function EntryForm({ date, onDateChange, initial, onDone, onCancel, floatingSave
       return setError('자동 규칙 키워드는 두 글자 이상 50자 이하로 입력해 주세요.')
     }
 
+    let fxEditFields: { krw_confirmed: true; exchange_rate: number } | {} = {}
+    if (initialFx && initial && amount !== initial.amount) {
+      const fields = buildFxEditFields(initial, amount as number)
+      if (fields === null) return setError('금액을 확인해 주세요.')
+      fxEditFields = fields
+    }
+
     const input: TransactionInput = {
       account_id: accountId || null,
       used_at: date,
       merchant: trimmedMerchant,
       ...(fxFields ?? { amount: amount as number, discount: discount ?? 0, installment_months: months, interest_free: months > 1 && interestFree }),
+      ...fxEditFields,
       is_fixed: shownIsFixed,
       fixed_type: shownIsFixed ? shownFixedType : null,
       memo: memo.trim() || null,
@@ -140,6 +151,7 @@ function EntryForm({ date, onDateChange, initial, onDone, onCancel, floatingSave
 
   return (
     <form onSubmit={handleSubmit} className={`flex flex-col gap-4 ${floatingSave && !isEdit ? 'pb-20' : ''}`} noValidate>
+      {initialFx && initial && <FxEditNotice tx={initial} />}
       {!isEdit && <FixedLoadPanel options={fixedLoadOptions} onPick={handleFixedLoad} />}
       <div>
         <label htmlFor={`${idPrefix}-merchant`} className={labelClass}>결제명</label>
@@ -157,7 +169,7 @@ function EntryForm({ date, onDateChange, initial, onDone, onCancel, floatingSave
         />
       </div>
 
-      <FxAmountSection idPrefix={idPrefix} fx={fx} amount={amount} onAmountChange={setAmount} />
+      <FxAmountSection idPrefix={idPrefix} fx={fx} amount={amount} onAmountChange={setAmount} amountLabel={initialFx ? '원화 금액' : undefined} />
 
       <EntryDateField idPrefix={idPrefix} date={date} onDateChange={onDateChange} />
 
@@ -177,7 +189,7 @@ function EntryForm({ date, onDateChange, initial, onDone, onCancel, floatingSave
         )}
       </div>
 
-      {!fx.isFx && <InstallmentFields idPrefix={idPrefix} amount={amount} discount={discount} onDiscountChange={setDiscount} months={months} onMonthsChange={(next) => { setMonths(next); if (next === 1) setInterestFree(false) }} />}
+      {!initialFx && !fx.isFx && <InstallmentFields idPrefix={idPrefix} amount={amount} discount={discount} onDiscountChange={setDiscount} months={months} onMonthsChange={(next) => { setMonths(next); if (next === 1) setInterestFree(false) }} />}
 
       <div className="flex flex-col">
         <label className="flex min-h-11 items-center gap-3 text-base text-gray-700">
@@ -189,7 +201,7 @@ function EntryForm({ date, onDateChange, initial, onDone, onCancel, floatingSave
           />
           취소 건 (환불·결제 취소)
         </label>
-        {!fx.isFx && months > 1 && (
+        {!initialFx && !fx.isFx && months > 1 && (
           <label className="flex min-h-11 items-center gap-3 text-base text-gray-700">
             <input
               type="checkbox"

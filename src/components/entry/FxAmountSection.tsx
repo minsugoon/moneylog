@@ -10,13 +10,14 @@ interface FxAmountSectionProps {
   fx: ReturnType<typeof useFxEntry>
   amount: number | null
   onAmountChange: (value: number | null) => void
+  amountLabel?: string
 }
 
-function FxAmountSection({ idPrefix, fx, amount, onAmountChange }: FxAmountSectionProps) {
+function FxAmountSection({ idPrefix, fx, amount, onAmountChange, amountLabel }: FxAmountSectionProps) {
   return (
     <div className="space-y-2">
       <div>
-        <label htmlFor={`${idPrefix}-amount`} className={labelClass}>{fx.isFx ? `금액 (${fx.code})` : '금액 (원)'}</label>
+        <label htmlFor={`${idPrefix}-amount`} className={labelClass}>{amountLabel ?? (fx.isFx ? `금액 (${fx.code})` : '금액 (원)')}</label>
         {fx.isFx ? (
           <FxAmountInput id={`${idPrefix}-amount`} code={fx.code} value={fx.text} onChange={fx.setText} placeholder="0" />
         ) : (

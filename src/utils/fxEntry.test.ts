@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
-import { computeFxEntry, buildFxSaveFields } from './fxEntry.ts'
+import { computeFxEntry, buildFxSaveFields, buildFxEditFields } from './fxEntry.ts'
 import type { RateChoice } from './fxRates.ts'
+import { tx } from '../testing/ledgerFixtures.tsx'
 
 const now = new Date('2026-10-31T12:00:00.000Z')
 const at = '2026-10-31T10:00:00.000Z'
@@ -10,6 +11,13 @@ function choice(status: RateChoice['status'], rate: number | null, time: string 
 }
 
 describe('computeFxEntry', () => {
+  it('외화 청구액을 바꾸면 확정 환율을 만든다', () => {
+    expect(buildFxEditFields(tx({ currency: 'VND', original_amount: 20000, amount: 1042 }), 1100)).toEqual({ krw_confirmed: true, exchange_rate: 0.055 })
+    expect(buildFxEditFields(tx({ currency: 'VND', original_amount: 20000, amount: 1042 }), 1042)).toEqual({})
+    expect(buildFxEditFields(tx({ currency: 'KRW' }), 1100)).toEqual({})
+    expect(buildFxEditFields(tx({ currency: 'VND', original_amount: null }), 1100)).toBeNull()
+  })
+
   it('환율로 계산한 금액과 시각을 만든다', () => {
     const state = computeFxEntry({ code: 'VND', text: '20000', choice: choice('live', 0.0521), manualOpen: false, manualKrw: null }, now)
     expect(state).toMatchObject({ krw: 1042, confirmed: false, rateAt: at, canSave: true })

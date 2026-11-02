@@ -1,6 +1,15 @@
-import { convertToKrw, FX_CONVERT_MESSAGES, minorToAmount, parseFxMinor, rateFromKrw } from './currency.ts'
+import { convertToKrw, currencyDecimals, FX_CONVERT_MESSAGES, minorToAmount, parseFxMinor, rateFromKrw } from './currency.ts'
 import { checkFxSave, type RateChoice } from './fxRates.ts'
 import { noRateNote, staleRateNote } from './fxDisplay.ts'
+import type { Transaction } from '../lib/types.ts'
+
+export function buildFxEditFields(initial: Transaction, amount: number): { krw_confirmed: true; exchange_rate: number } | {} | null {
+  if (initial.currency === 'KRW' || amount === initial.amount) return {}
+  if (initial.original_amount === null) return null
+  const minor = Math.round(initial.original_amount * 10 ** currencyDecimals(initial.currency))
+  const exchange_rate = rateFromKrw(amount, minor, initial.currency)
+  return exchange_rate === null ? null : { krw_confirmed: true, exchange_rate }
+}
 
 export interface FxEntryInput {
   code: string

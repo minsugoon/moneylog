@@ -3,10 +3,8 @@ import { useLedger } from '../../hooks/useLedger.ts'
 import type { TransactionInput } from '../../hooks/useTransactions.ts'
 import { type FixedType, type Transaction } from '../../lib/types.ts'
 import { findFixedRule, isValidRuleKeyword } from '../../utils/fixedRules.ts'
-import { describePayments } from '../../utils/installment.ts'
 import { listFixedLoadOptions } from '../../utils/fixedLoadOptions.ts'
 import { readSetting, writeSetting } from '../../utils/storage.ts'
-import AmountInput from '../AmountInput.tsx'
 import { errorBoxClass, inputClass, labelClass, primaryButtonClass, secondaryButtonClass } from '../ui.ts'
 import AccountPicker from './AccountPicker.tsx'
 import FixedLoadPanel from './FixedLoadPanel.tsx'
@@ -14,6 +12,9 @@ import { useFixedLoad } from './useFixedLoad.ts'
 import FixedExpenseFields from './FixedExpenseFields.tsx'
 import EntryDateField from './EntryDateField.tsx'
 import FloatingSaveButton from './FloatingSaveButton.tsx'
+import FxAmountSection from './FxAmountSection.tsx'
+import InstallmentFields from './InstallmentFields.tsx'
+import { useFxEntry } from '../../hooks/useFxEntry.ts'
 
 const LAST_ACCOUNT_KEY = 'moneylog.lastAccountId'
 
@@ -48,6 +49,7 @@ function EntryForm({ date, onDateChange, initial, onDone, onCancel, floatingSave
   const [amount, setAmount] = useState<number | null>(initial?.amount ?? null)
   const [discount, setDiscount] = useState<number | null>(initial && initial.discount > 0 ? initial.discount : null)
   const [isCancel, setIsCancel] = useState(initial?.is_cancel ?? false)
+  const fx = useFxEntry({ date, isCancel, enabled: !isEdit })
   const [months, setMonths] = useState(initial?.installment_months ?? 1)
   const [interestFree, setInterestFree] = useState(initial?.interest_free ?? false)
   const [isFixed, setIsFixed] = useState(initial?.is_fixed ?? false)
@@ -65,15 +67,21 @@ function EntryForm({ date, onDateChange, initial, onDone, onCancel, floatingSave
   const shownFixedType = matched ? matched.fixed_type : fixedType
   const canSaveRule = !isEdit && shownIsFixed && !matched
   const ruleKeyword = ruleKeywordEdit ?? merchant.trim()
-  const handleFixedLoad = useFixedLoad({ choices, setMerchant, setAmount, setDiscount, setMonths, setInterestFree, setIsCancel, setIsFixed, setFixedType, setFixedTouched, setAccountChoice, setSaveRule, setRuleKeywordEdit, setError, setNotice })
+  const handleFixedLoad = useFixedLoad({ choices, setMerchant, setAmount, setDiscount, setMonths, setInterestFree, setIsCancel, setIsFixed, setFixedType, setFixedTouched, setAccountChoice, setSaveRule, setRuleKeywordEdit, setError, setNotice, resetFx: fx.resetToKrw })
   async function handleSubmit(event: FormEvent) {
     event.preventDefault()
     setNotice('')
     const trimmedMerchant = merchant.trim()
     if (!date) return setError('사용일을 선택해 주세요.')
     if (!trimmedMerchant) return setError('결제명을 입력해 주세요.')
-    if (amount === null || amount <= 0) return setError('금액을 입력해 주세요.')
-    if ((discount ?? 0) > amount) return setError('할인이 금액보다 커요. 다시 확인해 주세요.')
+    let fxFields = null
+    if (fx.isFx) {
+      fxFields = fx.buildSaveFields()
+      if (!fxFields) return setError(fx.state.blockMessage ?? '금액을 확인해 주세요.')
+    } else {
+      if (amount === null || amount <= 0) return setError('금액을 입력해 주세요.')
+      if ((discount ?? 0) > amount) return setError('할인이 금액보다 커요. 다시 확인해 주세요.')
+    }
     if (!isEdit && saveRule && canSaveRule && !isValidRuleKeyword(ruleKeyword)) {
       return setError('자동 규칙 키워드는 두 글자 이상 50자 이하로 입력해 주세요.')
     }
@@ -82,15 +90,12 @@ function EntryForm({ date, onDateChange, initial, onDone, onCancel, floatingSave
       account_id: accountId || null,
       used_at: date,
       merchant: trimmedMerchant,
-      amount,
-      discount: discount ?? 0,
-      installment_months: months,
+      ...(fxFields ?? { amount: amount as number, discount: discount ?? 0, installment_months: months, interest_free: months > 1 && interestFree }),
       is_fixed: shownIsFixed,
       fixed_type: shownIsFixed ? shownFixedType : null,
       memo: memo.trim() || null,
       is_cancel: isCancel,
       // 일시불에는 무이자 표시가 의미 없으므로 함께 해제한다
-      interest_free: months > 1 && interestFree,
     }
 
     setBusy(true)
@@ -118,6 +123,7 @@ function EntryForm({ date, onDateChange, initial, onDone, onCancel, floatingSave
     if (accountId) writeSetting(LAST_ACCOUNT_KEY, accountId)
     setMerchant('')
     setAmount(null)
+    fx.resetAfterSave()
     setDiscount(null)
     setIsCancel(false)
     setMonths(1)
@@ -151,10 +157,7 @@ function EntryForm({ date, onDateChange, initial, onDone, onCancel, floatingSave
         />
       </div>
 
-      <div>
-        <label htmlFor={`${idPrefix}-amount`} className={labelClass}>금액 (원)</label>
-        <AmountInput id={`${idPrefix}-amount`} value={amount} onChange={setAmount} placeholder="0" size="large" />
-      </div>
+      <FxAmountSection idPrefix={idPrefix} fx={fx} amount={amount} onAmountChange={setAmount} />
 
       <EntryDateField idPrefix={idPrefix} date={date} onDateChange={onDateChange} />
 
@@ -174,35 +177,7 @@ function EntryForm({ date, onDateChange, initial, onDone, onCancel, floatingSave
         )}
       </div>
 
-      <div>
-        <label htmlFor={`${idPrefix}-discount`} className={labelClass}>할인 (선택)</label>
-        <AmountInput id={`${idPrefix}-discount`} value={discount} onChange={setDiscount} placeholder="0" />
-      </div>
-
-      <div>
-        <label htmlFor={`${idPrefix}-months`} className={labelClass}>
-          할부
-        </label>
-        <select
-          id={`${idPrefix}-months`}
-          value={months}
-          onChange={(e) => {
-            const next = Number(e.target.value)
-            setMonths(next)
-            if (next === 1) setInterestFree(false)
-          }}
-          className={inputClass}
-        >
-          {Array.from({ length: 36 }, (_, i) => i + 1).map((m) => (
-            <option key={m} value={m}>
-              {m === 1 ? '일시불' : `${m}개월`}
-            </option>
-          ))}
-        </select>
-        {months > 1 && amount !== null && amount > 0 && (
-          <p className="mt-1 text-xs text-gray-600">{describePayments(amount, discount ?? 0, months)}</p>
-        )}
-      </div>
+      {!fx.isFx && <InstallmentFields idPrefix={idPrefix} amount={amount} discount={discount} onDiscountChange={setDiscount} months={months} onMonthsChange={(next) => { setMonths(next); if (next === 1) setInterestFree(false) }} />}
 
       <div className="flex flex-col">
         <label className="flex min-h-11 items-center gap-3 text-base text-gray-700">
@@ -214,7 +189,7 @@ function EntryForm({ date, onDateChange, initial, onDone, onCancel, floatingSave
           />
           취소 건 (환불·결제 취소)
         </label>
-        {months > 1 && (
+        {!fx.isFx && months > 1 && (
           <label className="flex min-h-11 items-center gap-3 text-base text-gray-700">
             <input
               type="checkbox"

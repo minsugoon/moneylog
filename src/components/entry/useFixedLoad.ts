@@ -17,10 +17,12 @@ interface FixedLoadSetters {
   setRuleKeywordEdit: (value: string | null) => void
   setError: (value: string) => void
   setNotice: (value: string) => void
+  resetFx?: () => void
 }
 
-export function useFixedLoad({ choices, setMerchant, setAmount, setDiscount, setMonths, setInterestFree, setIsCancel, setIsFixed, setFixedType, setFixedTouched, setAccountChoice, setSaveRule, setRuleKeywordEdit, setError, setNotice }: FixedLoadSetters) {
+export function useFixedLoad({ choices, setMerchant, setAmount, setDiscount, setMonths, setInterestFree, setIsCancel, setIsFixed, setFixedType, setFixedTouched, setAccountChoice, setSaveRule, setRuleKeywordEdit, setError, setNotice, resetFx }: FixedLoadSetters) {
   return (option: FixedLoadOption) => {
+    resetFx?.()
     setMerchant(option.merchant)
     setAmount(option.amount)
     setDiscount(option.discount > 0 ? option.discount : null)

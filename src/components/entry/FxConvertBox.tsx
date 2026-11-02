@@ -22,6 +22,7 @@ interface FxConvertBoxProps {
   onManualChange: (value: number | null) => void
   dayLine: string | null
   idPrefix: string
+  bare?: boolean
 }
 
 function FxConvertBox(props: FxConvertBoxProps) {
@@ -30,7 +31,7 @@ function FxConvertBox(props: FxConvertBoxProps) {
   const showEmpty = !hasAmount || (noRate && !displayManual && krw === null)
 
   return (
-    <section aria-label="원화 환산" className="rounded-xl border border-gray-200 bg-gray-50 p-3">
+    <section aria-label="원화 환산" className={props.bare ? 'min-h-[13rem]' : 'rounded-xl border border-gray-200 bg-gray-50 p-3'}>
       <div className="space-y-2">
         <div className="flex items-center justify-between gap-2">
           <span className="text-sm font-bold text-gray-700">원화로 바꾸면</span>

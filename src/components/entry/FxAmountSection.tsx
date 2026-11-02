@@ -4,6 +4,7 @@ import { labelClass } from '../ui.ts'
 import CurrencyToggle from './CurrencyToggle.tsx'
 import FxAmountInput from './FxAmountInput.tsx'
 import FxConvertBox from './FxConvertBox.tsx'
+import FxIntroPanel from './FxIntroPanel.tsx'
 
 interface FxAmountSectionProps {
   idPrefix: string
@@ -24,10 +25,9 @@ function FxAmountSection({ idPrefix, fx, amount, onAmountChange, amountLabel }: 
           <AmountInput id={`${idPrefix}-amount`} value={amount} onChange={onAmountChange} placeholder="0" size="large" />
         )}
       </div>
-      {fx.enabled && <CurrencyToggle expanded={fx.expanded} selected={fx.code} codes={fx.favoriteCodes} onToggle={fx.toggle} onSelect={fx.selectCode} />}
-      {fx.isFx && (
-        <div className="mt-2">
-          <FxConvertBox
+      {fx.enabled && (
+        <CurrencyToggle expanded={fx.expanded} selected={fx.code} codes={fx.favoriteCodes} onToggle={fx.toggle} onSelect={fx.selectCode}>
+          {fx.isFx ? <FxConvertBox
             code={fx.code}
             hasAmount={fx.state.hasAmount}
             krw={fx.state.krw}
@@ -46,8 +46,10 @@ function FxAmountSection({ idPrefix, fx, amount, onAmountChange, amountLabel }: 
             onManualChange={fx.setManualKrw}
             dayLine={fx.dayLine}
             idPrefix={idPrefix}
+            bare
           />
-        </div>
+          : <FxIntroPanel />}
+        </CurrencyToggle>
       )}
     </div>
   )

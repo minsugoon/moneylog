@@ -302,7 +302,7 @@ alter table public.transactions
 | ai_usage | 호출 시각·모델·토큰 수만 남긴다. **캡처 내용(이미지·읽은 결과)은 저장하지 않는다** |
 | transactions.performance_override | 사용자가 정한 실적 처리. `include`=실적 포함 확정, `exclude`=실적 제외 확정, 비어 있으면 자동 판정 |
 | transactions.interest_free | 무이자 할부 결제 여부 (직접 체크) |
-| transactions.currency | 통화 코드. 기본 `KRW`(원화). 외화 입력은 `VND`·`USD`·`JPY`·`EUR`·`CNY`·`THB` 같은 3글자 대문자 |
+| transactions.currency | 통화 코드. 기본 `KRW`(원화). 외화 입력은 `USD`·`EUR`·`JPY`·`TWD`·`VND`·`CNY`·`MNT`·`PHP`·`GBP` 같은 3글자 대문자 |
 | transactions.original_amount | 입력한 외화 금액(예: 85000, 9.99). 원화 내역은 비어 있음 |
 | transactions.exchange_rate | 외화 1단위당 원화 환율. **입력 당시 값을 그대로 저장**해서 나중에 환율이 바뀌어도 이미 적은 금액은 변하지 않음. 카드 청구액으로 고치면 `청구액 ÷ 외화 금액`으로 다시 계산 |
 | transactions.rate_at | 그 환율을 받은 시각 (환율 서버 오류로 받아 둔 값을 썼다면 그 값을 받은 시각) |

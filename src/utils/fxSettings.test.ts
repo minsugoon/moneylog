@@ -12,11 +12,11 @@ describe('자주 쓰는 통화 설정', () => {
   })
 
   it('대문자 통화만 중복 없이 통화 순서대로 정리한다', () => {
-    expect(parseFxCurrencySetting('THB,usd,BOGUS,USD,VND, USD')).toEqual(['VND', 'USD', 'THB'])
+    expect(parseFxCurrencySetting('THB,usd,BOGUS,USD,VND, USD')).toEqual(['USD', 'VND'])
   })
 
   it('직렬화한 값은 다시 같은 통화 목록으로 읽힌다', () => {
-    const codes = ['THB', 'USD', 'VND']
-    expect(parseFxCurrencySetting(serializeFxCurrencySetting(codes))).toEqual(['VND', 'USD', 'THB'])
+    const codes = ['USD', 'EUR', 'VND']
+    expect(parseFxCurrencySetting(serializeFxCurrencySetting(codes))).toEqual(['USD', 'EUR', 'VND'])
   })
 })

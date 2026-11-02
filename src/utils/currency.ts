@@ -1,21 +1,25 @@
 export interface CurrencyInfo {
   code: string
+  label: string
   name: string
   decimals: number
 }
 
 export const CURRENCIES: CurrencyInfo[] = [
-  { code: 'KRW', name: '원', decimals: 0 },
-  { code: 'VND', name: '동', decimals: 0 },
-  { code: 'USD', name: '달러', decimals: 2 },
-  { code: 'JPY', name: '엔', decimals: 0 },
-  { code: 'EUR', name: '유로', decimals: 2 },
-  { code: 'CNY', name: '위안', decimals: 2 },
-  { code: 'THB', name: '바트', decimals: 2 },
+  { code: 'KRW', label: '원', name: '원', decimals: 0 },
+  { code: 'USD', label: '달러', name: '달러', decimals: 2 },
+  { code: 'EUR', label: '유로', name: '유로', decimals: 2 },
+  { code: 'JPY', label: '엔', name: '엔', decimals: 0 },
+  { code: 'TWD', label: '대만', name: '대만 달러', decimals: 2 },
+  { code: 'VND', label: '베트남', name: '동', decimals: 0 },
+  { code: 'CNY', label: '중국', name: '위안', decimals: 2 },
+  { code: 'MNT', label: '몽골', name: '투그릭', decimals: 2 },
+  { code: 'PHP', label: '필리핀', name: '페소', decimals: 2 },
+  { code: 'GBP', label: '영국', name: '파운드', decimals: 2 },
 ]
 
 export const FX_CURRENCIES = CURRENCIES.filter((currency) => currency.code !== 'KRW')
-export const DEFAULT_FX_CODES = ['VND', 'USD', 'JPY', 'EUR']
+export const DEFAULT_FX_CODES = FX_CURRENCIES.map((currency) => currency.code)
 export const MAX_FX_MINOR = 9_999_999_999_900
 export const MAX_KRW = 2_000_000_000
 const RATE_SCALE = 100_000_000n

@@ -62,3 +62,37 @@ export interface FixedRule {
   fixed_type: FixedType
   created_at: string
 }
+
+// 카드 실적 프로그램·혜택 (docs/PERFORMANCE_SPEC.md)
+export type ExclusionMode = 'exclude' | 'flag' | 'ignore'
+export type MeasureBasis = 'current_month' | 'previous_month'
+export type InstallmentMode = 'full' | 'monthly'
+export const BENEFIT_KINDS = ['렌탈', '통신', '구독', '보험', '기타'] as const
+export type BenefitKind = (typeof BENEFIT_KINDS)[number]
+
+export interface CardProgram {
+  id: string
+  account_id: string
+  name: string
+  target_amount: number
+  measure_basis: MeasureBasis
+  installment_mode: InstallmentMode
+  period_start_day: number // 1~28
+  exclude_keywords: string[]
+  exclusion_modes: Record<string, ExclusionMode>
+  is_active: boolean
+  sort_order: number
+  created_at: string
+}
+
+export interface CardBenefit {
+  id: string
+  program_id: string
+  name: string
+  required_amount: number | null
+  benefit_amount: number
+  benefit_kind: BenefitKind
+  linked_keyword: string | null
+  memo: string | null
+  created_at: string
+}

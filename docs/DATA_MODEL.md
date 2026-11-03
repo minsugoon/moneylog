@@ -1,6 +1,7 @@
 # Moneylog 데이터 구조 (Supabase)
 
-- 버전: v0.8 / 최종 수정: 2026-11-02
+- 버전: v0.9 / 최종 수정: 2026-11-03
+- 변경(v0.9, 2026-11-03): **6~7번(카드 실적·혜택 표 + 보안) 적용 완료** — 단계 9. 사용자가 SQL Editor에서 직접 적용. 다시 실행해도 오류가 없게 `if not exists`·`drop policy if exists`를 넣고, 카드 연결 칸 색인(`card_programs_account_idx`)을 추가했다.
 - 변경(v0.8, 2026-11-02): **통화 칸 5개(12번) 추가** — 외화 입력(단계 4-1). 적용은 사용자가 SQL Editor에서 직접 한다.
 - 변경(v0.7, 2026-10-31): **AI 캡처 입력용 표 2개와 함수 초안(9~11번) 추가.** 단계 7-B에서 적용할 예정이며 **아직 DB에 없다.**
 - 변경(v0.6): 보안 규칙(policy)의 `auth.uid()`를 `(select auth.uid())`로 바꿈. 내역이 많아져도 빠르게 하기 위한 Supabase 권장 방식이고 결과는 같다.
@@ -17,15 +18,15 @@
 | card_benefits | 실적 달성 혜택 | 미션 달성 보상 |
 | exclusion_rules | 실적 제외 키워드 사전 | "이 단어가 있으면 실적 제외될 수 있음" 목록 |
 | daily_notes | 날짜별 하루 정리(일기) | 가계부 속 일기장 한 쪽 |
-| user_settings | AI 동의 기록, 플랜, 월 이용 한도 (7-B 예정) | 이용자별 이용 안내서와 한도표 |
-| ai_usage | AI 사용 기록 (시각·모델·토큰만, 내용은 저장 안 함) (7-B 예정) | 사용 횟수 장부 |
+| user_settings | AI 동의 기록, 플랜, 월 이용 한도 | 이용자별 이용 안내서와 한도표 |
+| ai_usage | AI 사용 기록 (시각·모델·토큰만, 내용은 저장 안 함) | 사용 횟수 장부 |
 
 ## 2. 실행 순서 (SCHEDULE.md와 연결)
 | 번호 | 내용 | 실행 시점 |
 |------|------|-----------|
 | 1~4 | 결제수단, 내역, 고정지출 표 + 보안 | 단계 2 |
 | 5 | 하루 정리(일기) 표 + 보안 | 단계 4 |
-| 6~7 | 카드 실적, 혜택 표 + 보안 | 단계 9 |
+| 6~7 | 카드 실적, 혜택 표 + 보안 | 단계 9 (2026-11-03 사용자가 직접 적용 완료) |
 | 8 | 제외 키워드 표 + 보안 | 단계 10 |
 | 9~11 | AI 이용 설정·사용 기록 표 + 동의·한도 확인 함수 | **단계 7-B** (사용자 승인 후 적용) |
 | 12 | 내역에 통화 칸 5개 추가 (외화 입력) | 단계 4-1 (2026-11-02 사용자가 직접 적용 완료) |
@@ -34,7 +35,7 @@
 
 **적용 현황 (2026-10-25, 새 Supabase 프로젝트 `nytowuyczllgwuomoivv`)**
 - 1~5번 적용 완료: `accounts`, `transactions`, `fixed_rules`, `daily_notes` + 보안 규칙 (Claude가 Supabase MCP로 적용)
-- 6~7번(단계 9), 8번(단계 10)은 해당 단계 시작 전에 적용
+- 6~7번 적용 완료(2026-11-03, 단계 9): `card_programs`, `card_benefits` + 보안 규칙. 8번(단계 10)은 해당 단계 시작 전에 적용
 - 추가 조치: Supabase 기본 함수 `public.rls_auto_enable()`(새 표에 보안을 자동으로 켜 주는 안전장치)의 외부 실행 권한을 회수했다. 안전장치 자체는 계속 작동한다.
 - 남은 점검 경고: "유출된 비밀번호 차단"은 Supabase 대시보드(Authentication)에서만 켤 수 있다. 요금제에 따라 못 켤 수 있다.
 
@@ -133,9 +134,9 @@ create policy "own daily_notes" on public.daily_notes
 - 지출이 없는 날에도 저장할 수 있다.
 - 지출 내역(transactions)을 지워도 하루 정리는 남는다.
 
-### 6) 카드 실적 프로그램
+### 6) 카드 실적 프로그램 — 2026-11-03 적용 완료
 ```sql
-create table public.card_programs (
+create table if not exists public.card_programs (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null default auth.uid() references auth.users(id) on delete cascade,
   account_id uuid not null references public.accounts(id) on delete cascade,
@@ -159,13 +160,14 @@ create table public.card_programs (
   created_at timestamptz not null default now()
 );
 
-create index card_programs_user_idx on public.card_programs (user_id, is_active);
+create index if not exists card_programs_user_idx on public.card_programs (user_id, is_active);
+create index if not exists card_programs_account_idx on public.card_programs (account_id);
 ```
 - `exclusion_modes` 값: `exclude`(제외) / `flag`(표시만) / `ignore`(무시)
 
-### 7) 카드 혜택 + 보안
+### 7) 카드 혜택 + 보안 — 2026-11-03 적용 완료
 ```sql
-create table public.card_benefits (
+create table if not exists public.card_benefits (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null default auth.uid() references auth.users(id) on delete cascade,
   program_id uuid not null references public.card_programs(id) on delete cascade,
@@ -179,16 +181,19 @@ create table public.card_benefits (
   created_at timestamptz not null default now()
 );
 
-create index card_benefits_program_idx on public.card_benefits (program_id);
+create index if not exists card_benefits_program_idx on public.card_benefits (program_id);
 
 alter table public.card_programs enable row level security;
 alter table public.card_benefits enable row level security;
 
+drop policy if exists "own card_programs" on public.card_programs;
 create policy "own card_programs" on public.card_programs
   for all using (user_id = (select auth.uid())) with check (user_id = (select auth.uid()));
+drop policy if exists "own card_benefits" on public.card_benefits;
 create policy "own card_benefits" on public.card_benefits
   for all using (user_id = (select auth.uid())) with check (user_id = (select auth.uid()));
 ```
+- 점검 도구가 `card_benefits.user_id` 칸에 색인이 없다는 정보(INFO) 알림을 낸다. 혜택은 프로그램(`program_id`)으로 찾고 수가 적어 영향이 없으므로 그대로 둔다.
 - `required_amount`가 비어 있으면 프로그램의 `target_amount`를 쓴다.
 
 ### 8) 실적 제외 키워드 사전 + 보안
@@ -269,7 +274,7 @@ create policy "read own usage" on public.ai_usage
 - 시험(롤백 방식)으로 확인한 동작: 동의 없음 → `ai_not_consented`, 분당 6번째 → `ai_rate_limit`, 6장 → `bad_image_count`, 하루 11번째 → `ai_limit_day`, 철회 후 → `ai_not_consented`. `anon`은 실행 불가.
 - 운영자의 한도·플랜 변경 예: `update public.user_settings set plan = 'plus', ai_monthly_limit = 200 where user_id = '이용자 id';`
 
-### 12) 통화 칸 5개 (외화 입력, 단계 4-1) — **아직 DB에 없다. 사용자가 SQL Editor에서 직접 적용한다**
+### 12) 통화 칸 5개 (외화 입력, 단계 4-1) — 2026-11-02 사용자가 SQL Editor에서 직접 적용 완료
 해외에서 현지 통화로 쓴 금액을 입력하면 원화로 바꿔 `amount`에 저장하고, 외화 정보는 아래 보조 칸에 함께 저장한다. **기존 내역은 모두 원화(KRW)·확정(true)이 되고 금액은 그대로**다. 여러 번 실행해도 안전하다.
 ```sql
 alter table public.transactions
@@ -310,6 +315,7 @@ alter table public.transactions
 | card_programs.measure_basis | `previous_month`=지난달 사용액이 이번 달 혜택 결정, `current_month`=이번 달 사용액이 이번 달 혜택 결정 |
 | card_programs.installment_mode | `full`=사용한 달에 할부 전액 인정, `monthly`=월 납부액만 인정 |
 | card_programs.period_start_day | 실적 집계 시작일. 1이면 달력 기준 |
+| card_programs.exclusion_modes | 제외 사전 분류별 처리 방식. 단계 9에서는 `cancel`·`interest_free`만 쓰고, 나머지는 단계 10(제외 키워드 사전)부터 쓴다 |
 
 ## 5. 삭제 시 동작
 | 지우는 것 | 결과 |

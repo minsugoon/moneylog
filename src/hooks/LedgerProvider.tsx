@@ -3,6 +3,7 @@ import { LedgerContext } from './ledgerContext.ts'
 import { useAccounts } from './useAccounts.ts'
 import { useDailyNotes } from './useDailyNotes.ts'
 import { useFixedRules } from './useFixedRules.ts'
+import { useCardPrograms } from './useCardPrograms.ts'
 import { useTransactions } from './useTransactions.ts'
 
 interface LedgerProviderProps {
@@ -17,7 +18,8 @@ function LedgerProvider({ userId, children }: LedgerProviderProps) {
   const transactions = useTransactions()
   const notes = useDailyNotes(userId)
   const fixedRules = useFixedRules(userId)
-  const value = useMemo(() => ({ accounts, transactions, notes, fixedRules }), [accounts, transactions, notes, fixedRules])
+  const cardPrograms = useCardPrograms()
+  const value = useMemo(() => ({ accounts, transactions, notes, fixedRules, cardPrograms }), [accounts, transactions, notes, fixedRules, cardPrograms])
   return <LedgerContext.Provider value={value}>{children}</LedgerContext.Provider>
 }
 

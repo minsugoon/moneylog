@@ -14,7 +14,7 @@ describe('보기 화면 시안', () => {
     expect(html).toContain('기간별')
     expect(html).toContain('결제수단별')
     expect(html).toContain('고정지출')
-    expect(html).toContain('grid-cols-3')
+    expect(html).toContain('grid-cols-4')
     expect(html).toContain('bg-brand')
     expect(html).toContain('월별 지출')
     expect(html).not.toContain('고정지출 총합')

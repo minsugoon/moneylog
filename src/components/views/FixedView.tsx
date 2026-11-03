@@ -3,6 +3,7 @@ import { formatAccountLabel, formatMonthLabel, formatWon } from '../../utils/for
 import type { ViewBasis } from '../../utils/installment.ts'
 import { entriesForMonth, sumCharges } from '../../utils/summary.ts'
 import { fixedGroups } from '../../utils/viewStats.ts'
+import { fixedDiscountFor } from '../../utils/performanceLinks.ts'
 import { cardClass } from '../ui.ts'
 import SummaryCard from '../SummaryCard.tsx'
 
@@ -13,14 +14,17 @@ interface FixedViewProps {
 
 // 고정지출 보기: 종류별 소계와 총합
 function FixedView({ month, basis }: FixedViewProps) {
-  const { transactions, accounts } = useLedger()
+  const { transactions, accounts, cardPrograms } = useLedger()
   const entries = entriesForMonth(transactions.items, month, basis)
   const groups = fixedGroups(entries).sort((a, b) => b.total - a.total || a.label.localeCompare(b.label))
   const total = groups.reduce((sum, group) => sum + group.total, 0)
+  const discountFor = (groupEntries: typeof entries) => groupEntries.reduce((sum, entry) => sum + fixedDiscountFor(entry.tx.merchant, cardPrograms.programs, cardPrograms.benefits), 0)
+  const discountTotal = discountFor(groups.flatMap((group) => group.entries))
 
   return (
     <div className="flex flex-col gap-4">
       <SummaryCard ariaLabel="고정지출 총합" label={`${formatMonthLabel(month)} 고정지출 총합`} amount={formatWon(total)} sub={`전체 지출 ${formatWon(sumCharges(entries))} 중 ${sumCharges(entries) > 0 ? `${Math.round((total / sumCharges(entries)) * 100)}%` : '0%'}`} />
+      {discountTotal > 0 && <p className="text-xs text-gray-600" role="note">카드 실적을 채우면 예상 {formatWon(Math.max(0, total - discountTotal))} (할인 {formatWon(discountTotal)} 반영 전 {formatWon(total)})</p>}
 
       {groups.length === 0 ? (
         <p className="rounded-2xl bg-white px-4 py-10 text-center text-sm text-gray-600 shadow-sm">
@@ -33,6 +37,7 @@ function FixedView({ month, basis }: FixedViewProps) {
               <h3 className="text-base font-bold text-gray-800">{group.label}</h3>
               <span className="text-base font-bold tabular-nums text-gray-800">{formatWon(group.total)}</span>
             </div>
+            {discountFor(group.entries) > 0 && <p className="mt-1 text-xs text-gray-600">실적 달성 시 {formatWon(Math.max(0, group.total - discountFor(group.entries)))} (할인 {formatWon(discountFor(group.entries))})</p>}
             <ul className="mt-2 divide-y divide-gray-100">
               {group.entries.map((entry) => (
                 <li key={entry.tx.id} className="flex items-start justify-between gap-3 py-2">
@@ -41,6 +46,7 @@ function FixedView({ month, basis }: FixedViewProps) {
                     <span className="block text-xs text-gray-600">
                       {formatAccountLabel(accounts.accounts.find((a) => a.id === entry.tx.account_id))}
                     </span>
+                    {fixedDiscountFor(entry.tx.merchant, cardPrograms.programs, cardPrograms.benefits) > 0 && <span className="block text-xs font-bold text-green-800">실적 달성 시 -{formatWon(fixedDiscountFor(entry.tx.merchant, cardPrograms.programs, cardPrograms.benefits))}</span>}
                   </span>
                   <span className="shrink-0 text-sm tabular-nums text-gray-700">{formatWon(entry.charge)}</span>
                 </li>

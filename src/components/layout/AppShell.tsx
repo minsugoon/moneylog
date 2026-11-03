@@ -1,5 +1,6 @@
-import { useState, type ReactNode } from 'react'
+import { useMemo, useState, type ReactNode } from 'react'
 import type { TabKey } from './navItems.ts'
+import { NavContext, type ViewTarget } from './navContext.ts'
 import BottomTabs from './BottomTabs.tsx'
 import SideNav from './SideNav.tsx'
 import QuickEntryPanel from './QuickEntryPanel.tsx'
@@ -15,8 +16,15 @@ interface AppShellProps {
 // 모바일: 본문 + 하단 탭 / 태블릿: 사이드바 + 본문 / PC: 사이드바 + 본문 + 빠른 입력
 function AppShell({ pages, quickEntry }: AppShellProps) {
   const [activeTab, setActiveTab] = useState<TabKey>('list')
+  const [pendingView, setPendingView] = useState<ViewTarget | null>(null)
+  const nav = useMemo(() => ({
+    goToView: (view: ViewTarget) => { setPendingView(view); setActiveTab('view') },
+    pendingView,
+    clearPendingView: () => setPendingView(null),
+  }), [pendingView])
 
   return (
+    <NavContext.Provider value={nav}>
     <div className="flex min-h-dvh">
       <SideNav activeTab={activeTab} onSelect={setActiveTab} />
 
@@ -33,6 +41,7 @@ function AppShell({ pages, quickEntry }: AppShellProps) {
       <QuickEntryPanel>{quickEntry}</QuickEntryPanel>
       <BottomTabs activeTab={activeTab} onSelect={setActiveTab} />
     </div>
+    </NavContext.Provider>
   )
 }
 

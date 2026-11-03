@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import BasisToggle from '../components/BasisToggle.tsx'
 import MonthSwitcher from '../components/MonthSwitcher.tsx'
 import { chipClass, errorBoxClass, secondaryButtonClass } from '../components/ui.ts'
@@ -9,8 +9,9 @@ import PeriodView from '../components/views/PeriodView.tsx'
 import { useLedger } from '../hooks/useLedger.ts'
 import { useViewBasis } from '../hooks/useViewBasis.ts'
 import { currentMonthKey } from '../utils/format.ts'
+import { useNav, type ViewTarget } from '../components/layout/navContext.ts'
 
-type ViewKey = 'fixed' | 'period' | 'account' | 'performance'
+type ViewKey = ViewTarget
 
 // 보기 탭 순서: 기간별 → 결제수단별 → 고정지출 → 카드 실적 (맨 앞이 처음 열리는 화면)
 const VIEWS: { key: ViewKey; label: string }[] = [
@@ -23,9 +24,12 @@ const VIEWS: { key: ViewKey; label: string }[] = [
 // 보기 화면: 기간별 / 결제수단별 / 고정지출 / 카드 실적
 function ViewsPage() {
   const { transactions } = useLedger()
-  const [view, setView] = useState<ViewKey>(VIEWS[0].key)
+  const nav = useNav()
+  const [view, setView] = useState<ViewKey>(nav.pendingView ?? VIEWS[0].key)
   const [month, setMonth] = useState(currentMonthKey)
   const [basis, setBasis] = useViewBasis()
+
+  useEffect(() => { if (nav.pendingView) nav.clearPendingView() }, [nav])
 
   return (
     <div className={`mx-auto flex flex-col gap-4 ${view === 'performance' ? 'max-w-xl pc:max-w-5xl' : 'max-w-xl'}`}>

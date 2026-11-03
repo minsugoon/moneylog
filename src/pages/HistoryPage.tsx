@@ -5,6 +5,7 @@ import CarriedGroup from '../components/list/CarriedGroup.tsx'
 import DayGroup from '../components/list/DayGroup.tsx'
 import TransactionDialog from '../components/list/TransactionDialog.tsx'
 import SummaryCard from '../components/SummaryCard.tsx'
+import PerformanceStrip from '../components/list/PerformanceStrip.tsx'
 import { errorBoxClass, secondaryButtonClass } from '../components/ui.ts'
 import { useLedger } from '../hooks/useLedger.ts'
 import { useViewBasis } from '../hooks/useViewBasis.ts'
@@ -37,6 +38,7 @@ function HistoryPage() {
       <MonthSwitcher month={month} onChange={setMonth} showThisMonth={false} />
       <BasisToggle basis={basis} onChange={setBasis} />
 
+      <PerformanceStrip />
       <SummaryCard label={`${formatMonthLabel(month)} 합계`} amount={formatWon(sumCharges(entries))} sub={`지출 ${entries.length}건${carried.length > 0 ? ` (이어진 할부 ${carried.length}건 포함)` : ''}`} ariaLabel="월 합계" />
       {monthFxNote !== null && <p className="text-xs text-gray-600" role="note">{monthFxNote}</p>}
 

@@ -57,9 +57,10 @@ describe('고정지출 불러오기 목록', () => {
     ])
   })
 
-  it('기본 10개를 반환하고 limit이 1 미만이면 빈 목록을 반환한다', () => {
+  it('기본은 개수 제한 없이 모두 반환하고, limit을 주면 그만큼만, 1 미만이면 빈 목록을 반환한다', () => {
     const rows = Array.from({ length: 12 }, (_, index) => transaction({ id: `t${index}`, merchant: `샘플${index}` }))
-    expect(listFixedLoadOptions(rows)).toHaveLength(10)
+    expect(listFixedLoadOptions(rows)).toHaveLength(12)
+    expect(listFixedLoadOptions(rows, 10)).toHaveLength(10)
     expect(listFixedLoadOptions(rows, 0)).toEqual([])
   })
 

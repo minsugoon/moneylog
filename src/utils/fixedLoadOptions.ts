@@ -16,8 +16,9 @@ interface FixedLoadGroup extends FixedLoadOption {
   createdAt: string
 }
 
-export function listFixedLoadOptions(transactions: Transaction[], limit = 10): FixedLoadOption[] {
-  if (limit < 1) return []
+// 고정지출로 저장한 내역을 결제명·금액별로 묶어 최근 순으로 돌려준다. limit을 주지 않으면 모두 돌려준다.
+export function listFixedLoadOptions(transactions: Transaction[], limit?: number): FixedLoadOption[] {
+  if (limit !== undefined && limit < 1) return []
 
   const groups = new Map<string, FixedLoadGroup>()
 
@@ -58,6 +59,6 @@ export function listFixedLoadOptions(transactions: Transaction[], limit = 10): F
   return [...groups.values()]
     .sort((a, b) => b.usedAt.localeCompare(a.usedAt) || b.count - a.count ||
       a.merchant.localeCompare(b.merchant, 'ko') || a.amount - b.amount)
-    .slice(0, limit)
+    .slice(0, limit ?? groups.size)
     .map(({ createdAt: _createdAt, ...option }) => option)
 }

@@ -61,7 +61,7 @@ describe('입력 화면 시안', () => {
   })
 
   it('펼친 고정지출 불러오기 박스에 저장 내역을 보여준다', () => {
-    const options = listFixedLoadOptions(txList, 10)
+    const options = listFixedLoadOptions(txList)
     const html = renderWithLedger(<FixedLoadPanel options={options} onPick={() => {}} defaultOpen />)
     expect(html).toContain('📌 고정지출 불러오기')
     expect(html).toContain('rounded-xl')

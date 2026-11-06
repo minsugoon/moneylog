@@ -46,7 +46,7 @@ function EntryForm({ date, onDateChange, initial, onDone, onCancel, floatingSave
   const [accountChoice, setAccountChoice] = useState<string | null>(initial ? (initial.account_id ?? '') : null)
   const defaultId = choices.find((a) => a.id === remembered)?.id ?? choices[0]?.id ?? ''
   const accountId = accountChoice ?? defaultId
-  const fixedLoadOptions = useMemo(() => listFixedLoadOptions(transactions.items, 10), [transactions.items])
+  const fixedLoadOptions = useMemo(() => listFixedLoadOptions(transactions.items), [transactions.items])
 
   const [merchant, setMerchant] = useState(initial?.merchant ?? '')
   const [amount, setAmount] = useState<number | null>(initial?.amount ?? null)

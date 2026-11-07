@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { useLedger } from '../../hooks/useLedger.ts'
 import { addMonths, todayString } from '../../utils/format.ts'
 import { computeAllPrograms, currentPeriodKey } from '../../utils/performance.ts'
+import { computeForecast } from '../../utils/performanceForecast.ts'
 import { periodOffsetLabel } from '../../utils/performanceLabels.ts'
 import { errorBoxClass, secondaryButtonClass } from '../ui.ts'
 import ProgramCard from './ProgramCard.tsx'
@@ -54,6 +55,7 @@ function PerformanceView() {
               <ProgramCard
                 result={result}
                 account={accounts.accounts.find((account) => account.id === result.program.account_id)}
+                forecast={computeForecast(result, transactions.items, today)}
               />
             </li>
           ))}

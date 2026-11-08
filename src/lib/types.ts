@@ -13,8 +13,27 @@ export interface Account {
   created_at: string
 }
 
-export const FIXED_TYPES = ['통신', '구독', '렌탈', '적금', '기부', '보험', '기타고정'] as const
-export type FixedType = (typeof FIXED_TYPES)[number]
+export const DEFAULT_FIXED_TYPES = ['통신', '구독', '렌탈', '적금', '기부', '보험', '기타고정'] as const
+export const FIXED_TYPES = DEFAULT_FIXED_TYPES
+export type FixedType = string
+export const FALLBACK_FIXED_TYPE = '기타고정'
+
+export interface FixedExpense {
+  id: string
+  merchant: string
+  account_id: string | null
+  amount: number
+  pay_day: number
+  fixed_type: FixedType
+  created_at: string
+}
+
+export interface FixedTypeRow {
+  id: string
+  name: string
+  sort_order: number
+  created_at: string
+}
 
 export interface Transaction {
   id: string

@@ -49,7 +49,7 @@ function PerformanceView() {
           </p>
         </div>
       ) : (
-        <ul className="grid gap-4 pc:grid-cols-2">
+        <ul className="grid gap-4">
           {results.map((result) => (
             <li key={result.program.id}>
               <ProgramCard

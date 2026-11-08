@@ -32,7 +32,7 @@ function ViewsPage() {
   useEffect(() => { if (nav.pendingView) nav.clearPendingView() }, [nav])
 
   return (
-    <div className={`mx-auto flex flex-col gap-4 ${view === 'performance' ? 'max-w-xl pc:max-w-5xl' : 'max-w-xl'}`}>
+    <div className="mx-auto flex max-w-xl flex-col gap-4">
       <h2 className="text-lg font-bold text-gray-800">보기</h2>
 
       <div className="grid grid-cols-4 gap-2" role="group" aria-label="보기 종류">

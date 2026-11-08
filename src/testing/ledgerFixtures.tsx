@@ -1,7 +1,7 @@
 import { renderToString } from 'react-dom/server'
 import type { ReactNode } from 'react'
 import { LedgerContext, type LedgerValue } from '../hooks/ledgerContext.ts'
-import { KRW_DEFAULTS, type Account, type DailyNote, type Transaction } from '../lib/types.ts'
+import { DEFAULT_FIXED_TYPES, KRW_DEFAULTS, type Account, type DailyNote, type Transaction } from '../lib/types.ts'
 import { addMonths, currentMonthKey, todayString } from '../utils/format.ts'
 
 // 화면 점검 테스트: 가짜 데이터를 넣고 화면을 한 번 그려서, 오류 없이 그려지고 핵심 글자가 보이는지 확인한다.
@@ -42,6 +42,8 @@ export function fakeLedger(overrides: Partial<LedgerValue> = {}): LedgerValue {
     transactions: { items: txList, loading: false, error: '', reload: async () => {}, add: ok, addMany: async () => ({ ok: true as const, saved: 0, skipped: 0 }), update: ok, remove: ok },
     notes: { items: noteList, byDate: new Map(noteList.map((n) => [n.note_date, n])), loading: false, error: '', reload: async () => {}, save: ok, remove: ok },
     fixedRules: { items: [], loading: false, error: '', reload: async () => {}, add: ok, update: ok, remove: ok },
+    fixedExpenses: { items: [], loading: false, error: '', reload: async () => {}, add: ok, update: ok, remove: ok, registerMany: ok },
+    fixedTypes: { items: [], names: [...DEFAULT_FIXED_TYPES], loading: false, error: '', reload: async () => {}, add: ok, rename: ok, remove: ok },
     cardPrograms: { programs: [], benefits: [], loading: false, error: '', reload: async () => {}, addProgram: ok, updateProgram: ok, setProgramActive: ok, removeProgram: ok, addBenefit: ok, updateBenefit: ok, removeBenefit: ok },
     ...overrides,
   }

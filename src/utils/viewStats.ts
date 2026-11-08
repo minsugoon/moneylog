@@ -17,7 +17,8 @@ export interface FixedGroup {
 // 고정지출로 표시한 내역만 종류별로 묶는다. 종류가 없는 것은 맨 끝에 "종류 미지정".
 export function fixedGroups(entries: MonthEntry[]): FixedGroup[] {
   const fixed = entries.filter((entry) => entry.tx.is_fixed)
-  const order: (FixedType | null)[] = [...FIXED_TYPES, null]
+  const customTypes = [...new Set(fixed.flatMap((entry) => entry.tx.fixed_type && !FIXED_TYPES.includes(entry.tx.fixed_type as (typeof FIXED_TYPES)[number]) ? [entry.tx.fixed_type] : []))].sort((a, b) => a.localeCompare(b, 'ko'))
+  const order: (FixedType | null)[] = [...FIXED_TYPES, ...customTypes, null]
   return order
     .map((type) => {
       const list = fixed.filter((entry) => entry.tx.fixed_type === type)

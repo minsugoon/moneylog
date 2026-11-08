@@ -3,7 +3,8 @@ import AccountSection from '../components/accounts/AccountSection.tsx'
 import AiSettingsSection from '../components/settings/AiSettingsSection.tsx'
 import CardProgramSection from '../components/settings/CardProgramSection.tsx'
 import CurrencySection from '../components/settings/CurrencySection.tsx'
-import FixedRuleSection from '../components/settings/FixedRuleSection.tsx'
+import FixedExpenseSection from '../components/settings/FixedExpenseSection.tsx'
+import FixedTypeSection from '../components/settings/FixedTypeSection.tsx'
 import type { AuthResult } from '../hooks/useAuth.ts'
 
 interface SettingsPageProps {
@@ -36,7 +37,9 @@ function SettingsPage({ email, provider, onSignOut }: SettingsPageProps) {
 
       <CardProgramSection />
 
-      <FixedRuleSection />
+      <FixedExpenseSection />
+
+      <FixedTypeSection />
 
       <CurrencySection />
 

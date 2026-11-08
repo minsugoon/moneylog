@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import ImportPreview from '../import/ImportPreview.tsx'
 import { useLedger } from '../../hooks/useLedger.ts'
+import { registrationFromTransaction } from '../../utils/fixedExpenses.ts'
 import {
   applyAccountToAll,
   buildPreviewItems,
@@ -13,17 +14,17 @@ import { parseMessages } from '../../utils/parsers/index.ts'
 import { cardClass, primaryButtonClass } from '../ui.ts'
 
 function PasteImport() {
-  const { accounts, transactions, fixedRules } = useLedger()
+  const { accounts, transactions, fixedExpenses, fixedTypes } = useLedger()
   const [text, setText] = useState('')
   const [items, setItems] = useState<PreviewItem[]>([])
   const [preview, setPreview] = useState(false)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
-  const [result, setResult] = useState<{ saved: number; skipped: number } | null>(null)
+  const [result, setResult] = useState<{ saved: number; skipped: number; registrationError: string } | null>(null)
   const activeAccounts = accounts.accounts.filter((account) => account.is_active)
 
   const read = () => {
-    setItems(buildPreviewItems(parseMessages(text, { now: new Date() }), activeAccounts, transactions.items, fixedRules.items))
+    setItems(buildPreviewItems(parseMessages(text, { now: new Date() }), activeAccounts, transactions.items))
     setError('')
     setPreview(true)
   }
@@ -42,7 +43,12 @@ function PasteImport() {
       setError(outcome.message)
       return
     }
-    setResult({ saved: outcome.saved, skipped: outcome.skipped })
+    const registrations = records.flatMap((record) => {
+      const row = registrationFromTransaction(record)
+      return row ? [row] : []
+    })
+    const registrationOutcome = registrations.length ? await fixedExpenses.registerMany(registrations) : null
+    setResult({ saved: outcome.saved, skipped: outcome.skipped, registrationError: registrationOutcome && !registrationOutcome.ok ? registrationOutcome.message : '' })
     setText('')
     setItems([])
     setPreview(false)
@@ -54,6 +60,7 @@ function PasteImport() {
       <ImportPreview
         items={items}
         accounts={activeAccounts}
+        fixedTypeOptions={fixedTypes.names}
         saving={saving}
         error={error}
         onEdit={(id, patch) =>
@@ -84,7 +91,7 @@ function PasteImport() {
       )}
       {result && (
         <p role="status" className="rounded-lg bg-green-50 px-3 py-2 text-sm text-green-700">
-          {result.saved}건 저장했어요. {result.skipped}건은 이미 있어서 건너뛰었어요.
+          {result.saved}건 저장했어요. {result.skipped}건은 이미 있어서 건너뛰었어요.{result.registrationError && ` 다만 고정지출 목록에는 넣지 못했어요: ${result.registrationError}`}
         </p>
       )}
       <div className={`${cardClass} space-y-4`}>

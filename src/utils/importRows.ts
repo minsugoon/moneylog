@@ -1,8 +1,7 @@
-import type { Account, FixedRule, FixedType } from '../lib/types.ts'
+import { FALLBACK_FIXED_TYPE, type Account, type FixedType } from '../lib/types.ts'
 import type { TransactionInput } from '../hooks/useTransactions.ts'
 import type { AccountHint, ParsedRow } from './parsers/types.ts'
 import { classifyImports, type ExistingTransaction } from './importMatch.ts'
-import { findFixedRule } from './fixedRules.ts'
 
 export type PreviewStatus = 'new' | 'duplicate' | 'possible' | 'income' | 'failed'
 
@@ -41,10 +40,8 @@ export function suggestAccountId(hint: AccountHint | null, accounts: Account[]):
   return matches.length === 1 ? matches[0].id : ''
 }
 
-export function buildPreviewItems(rows: ParsedRow[], accounts: Account[], existing: ExistingTransaction[], rules: FixedRule[] = []): PreviewItem[] {
-  return refreshItems(rows.map((row, index) => {
-    const fixedRule = findFixedRule(row.merchant, rules)
-    return {
+export function buildPreviewItems(rows: ParsedRow[], accounts: Account[], existing: ExistingTransaction[]): PreviewItem[] {
+  return refreshItems(rows.map((row, index) => ({
     id: `row-${index}`,
     row,
     accountId: suggestAccountId(row.accountHint, accounts),
@@ -54,8 +51,8 @@ export function buildPreviewItems(rows: ParsedRow[], accounts: Account[], existi
     amount: row.amount,
     installment: row.installment,
     isCancel: row.isCancel,
-    isFixed: Boolean(fixedRule),
-    fixedType: fixedRule?.fixed_type ?? '기타고정',
+    isFixed: false,
+    fixedType: FALLBACK_FIXED_TYPE,
     interestFree: row.interestFree,
     direction: row.direction,
     status: 'new',
@@ -63,7 +60,7 @@ export function buildPreviewItems(rows: ParsedRow[], accounts: Account[], existi
     error: null,
     selected: false,
     userToggled: false,
-  }}), existing)
+  })), existing)
 }
 
 export function refreshItems(items: PreviewItem[], existing: ExistingTransaction[]): PreviewItem[] {

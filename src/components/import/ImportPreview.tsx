@@ -1,5 +1,5 @@
 ﻿import { useId } from 'react'
-import type { Account } from '../../lib/types.ts'
+import { DEFAULT_FIXED_TYPES, type Account } from '../../lib/types.ts'
 import { summarizeItems, type PreviewItem } from '../../utils/importRows.ts'
 import { formatAccountLabel } from '../../utils/format.ts'
 import PreviewRowEditor from './PreviewRowEditor.tsx'
@@ -8,6 +8,7 @@ import { cardClass, inputClass, primaryButtonClass, secondaryButtonClass } from 
 export interface ImportPreviewProps {
   items: PreviewItem[]
   accounts: Account[]
+  fixedTypeOptions?: string[]
   saving: boolean
   error: string
   onEdit: (
@@ -23,6 +24,7 @@ export interface ImportPreviewProps {
 function ImportPreview({
   items,
   accounts,
+  fixedTypeOptions = [...DEFAULT_FIXED_TYPES],
   saving,
   error,
   onEdit,
@@ -62,7 +64,7 @@ function ImportPreview({
       ) : (
         <ul className="space-y-4">
           {items.map((item) => (
-            <PreviewRowEditor key={item.id} item={item} accounts={accounts} onEdit={onEdit} onToggle={onToggle} />
+            <PreviewRowEditor key={item.id} item={item} accounts={accounts} fixedTypeOptions={fixedTypeOptions} onEdit={onEdit} onToggle={onToggle} />
           ))}
         </ul>
       )}

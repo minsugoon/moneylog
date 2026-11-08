@@ -12,6 +12,7 @@ import {
 } from '../../utils/importRows.ts'
 import { resizeImageToBase64 } from '../../utils/imageResize.ts'
 import { formatAccountLabel } from '../../utils/format.ts'
+import { registrationFromTransaction } from '../../utils/fixedExpenses.ts'
 import { cardClass, chipClass, inputClass, primaryButtonClass } from '../ui.ts'
 import AiConsentDialog from './AiConsentDialog.tsx'
 import PhotoPickArea from './PhotoPickArea.tsx'
@@ -19,7 +20,7 @@ import UsageBar from '../UsageBar.tsx'
 
 function CaptureImport() {
   const ai = useAiCapture()
-  const { accounts, transactions, fixedRules } = useLedger()
+  const { accounts, transactions, fixedExpenses, fixedTypes } = useLedger()
   const [showConsent, setShowConsent] = useState(false)
   const [consentBusy, setConsentBusy] = useState(false)
   const [consentError, setConsentError] = useState('')
@@ -75,7 +76,7 @@ function CaptureImport() {
           : '읽을 수 있는 거래가 없어요. 더 선명한 캡처로 다시 시도해 주세요')
         return
       }
-      let nextItems = buildPreviewItems(outcome.rows, activeAccounts, transactions.items, fixedRules.items)
+      let nextItems = buildPreviewItems(outcome.rows, activeAccounts, transactions.items)
       if (accountId) nextItems = applyAccountToAll(nextItems, accountId, transactions.items)
       setItems(nextItems)
       setPreview(true)
@@ -102,7 +103,13 @@ function CaptureImport() {
       setError(outcome.message)
       return
     }
-    setResultMessage(`${outcome.saved}건 저장했어요. ${outcome.skipped}건은 이미 있어서 건너뛰었어요.`)
+    const registrations = records.flatMap((record) => {
+      const row = registrationFromTransaction(record)
+      return row ? [row] : []
+    })
+    const registrationOutcome = registrations.length ? await fixedExpenses.registerMany(registrations) : null
+    const registrationError = registrationOutcome && !registrationOutcome.ok ? ` 다만 고정지출 목록에는 넣지 못했어요: ${registrationOutcome.message}` : ''
+    setResultMessage(`${outcome.saved}건 저장했어요. ${outcome.skipped}건은 이미 있어서 건너뛰었어요.${registrationError}`)
     setItems([])
     setPreview(false)
     setError('')
@@ -113,6 +120,7 @@ function CaptureImport() {
       <ImportPreview
         items={items}
         accounts={activeAccounts}
+        fixedTypeOptions={fixedTypes.names}
         saving={saving}
         error={error}
         onEdit={(id, patch) =>

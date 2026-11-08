@@ -9,7 +9,7 @@ import ProgramCard from './ProgramCard.tsx'
 
 // 등록한 카드 실적 조건과 기간별 진행 상황을 보여준다.
 function PerformanceView() {
-  const { accounts, transactions, cardPrograms } = useLedger()
+  const { accounts, transactions, cardPrograms, fixedExpenses } = useLedger()
   const [offset, setOffset] = useState(0)
   const today = todayString()
   const results = useMemo(
@@ -55,7 +55,7 @@ function PerformanceView() {
               <ProgramCard
                 result={result}
                 account={accounts.accounts.find((account) => account.id === result.program.account_id)}
-                forecast={computeForecast(result, transactions.items, today)}
+                forecast={computeForecast(result, transactions.items, fixedExpenses.items, today)}
               />
             </li>
           ))}

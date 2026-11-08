@@ -13,7 +13,7 @@ function ProgramDetail({ result, forecast }: ProgramDetailProps) {
   const groups = [{ title: '실적에 포함', rows: result.included }, { title: '실적에서 제외', rows: result.excluded }]
   return (
     <div className="flex flex-col gap-4 border-t border-gray-100 pt-3">
-      {forecast && <section><h4 className="text-sm font-bold">결제 예정 고정지출 ({forecast.pending.length}건)</h4><ul className="divide-y divide-gray-100">{forecast.pending.map((item) => <li key={item.tx.id} className="flex items-start justify-between gap-3 py-2"><span className="min-w-0"><span className="block text-xs text-orange-700">{formatDateLabel(item.expectedDate)} 예정</span><span className="block break-words text-sm text-gray-800">{item.tx.merchant}</span></span><span className="shrink-0 text-sm tabular-nums">{formatWon(item.amount)}</span></li>)}</ul><p className="text-xs text-gray-600">지난 기간에 결제된 고정지출을 같은 날짜로 예상했어요. 실제 결제되면 위 목록으로 옮겨져요.</p></section>}
+      {forecast && <section><h4 className="text-sm font-bold">결제 예정 고정지출 ({forecast.pending.length}건)</h4><ul className="divide-y divide-gray-100">{forecast.pending.map((item) => <li key={item.expense.id} className="flex items-start justify-between gap-3 py-2"><span className="min-w-0"><span className="block text-xs text-orange-700">{formatDateLabel(item.expectedDate)} 예정</span><span className="block break-words text-sm text-gray-800">{item.expense.merchant}</span></span><span className="shrink-0 text-sm tabular-nums">{formatWon(item.amount)}</span></li>)}</ul><p className="text-xs text-gray-600">등록한 고정지출의 결제일로 예상했어요. 실제 결제를 입력하면 위 목록으로 옮겨져요.</p></section>}
       {groups.map((group) => (
         <section key={group.title}>
           <h4 className="text-sm font-bold">{group.title} ({group.rows.length}건)</h4>

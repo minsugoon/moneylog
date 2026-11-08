@@ -6,6 +6,7 @@ import { fixedGroups } from '../../utils/viewStats.ts'
 import { fixedDiscountFor } from '../../utils/performanceLinks.ts'
 import { cardClass } from '../ui.ts'
 import SummaryCard from '../SummaryCard.tsx'
+import RegisteredFixedPanel from './RegisteredFixedPanel.tsx'
 
 interface FixedViewProps {
   month: string
@@ -25,6 +26,7 @@ function FixedView({ month, basis }: FixedViewProps) {
     <div className="flex flex-col gap-4">
       <SummaryCard ariaLabel="고정지출 총합" label={`${formatMonthLabel(month)} 고정지출 총합`} amount={formatWon(total)} sub={`전체 지출 ${formatWon(sumCharges(entries))} 중 ${sumCharges(entries) > 0 ? `${Math.round((total / sumCharges(entries)) * 100)}%` : '0%'}`} />
       {discountTotal > 0 && <p className="text-xs text-gray-600" role="note">카드 실적을 채우면 예상 {formatWon(Math.max(0, total - discountTotal))} (할인 {formatWon(discountTotal)} 반영 전 {formatWon(total)})</p>}
+      <RegisteredFixedPanel month={month} />
 
       {groups.length === 0 ? (
         <p className="rounded-2xl bg-white px-4 py-10 text-center text-sm text-gray-600 shadow-sm">

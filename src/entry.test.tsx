@@ -2,9 +2,8 @@ import { describe, expect, it } from 'vitest'
 import EntryPage from './pages/EntryPage.tsx'
 import EntryPanel from './components/entry/EntryPanel.tsx'
 import FixedLoadPanel from './components/entry/FixedLoadPanel.tsx'
-import { listFixedLoadOptions } from './utils/fixedLoadOptions.ts'
-import { todayString } from './utils/format.ts'
-import { fakeLedger, renderWithLedger, txList } from './testing/ledgerFixtures.tsx'
+import { toLoadOptions } from './utils/fixedExpenses.ts'
+import { fakeLedger, renderWithLedger } from './testing/ledgerFixtures.tsx'
 
 describe('입력 화면 시안', () => {
   it('입력 방식 칩을 같은 폭으로 보여준다', () => {
@@ -51,23 +50,28 @@ describe('입력 화면 시안', () => {
   })
 
   it('고정지출 불러오기 박스에 빈 안내를 보여준다', () => {
-    const ledger = fakeLedger({
-      transactions: { ...fakeLedger().transactions, items: txList.filter((item) => !item.is_fixed) },
-    })
+    const ledger = fakeLedger({ fixedExpenses: { ...fakeLedger().fixedExpenses, items: [] } })
     const html = renderWithLedger(<EntryPage />, ledger)
     expect(html).toContain('rounded-xl')
     expect(html).toContain('bg-gray-50')
-    expect(html).toContain('아직 고정지출로 저장한 내역이 없어요.')
+    expect(html).toContain('아직 등록한 고정지출이 없어요.')
   })
 
   it('펼친 고정지출 불러오기 박스에 저장 내역을 보여준다', () => {
-    const options = listFixedLoadOptions(txList)
+    const options = toLoadOptions([{
+      id: 'fixed-1', merchant: '통신비', account_id: 'a2', amount: 55000, pay_day: 25, fixed_type: '통신',
+      created_at: '2026-01-01T00:00:00Z',
+    }])
     const html = renderWithLedger(<FixedLoadPanel options={options} onPick={() => {}} defaultOpen />)
     expect(html).toContain('📌 고정지출 불러오기')
     expect(html).toContain('rounded-xl')
     expect(html).toContain('bg-gray-50')
     expect(html).toContain('통신비')
     expect(html).toContain('55,000원')
-    expect(html).toContain(todayString())
+    expect(html).toContain('매월 25일 · 통신')
+  })
+
+  it('입력 폼에 규칙 저장 항목을 보여주지 않는다', () => {
+    expect(renderWithLedger(<EntryPanel />)).not.toContain('고정 지출 이름 설정하기')
   })
 })

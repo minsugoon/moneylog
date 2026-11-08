@@ -137,20 +137,20 @@ describe('입력 화면', () => {
     expect(render(<EntryPanel />)).toContain('고정지출 불러오기')
     const empty = fakeLedger()
     empty.transactions = { ...empty.transactions, items: [] }
-    expect(render(<EntryPanel />, empty)).toContain('아직 고정지출로 저장한 내역이 없어요')
+    expect(render(<EntryPanel />, empty)).toContain('아직 등록한 고정지출이 없어요')
   })
 
   it('같은 결제명의 서로 다른 금액과 날짜를 고정지출 목록에 보여준다', () => {
     const options = [
-      { key: 'sample:20000', merchant: '샘플기부', amount: 20000, discount: 0, accountId: 'a1', fixedType: '기부' as const, usedAt: '2026-10-20', count: 1 },
-      { key: 'sample:31000', merchant: '샘플기부', amount: 31000, discount: 0, accountId: 'a1', fixedType: '기부' as const, usedAt: '2026-10-21', count: 1 },
+      { key: 'sample:20000', merchant: '샘플기부', amount: 20000, accountId: 'a1', fixedType: '기부' as const, payDay: 20 },
+      { key: 'sample:31000', merchant: '샘플기부', amount: 31000, accountId: 'a1', fixedType: '기부' as const, payDay: 21 },
     ]
     const html = render(<FixedLoadPanel options={options} onPick={() => {}} defaultOpen />)
     expect(html).toContain('샘플기부')
     expect(html).toContain('20,000원')
     expect(html).toContain('31,000원')
-    expect(html).toContain('2026-10-20')
-    expect(html).toContain('2026-10-21')
+    expect(html).toContain('매월 20일 · 기부')
+    expect(html).toContain('매월 21일 · 기부')
   })
 
   it('글을 쓰는 칸(결제명·메모·하루 정리)은 한글로 지정돼 있다', () => {
@@ -208,9 +208,10 @@ describe('설정 화면의 결제수단', () => {
 })
 
 describe('고정지출 입력', () => {
-  it('자동 적용 안내와 규칙 저장 선택을 보여준다', () => {
-    const html = render(<FixedExpenseFields idPrefix="test" isFixed onIsFixedChange={() => {}} fixedType="통신" onFixedTypeChange={() => {}} matchedKeyword="샘플통신" canSaveRule saveRule={false} onSaveRuleChange={() => {}} ruleKeyword="샘플" onRuleKeywordChange={() => {}} />)
-    expect(html).toContain('규칙에 따라 고정지출로 잡았어요')
-    expect(html).toContain('고정 지출 이름 설정하기')
+  it('사용자 분류 선택과 고정지출 등록 안내를 보여준다', () => {
+    const html = render(<FixedExpenseFields idPrefix="test" isFixed onIsFixedChange={() => {}} fixedType="대출이자" onFixedTypeChange={() => {}} typeOptions={['통신', '대출이자']} />)
+    expect(html).toContain('<option value="대출이자" selected="">대출이자</option>')
+    expect(html).toContain('저장하면 고정지출 목록에 등록돼요. 설정 탭에서 고치거나 뺄 수 있어요.')
+    expect(html).not.toContain('고정 지출 이름 설정하기')
   })
 })

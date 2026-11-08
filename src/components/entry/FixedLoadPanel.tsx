@@ -1,5 +1,5 @@
 import { useId, useState } from 'react'
-import type { FixedLoadOption } from '../../utils/fixedLoadOptions.ts'
+import { payDayLabel, type FixedLoadOption } from '../../utils/fixedExpenses.ts'
 import { formatWon } from '../../utils/format.ts'
 import { secondaryButtonClass } from '../ui.ts'
 
@@ -34,7 +34,7 @@ function FixedLoadPanel({ options, onPick, defaultOpen = false }: FixedLoadPanel
         {options.length > 0 && <span aria-hidden="true" className="text-sm text-gray-600">{open ? '▲' : '▼'}</span>}
       </div>
       {options.length === 0 ? (
-        <p className="px-3 pb-3 text-xs text-gray-600">아직 고정지출로 저장한 내역이 없어요. 고정지출로 저장하면 여기서 불러올 수 있어요.</p>
+        <p className="px-3 pb-3 text-xs text-gray-600">아직 등록한 고정지출이 없어요. 고정지출로 저장하거나 설정 탭에서 등록하면 여기서 불러올 수 있어요.</p>
       ) : (
       <div id={panelId} className={open ? 'px-2 pb-2' : 'hidden'}>
         {open && <>
@@ -43,7 +43,7 @@ function FixedLoadPanel({ options, onPick, defaultOpen = false }: FixedLoadPanel
               <li key={option.key}>
                 <button
                   type="button"
-                  aria-label={`${option.merchant}, ${formatWon(option.amount)}, ${option.usedAt}`}
+                  aria-label={`${option.merchant}, ${formatWon(option.amount)}, ${payDayLabel(option.payDay)}`}
                   onClick={() => { onPick(option); setOpen(false) }}
                   className="min-h-14 w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-left"
                 >
@@ -51,7 +51,7 @@ function FixedLoadPanel({ options, onPick, defaultOpen = false }: FixedLoadPanel
                     <span className="min-w-0 truncate font-bold">{option.merchant}</span>
                     <span className="shrink-0 text-right tabular-nums">{formatWon(option.amount)}</span>
                   </span>
-                  <span className="text-xs text-gray-600">{option.usedAt} · {option.fixedType}</span>
+                  <span className="text-xs text-gray-600">{payDayLabel(option.payDay)} · {option.fixedType}</span>
                 </button>
               </li>
             ))}

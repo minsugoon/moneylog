@@ -1,7 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import AccountSection from './components/accounts/AccountSection.tsx'
 import AiSettingsSection from './components/settings/AiSettingsSection.tsx'
-import FixedRuleSection from './components/settings/FixedRuleSection.tsx'
 import FixedExpenseFields from './components/entry/FixedExpenseFields.tsx'
 import FixedLoadPanel from './components/entry/FixedLoadPanel.tsx'
 import EntryPanel from './components/entry/EntryPanel.tsx'
@@ -208,32 +207,7 @@ describe('설정 화면의 결제수단', () => {
   })
 })
 
-describe('고정지출 규칙', () => {
-  it('규칙에 걸리지 않는 고정지출 후보를 보여준다', () => {
-    const html = render(<FixedRuleSection />)
-    expect(html).toContain('이미 입력한 고정지출에서 고르기')
-    expect(html).toContain('통신비샘플')
-  })
-
-  it('후보가 없으면 고정지출 선택 영역을 숨긴다', () => {
-    const matched = fakeLedger({ fixedRules: { ...fakeLedger().fixedRules, items: [{ id: 'r1', merchant_keyword: '통신비샘플', fixed_type: '통신', created_at: '2026-01-01T00:00:00Z' }] } })
-    expect(render(<FixedRuleSection />, matched)).not.toContain('이미 입력한 고정지출에서 고르기')
-    const empty = fakeLedger()
-    empty.transactions = { ...empty.transactions, items: [] }
-    expect(render(<FixedRuleSection />, empty)).not.toContain('이미 입력한 고정지출에서 고르기')
-  })
-
-  it('규칙이 있으면 제목과 키워드를 보여준다', () => {
-    const ledger = fakeLedger({ fixedRules: { ...fakeLedger().fixedRules, items: [{ id: 'r1', merchant_keyword: '샘플통신', fixed_type: '통신', created_at: '2026-01-01T00:00:00Z' }] } })
-    const html = render(<FixedRuleSection />, ledger)
-    expect(html).toContain('고정지출 규칙')
-    expect(html).toContain('샘플통신')
-  })
-
-  it('규칙이 없으면 빈 화면 안내를 보여준다', () => {
-    expect(render(<FixedRuleSection />)).toContain('아직 등록한 규칙이 없어요.')
-  })
-
+describe('고정지출 입력', () => {
   it('자동 적용 안내와 규칙 저장 선택을 보여준다', () => {
     const html = render(<FixedExpenseFields idPrefix="test" isFixed onIsFixedChange={() => {}} fixedType="통신" onFixedTypeChange={() => {}} matchedKeyword="샘플통신" canSaveRule saveRule={false} onSaveRuleChange={() => {}} ruleKeyword="샘플" onRuleKeywordChange={() => {}} />)
     expect(html).toContain('규칙에 따라 고정지출로 잡았어요')

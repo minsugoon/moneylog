@@ -2,8 +2,7 @@ import { useId, useMemo, useRef, useState, type FormEvent } from 'react'
 import { useLedger } from '../../hooks/useLedger.ts'
 import type { TransactionInput } from '../../hooks/useTransactions.ts'
 import { type FixedType, type Transaction } from '../../lib/types.ts'
-import { findFixedRule, isValidRuleKeyword } from '../../utils/fixedRules.ts'
-import { listFixedLoadOptions } from '../../utils/fixedLoadOptions.ts'
+import { registrationFromTransaction, toLoadOptions } from '../../utils/fixedExpenses.ts'
 import { readSetting, writeSetting } from '../../utils/storage.ts'
 import { errorBoxClass, inputClass, labelClass, primaryButtonClass, secondaryButtonClass } from '../ui.ts'
 import AccountPicker from './AccountPicker.tsx'
@@ -33,7 +32,7 @@ interface EntryFormProps {
 
 // 지출 입력 폼. 저장하면 폼을 비우고 이어서 입력할 수 있다.
 function EntryForm({ date, onDateChange, initial, onDone, onCancel, floatingSave = false }: EntryFormProps) {
-  const { accounts, transactions, fixedRules } = useLedger()
+  const { accounts, transactions, fixedExpenses, fixedTypes } = useLedger()
   const idPrefix = useId()
   const merchantRef = useRef<HTMLInputElement>(null)
   const isEdit = Boolean(initial)
@@ -46,7 +45,7 @@ function EntryForm({ date, onDateChange, initial, onDone, onCancel, floatingSave
   const [accountChoice, setAccountChoice] = useState<string | null>(initial ? (initial.account_id ?? '') : null)
   const defaultId = choices.find((a) => a.id === remembered)?.id ?? choices[0]?.id ?? ''
   const accountId = accountChoice ?? defaultId
-  const fixedLoadOptions = useMemo(() => listFixedLoadOptions(transactions.items), [transactions.items])
+  const fixedLoadOptions = useMemo(() => toLoadOptions(fixedExpenses.items), [fixedExpenses.items])
 
   const [merchant, setMerchant] = useState(initial?.merchant ?? '')
   const [amount, setAmount] = useState<number | null>(initial?.amount ?? null)
@@ -57,20 +56,12 @@ function EntryForm({ date, onDateChange, initial, onDone, onCancel, floatingSave
   const [interestFree, setInterestFree] = useState(initial?.interest_free ?? false)
   const [isFixed, setIsFixed] = useState(initial?.is_fixed ?? false)
   const [fixedType, setFixedType] = useState<FixedType>(initial?.fixed_type ?? '기타고정')
-  const [fixedTouched, setFixedTouched] = useState(false)
-  const [saveRule, setSaveRule] = useState(false)
-  const [ruleKeywordEdit, setRuleKeywordEdit] = useState<string | null>(null)
   const [memo, setMemo] = useState(initial?.memo ?? '')
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
   const [notice, setNotice] = useState('')
 
-  const matched = !isEdit && !fixedTouched ? findFixedRule(merchant, fixedRules.items) : null
-  const shownIsFixed = matched ? true : isFixed
-  const shownFixedType = matched ? matched.fixed_type : fixedType
-  const canSaveRule = !isEdit && shownIsFixed && !matched
-  const ruleKeyword = ruleKeywordEdit ?? merchant.trim()
-  const handleFixedLoad = useFixedLoad({ choices, setMerchant, setAmount, setDiscount, setMonths, setInterestFree, setIsCancel, setIsFixed, setFixedType, setFixedTouched, setAccountChoice, setSaveRule, setRuleKeywordEdit, setError, setNotice, resetFx: fx.resetToKrw })
+  const handleFixedLoad = useFixedLoad({ choices, setMerchant, setAmount, setDiscount, setMonths, setInterestFree, setIsCancel, setIsFixed, setFixedType, setAccountChoice, setError, setNotice, resetFx: fx.resetToKrw })
   async function handleSubmit(event: FormEvent) {
     event.preventDefault()
     setNotice('')
@@ -85,10 +76,6 @@ function EntryForm({ date, onDateChange, initial, onDone, onCancel, floatingSave
       if (amount === null || amount <= 0) return setError('금액을 입력해 주세요.')
       if ((discount ?? 0) > amount) return setError('할인이 금액보다 커요. 다시 확인해 주세요.')
     }
-    if (!isEdit && saveRule && canSaveRule && !isValidRuleKeyword(ruleKeyword)) {
-      return setError('자동 규칙 키워드는 두 글자 이상 50자 이하로 입력해 주세요.')
-    }
-
     let fxEditFields: { krw_confirmed: true; exchange_rate: number } | {} = {}
     if (initialFx && initial && amount !== initial.amount) {
       const fields = buildFxEditFields(initial, amount as number)
@@ -102,8 +89,8 @@ function EntryForm({ date, onDateChange, initial, onDone, onCancel, floatingSave
       merchant: trimmedMerchant,
       ...(fxFields ?? { amount: amount as number, discount: discount ?? 0, installment_months: months, interest_free: months > 1 && interestFree }),
       ...fxEditFields,
-      is_fixed: shownIsFixed,
-      fixed_type: shownIsFixed ? shownFixedType : null,
+      is_fixed: isFixed,
+      fixed_type: isFixed ? fixedType : null,
       memo: memo.trim() || null,
       is_cancel: isCancel,
       // 일시불에는 무이자 표시가 의미 없으므로 함께 해제한다
@@ -117,17 +104,12 @@ function EntryForm({ date, onDateChange, initial, onDone, onCancel, floatingSave
       return setError(result.message)
     }
 
+    const registration = registrationFromTransaction(input)
+    const registrationResult = registration ? await fixedExpenses.registerMany([registration]) : null
     if (initial) {
       setBusy(false)
       onDone?.()
       return
-    }
-    let savedRule = false
-    let ruleError = ''
-    if (saveRule && canSaveRule) {
-      const ruleResult = await fixedRules.add(ruleKeyword, shownFixedType)
-      savedRule = ruleResult.ok
-      if (!ruleResult.ok) ruleError = ruleResult.message
     }
     setBusy(false)
     // 연속 입력: 사용일과 결제수단은 두고 나머지만 비운다
@@ -141,11 +123,8 @@ function EntryForm({ date, onDateChange, initial, onDone, onCancel, floatingSave
     setInterestFree(false)
     setIsFixed(false)
     setFixedType('기타고정')
-    setFixedTouched(false)
-    setSaveRule(false)
-    setRuleKeywordEdit(null)
     setMemo('')
-    setNotice(ruleError ? `저장했어요. 다만 자동 규칙은 저장하지 못했어요: ${ruleError}` : savedRule ? `저장했어요. ‘${ruleKeyword}’ 규칙도 만들었어요.` : '저장했어요. 이어서 입력할 수 있어요.')
+    setNotice(registrationResult && !registrationResult.ok ? `저장했어요. 다만 고정지출 목록에는 넣지 못했어요: ${registrationResult.message}` : registrationResult ? '저장했어요. 고정지출 목록에도 넣었어요.' : '저장했어요. 이어서 입력할 수 있어요.')
     merchantRef.current?.focus()
   }
 
@@ -214,16 +193,11 @@ function EntryForm({ date, onDateChange, initial, onDone, onCancel, floatingSave
         )}
         <FixedExpenseFields
           idPrefix={idPrefix}
-          isFixed={shownIsFixed}
-          onIsFixedChange={(value) => { setFixedTouched(true); setIsFixed(value); setFixedType(shownFixedType) }}
-          fixedType={shownFixedType}
-          onFixedTypeChange={(value) => { setFixedTouched(true); setIsFixed(shownIsFixed); setFixedType(value) }}
-          matchedKeyword={matched?.merchant_keyword ?? null}
-          canSaveRule={canSaveRule}
-          saveRule={saveRule}
-          onSaveRuleChange={setSaveRule}
-          ruleKeyword={ruleKeyword}
-          onRuleKeywordChange={setRuleKeywordEdit}
+          isFixed={isFixed}
+          onIsFixedChange={setIsFixed}
+          fixedType={fixedType}
+          onFixedTypeChange={setFixedType}
+          typeOptions={fixedTypes.names}
         />
       </div>
 

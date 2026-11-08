@@ -11,13 +11,13 @@ export const inputLargeClass =
 export const labelClass = 'mb-1 block text-sm font-bold text-gray-600'
 
 export const primaryButtonClass =
-  'min-h-11 rounded-lg bg-brand px-4 text-base font-bold text-white enabled:hover:opacity-90 disabled:bg-gray-200 disabled:text-gray-600'
+  'min-h-11 whitespace-nowrap rounded-lg bg-brand px-4 text-base font-bold text-white enabled:hover:opacity-90 disabled:bg-gray-200 disabled:text-gray-600'
 
 export const secondaryButtonClass =
-  'min-h-11 rounded-lg border border-gray-300 bg-white px-4 text-base text-gray-700 hover:bg-gray-50 disabled:opacity-50'
+  'min-h-11 whitespace-nowrap rounded-lg border border-gray-300 bg-white px-4 text-base text-gray-700 hover:bg-gray-50 disabled:opacity-50'
 
 export const dangerButtonClass =
-  'min-h-11 rounded-lg bg-red-600 px-4 text-base font-bold text-white hover:bg-red-700 disabled:opacity-50'
+  'min-h-11 whitespace-nowrap rounded-lg bg-red-600 px-4 text-base font-bold text-white hover:bg-red-700 disabled:opacity-50'
 
 export const errorBoxClass = 'rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700'
 

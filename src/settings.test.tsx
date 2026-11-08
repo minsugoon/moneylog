@@ -13,6 +13,9 @@ import { fixedGroups } from './utils/viewStats.ts'
 import { tx } from './testing/ledgerFixtures.tsx'
 import type { FixedExpense } from './lib/types.ts'
 import { emptyFixedExpenseDraft } from './utils/fixedExpenses.ts'
+import { previewItems } from './components/settings/useExpandableList.ts'
+import ExpandListButton from './components/settings/ExpandListButton.tsx'
+import { primaryButtonClass } from './components/ui.ts'
 
 vi.mock('./hooks/useAiCapture.ts', () => ({
   useAiCapture: vi.fn(() => ({ loading: false, error: '', consented: true, monthlyLimit: 20, used: 7, reload: async () => {}, acceptConsent: async () => ({ ok: true as const }), withdrawConsent: async () => ({ ok: true as const }), parseCapture: async () => ({ ok: true as const, rows: [] }) })),
@@ -51,6 +54,21 @@ const ok = async () => ({ ok: true as const })
 const sampleItems: FixedExpense[] = Array.from({ length: 7 }, (_, index) => ({ id: `f${index}`, merchant: `인터넷 요금 ${index}`, account_id: 'a1', amount: 55000, pay_day: 25, fixed_type: '생활카드', created_at: '2026-01-01T00:00:00Z' }))
 
 describe('고정지출 설정', () => {
+  it('목록 미리보기와 펼치기 버튼을 표시한다', () => {
+    const items = [1, 2, 3, 4, 5, 6, 7]
+    expect(previewItems(items, false)).toHaveLength(5)
+    expect(previewItems(items, true)).toHaveLength(7)
+    expect(previewItems(items.slice(0, 4), false)).toHaveLength(4)
+    const closed = render(<ExpandListButton hiddenCount={3} expanded={false} onToggle={() => {}} />)
+    expect(closed).toContain('펼치기 (3개 더)')
+    expect(closed).toContain('aria-expanded="false"')
+    const open = render(<ExpandListButton hiddenCount={3} expanded onToggle={() => {}} />)
+    expect(open).toContain('접기')
+    expect(open).toContain('aria-expanded="true"')
+    expect(render(<ExpandListButton hiddenCount={0} expanded={false} onToggle={() => {}} />)).toBe('')
+    expect(primaryButtonClass).toContain('whitespace-nowrap')
+  })
+
   it('빈 목록 안내와 등록 목록 합계를 보여준다', () => {
     expect(renderWithLedger(<FixedExpenseSection />)).toContain('아직 등록한 고정지출이 없어요.')
     const ledger = fakeLedger()
@@ -62,7 +80,7 @@ describe('고정지출 설정', () => {
     expect(html).toContain('생활카드')
     expect(html).toContain('55,000원')
     expect(html).toContain('7개 · 매달 385,000원')
-    expect(html).toContain('더 보기 (2개 더)')
+    expect(html).toContain('펼치기 (2개 더)')
   })
 
   it('결제수단이 없으면 안내하고 입력 폼에는 다섯 칸을 보여준다', () => {

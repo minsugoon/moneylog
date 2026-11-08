@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import type { Account, FixedRule } from '../lib/types.ts'
+import type { Account } from '../lib/types.ts'
 import type { ParsedRow } from './parsers/types.ts'
 import type { ExistingTransaction } from './importMatch.ts'
 import { applyAccountToAll, buildPreviewItems, refreshItems, suggestAccountId, summarizeItems, toImportRecords, toggleItem } from './importRows.ts'
@@ -85,16 +85,12 @@ describe('가져오기 미리보기 행', () => {
     expect(records[0]).not.toHaveProperty('time')
   })
 
-  it('고정지출 규칙을 적용하고 새로 고쳐도 저장 값을 유지한다', () => {
-    const rules: FixedRule[] = [{ id: 'rule', merchant_keyword: 'Sample', fixed_type: '구독', created_at: '2026-01-01' }]
-    const matched = buildPreviewItems([row()], accounts, noExisting, rules)[0]
-    const unmatched = buildPreviewItems([row({ merchant: 'Other Shop' })], accounts, noExisting, rules)[0]
-    const withoutRules = buildPreviewItems([row()], accounts, noExisting)[0]
-    expect([matched.isFixed, matched.fixedType]).toEqual([true, '구독'])
-    expect([unmatched.isFixed, unmatched.fixedType]).toEqual([false, '기타고정'])
-    expect([withoutRules.isFixed, withoutRules.fixedType]).toEqual([false, '기타고정'])
-    expect(refreshItems([matched], noExisting)[0]).toMatchObject({ isFixed: true, fixedType: '구독' })
-    expect(toImportRecords([matched])[0]).toMatchObject({ is_fixed: true, fixed_type: '구독' })
-    expect(toImportRecords([{ ...unmatched, selected: true }])[0]).toMatchObject({ is_fixed: false, fixed_type: null })
+  it('고정지출은 자동으로 켜지지 않고, 사용자가 켠 값은 새로 고쳐도 유지한다', () => {
+    const item = buildPreviewItems([row()], accounts, noExisting)[0]
+    expect([item.isFixed, item.fixedType]).toEqual([false, '기타고정'])
+    const fixed = { ...item, isFixed: true, fixedType: '대출이자' }
+    expect(refreshItems([fixed], noExisting)[0]).toMatchObject({ isFixed: true, fixedType: '대출이자' })
+    expect(toImportRecords([fixed])[0]).toMatchObject({ is_fixed: true, fixed_type: '대출이자' })
+    expect(toImportRecords([{ ...item, selected: true }])[0]).toMatchObject({ is_fixed: false, fixed_type: null })
   })
 })

@@ -7,6 +7,8 @@ import ConfirmDialog from '../ConfirmDialog.tsx'
 import Dialog from '../Dialog.tsx'
 import CardProgramForm from './CardProgramForm.tsx'
 import CardProgramRow from './CardProgramRow.tsx'
+import ExpandListButton from './ExpandListButton.tsx'
+import { useExpandableList } from './useExpandableList.ts'
 
 // 카드 실적 조건의 목록과 추가·수정·삭제를 관리합니다.
 function CardProgramSection() {
@@ -16,6 +18,7 @@ function CardProgramSection() {
   const [busyId, setBusyId] = useState('')
   const [error, setError] = useState('')
   const [deleteError, setDeleteError] = useState('')
+  const { visible, hiddenCount, expanded, toggle: toggleList } = useExpandableList(store.programs)
   const activeCards = accounts.accounts.filter((account) => account.kind === 'card' && account.is_active)
   const cards: Account[] = editing && !activeCards.some((card) => card.id === editing.account_id)
     ? [...activeCards, ...accounts.accounts.filter((account) => account.id === editing.account_id)]
@@ -67,8 +70,9 @@ function CardProgramSection() {
     body = <p className="rounded-xl bg-gray-50 px-4 py-6 text-center text-sm text-gray-600">아직 등록한 실적 조건이 없어요.</p>
   } else {
     body = (
+      <>
       <ul className="divide-y divide-gray-100">
-        {store.programs.map((program) => (
+        {visible.map((program) => (
           <CardProgramRow
             key={program.id}
             program={program}
@@ -84,6 +88,8 @@ function CardProgramSection() {
           />
         ))}
       </ul>
+      <ExpandListButton hiddenCount={hiddenCount} expanded={expanded} onToggle={toggleList} />
+      </>
     )
   }
 

@@ -8,6 +8,8 @@ import Dialog from '../Dialog.tsx'
 import { cardClass, errorBoxClass, primaryButtonClass, secondaryButtonClass } from '../ui.ts'
 import AccountForm from './AccountForm.tsx'
 import AccountRow from './AccountRow.tsx'
+import ExpandListButton from '../settings/ExpandListButton.tsx'
+import { useExpandableList } from '../settings/useExpandableList.ts'
 
 type FormState = { mode: 'add' } | { mode: 'edit'; account: Account } | null
 
@@ -15,6 +17,7 @@ type FormState = { mode: 'add' } | { mode: 'edit'; account: Account } | null
 function AccountSection() {
   const { accounts: store } = useLedger()
   const { accounts, loading, error, reload } = store
+  const { visible, hiddenCount, expanded, toggle } = useExpandableList(accounts)
 
   const [formState, setFormState] = useState<FormState>(null)
   const [deleting, setDeleting] = useState<Account | null>(null)
@@ -85,19 +88,22 @@ function AccountSection() {
             아직 등록한 결제수단이 없어요. 위의 “+ 추가”를 눌러 카드나 통장, 현금을 등록해 보세요.
           </p>
         ) : (
-          <ul className="flex flex-col gap-2">
-            {accounts.map((account, index) => (
+          <>
+            <ul className="flex flex-col gap-2">
+            {visible.map((account, index) => (
               <AccountRow
                 key={account.id}
                 account={account}
                 isFirst={index === 0}
-                isLast={index === accounts.length - 1}
+                isLast={accounts.indexOf(account) === accounts.length - 1}
                 busy={busyId !== ''}
                 onMove={(direction) => void runAction(account.id, () => store.move(account.id, direction))}
                 onEdit={() => setFormState({ mode: 'edit', account })}
               />
             ))}
           </ul>
+            <ExpandListButton hiddenCount={hiddenCount} expanded={expanded} onToggle={toggle} />
+          </>
         )}
       </div>
 

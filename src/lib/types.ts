@@ -75,13 +75,6 @@ export interface DailyNote {
   updated_at: string
 }
 
-export interface FixedRule {
-  id: string
-  merchant_keyword: string
-  fixed_type: FixedType
-  created_at: string
-}
-
 // 카드 실적 프로그램·혜택 (docs/PERFORMANCE_SPEC.md)
 export type ExclusionMode = 'exclude' | 'flag' | 'ignore'
 export type MeasureBasis = 'current_month' | 'previous_month'

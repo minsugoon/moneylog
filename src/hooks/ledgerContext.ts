@@ -1,7 +1,6 @@
 import { createContext } from 'react'
 import type { useAccounts } from './useAccounts.ts'
 import type { useDailyNotes } from './useDailyNotes.ts'
-import type { useFixedRules } from './useFixedRules.ts'
 import type { useFixedExpenses } from './useFixedExpenses.ts'
 import type { useFixedTypes } from './useFixedTypes.ts'
 import type { useCardPrograms } from './useCardPrograms.ts'
@@ -13,7 +12,6 @@ export interface LedgerValue {
   accounts: ReturnType<typeof useAccounts>
   transactions: ReturnType<typeof useTransactions>
   notes: ReturnType<typeof useDailyNotes>
-  fixedRules: ReturnType<typeof useFixedRules>
   fixedExpenses: ReturnType<typeof useFixedExpenses>
   fixedTypes: ReturnType<typeof useFixedTypes>
   cardPrograms: ReturnType<typeof useCardPrograms>

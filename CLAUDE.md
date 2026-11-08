@@ -52,12 +52,14 @@
 ## 5. 데이터 구조 요약 (상세는 docs/DATA_MODEL.md)
 - **accounts**: 결제수단 (name, kind[card|cash|account], issuer, last4, sort_order, is_active)
 - **transactions**: 내역 (account_id, used_at, merchant, amount, discount, installment_months, is_fixed, fixed_type, source, import_hash, memo, is_cancel, interest_free, performance_override, **currency, original_amount, exchange_rate, rate_at, krw_confirmed** — 외화 입력용, 단계 4-1)
-- **fixed_rules**: 고정지출 자동 인식 (merchant_keyword, fixed_type)
+- **fixed_expenses**: 등록한 고정지출 (merchant, account_id, amount, pay_day, fixed_type)
+- **fixed_types**: 고정지출 분류 (name, sort_order) — 사용자가 추가·변경·삭제, `기타고정`은 고정
+- `fixed_rules`: 옛 키워드 규칙. 앱에서 쓰지 않고 표만 남아 있음
 - **card_programs**: 카드 실적 프로그램 (account_id, name, target_amount, measure_basis, installment_mode, period_start_day, exclude_keywords, exclusion_modes, is_active)
 - **card_benefits**: 실적 달성 혜택 (program_id, name, required_amount, benefit_amount, benefit_kind, linked_keyword, memo)
 - **exclusion_rules**: 실적 제외 키워드 사전 (category, keyword, is_default, is_active)
 - **daily_notes**: 하루 정리 일기 (note_date, body, updated_at) — 하루 한 편, 저장은 upsert
-- fixed_type 값: 통신, 구독, 렌탈, 적금, 기부, 보험, 기타고정
+- fixed_type 값: 기본 통신, 구독, 렌탈, 적금, 기부, 보험, 기타고정 + 사용자가 만든 분류 (글자로 저장)
 - 모든 표는 RLS로 `user_id = auth.uid()`만 접근 가능
 
 ## 6. 폴더 구조
@@ -196,7 +198,8 @@ moneylog/
 | 7-E | ✅ 구현·서버 배포 완료, main 병합 (2026-11-01), 직접 확인 완료: 영수증 촬영·사진 선택 정상 | 브랜치 `agent/receipt` | 입력 탭 "사진 입력"에서 "카드사 앱 캡처"/"영수증" 선택. 서버 함수 `parse-capture` 영수증 모드(버전 4) 배포. 영수증은 끝 4자리가 정확히 보일 때만 결제수단 자동 선택. 로컬 시험에서 인식 양호 |
 | 8 | ✅ 완료 (2026-11-01, 운영 배포) | `agent/fix-*`·`load-*`·`in-menu` | 고정지출 규칙 저장·자동 적용·설정 관리, 입력 폼 "고정지출 불러오기"(맨 위 접이식 박스), 설정 "이미 입력한 고정지출에서 고르기" 목록 |
 | 디자인 | ✅ 시안 적용 완료 (2026-11-01, 운영 배포) | `redesign` 병합 | 시안 1~12단계(선 아이콘 탭, 브랜드 합계 카드, 날짜 흐름, 새 입력 순서, 미리보기 하단 바 등)와 다듬기. 가이드는 `docs/DESIGN.md` v1.2, 샘플은 "Moneylog 화면 샘플" 아티팩트 |
-| 9 | 🔶 구현 완료 (2026-11-03), **로컬 main 병합, push·운영 확인 대기** | `perf-*` 6건 | DB `card_programs`·`card_benefits`(사용자 직접 적용). 설정 "카드 실적"(조건·혜택 관리), 보기 "카드 실적" 탭(이번/지난 기간 이동, 지난 기간은 달성/미달성만), 내역 위 요약 띠(→ 보기 카드 실적), 고정지출 "실적 달성 시 -○원", 결제 예정 고정지출 예상(주황 막대, 2026-11-07 추가). 판정은 확정 → 취소 → 무이자 → 개별 키워드까지(기본 제외 사전·배지·확정 버튼은 단계 10) |
+| 9 | 🔶 구현 완료 (2026-11-03), **운영 배포 완료, 직접 확인 대기** | `perf-*` 6건 | DB `card_programs`·`card_benefits`(사용자 직접 적용). 설정 "카드 실적"(조건·혜택 관리), 보기 "카드 실적" 탭(이번/지난 기간 이동, 지난 기간은 달성/미달성만), 내역 위 요약 띠(→ 보기 카드 실적), 고정지출 "실적 달성 시 -○원", 결제 예정 고정지출 예상(주황 막대, 2026-11-07 추가). 판정은 확정 → 취소 → 무이자 → 개별 키워드까지(기본 제외 사전·배지·확정 버튼은 단계 10) |
+| 고정지출 개편 | 🔶 구현·로컬 병합 (2026-11-08), **SQL 적용 → push 대기** | `fx2-*`·`cur-list` | 키워드 규칙 제거, 등록 목록(F30)·분류 관리(F31), 실적 예상을 등록 목록 기준으로, 설정 통화 목록형. DB는 `DATA_MODEL.md` 13번 |
 | 10~12 | ⬜ 시작 전 | | 실적 제외 → 파일 업로드 → 마무리 |
 
 단계 3~6은 빌드·테스트·DB 동작 검증에 더해 **사용자가 배포 주소에서 직접 확인을 마쳤다**(2026-10-25). 로그인이 필요한 화면은 Claude가 직접 눌러볼 수 없어서 이 확인이 꼭 필요하다.
@@ -208,7 +211,8 @@ moneylog/
 - [x] **7-E 영수증 완료** (2026-11-01): 서버 함수 버전 4 배포, 운영 주소에서 촬영·사진 선택 확인
 - [x] **8 완료·디자인 시안 적용 완료** (2026-11-01, 운영 배포)
 - [ ] **4-1 외화 입력 마무리**: `DATA_MODEL.md` 12번 SQL을 Supabase SQL Editor에서 적용한 뒤 운영에서 확인한다 (사용자)
-- [ ] **9 카드 실적**: 구현·로컬 병합 완료(2026-11-03). push(운영 배포) 승인 → 운영에서 직접 확인이 남았다
+- [ ] **고정지출 개편**: `DATA_MODEL.md` 13번 SQL 적용 확인 후 push한다. 표가 없는 상태로 push하면 고정지출 기능이 깨진다
+- [ ] **9 카드 실적**: 운영 배포 완료. 직접 확인이 남았다
 - [ ] **10 실적 제외** (다음 단계): 시작 전 DATA_MODEL 8번 SQL을 보여주고 적용 승인을 받는다. `performance.ts`의 `classifyTransaction` 5번 자리에 기본 제외 사전을 끼우고, 배지·확정 버튼(보기 카드 실적의 포함/제외 내역 포함)을 만든다
 - 참고: 이 세션 환경에서는 Supabase MCP 쓰기 도구의 승인 창이 뜨지 않아 자동 거절됐다. 그때는 SQL을 보여 주고 사용자가 SQL Editor에서 직접 적용한다
 - 실제 문자에서 인식이 안 되는 형식(다른 카드사, 할부, 해외결제 등)은 미리보기에서 "실패"로 뜬다. 그 문자(이름·번호·금액은 임의 값으로 바꿔서)를 주면 `src/utils/parsers/`에 파일을 추가해 넓힌다.

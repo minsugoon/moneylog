@@ -1,6 +1,7 @@
 # Moneylog 데이터 구조 (Supabase)
 
-- 버전: v0.9 / 최종 수정: 2026-11-03
+- 버전: v0.10 / 최종 수정: 2026-11-08
+- 변경(v0.10, 2026-11-08): **고정지출 등록 목록·분류 표(13번) 추가**. 키워드 규칙(`fixed_rules`)은 앱에서 쓰지 않는다(표와 기존 행은 지우지 않고 남겨 둠). `transactions.fixed_type`의 고정 목록 제한을 글자 수 제한으로 바꿈.
 - 변경(v0.9, 2026-11-03): **6~7번(카드 실적·혜택 표 + 보안) 적용 완료** — 단계 9. 사용자가 SQL Editor에서 직접 적용. 다시 실행해도 오류가 없게 `if not exists`·`drop policy if exists`를 넣고, 카드 연결 칸 색인(`card_programs_account_idx`)을 추가했다.
 - 변경(v0.8, 2026-11-02): **통화 칸 5개(12번) 추가** — 외화 입력(단계 4-1). 적용은 사용자가 SQL Editor에서 직접 한다.
 - 변경(v0.7, 2026-10-31): **AI 캡처 입력용 표 2개와 함수 초안(9~11번) 추가.** 단계 7-B에서 적용할 예정이며 **아직 DB에 없다.**
@@ -13,7 +14,9 @@
 |----|------|-----------|
 | accounts | 카드·통장·현금 등록 | 지갑 속 결제수단 목록 |
 | transactions | 지출 내역 | 가계부 본문 |
-| fixed_rules | 고정지출 자동 인식 규칙 | "이 이름이면 통신비" 메모장 |
+| fixed_expenses | 등록한 고정지출 (결제명·결제수단·금액·결제일·분류) | 매달 나가는 돈 목록 |
+| fixed_types | 고정지출 분류 (사용자가 추가·변경·삭제) | 목록의 분류 이름표 |
+| fixed_rules | (사용 안 함) 옛 키워드 규칙. 표만 남아 있음 | 지난 메모장 |
 | card_programs | 카드 실적 프로그램 | 카드별 "월 N원 이상 쓰기" 미션 |
 | card_benefits | 실적 달성 혜택 | 미션 달성 보상 |
 | exclusion_rules | 실적 제외 키워드 사전 | "이 단어가 있으면 실적 제외될 수 있음" 목록 |
@@ -30,6 +33,7 @@
 | 8 | 제외 키워드 표 + 보안 | 단계 10 |
 | 9~11 | AI 이용 설정·사용 기록 표 + 동의·한도 확인 함수 | **단계 7-B** (사용자 승인 후 적용) |
 | 12 | 내역에 통화 칸 5개 추가 (외화 입력) | 단계 4-1 (2026-11-02 사용자가 직접 적용 완료) |
+| 13 | 고정지출 등록 목록·분류 표, 분류 제한 완화, 기존 고정지출 옮기기 | 2026-11-08 (사용자가 SQL Editor에서 적용) |
 
 한 번에 모두 실행해도 문제는 없다. 새 프로젝트에서 **SQL Editor**에 붙여넣고 **Run**.
 
@@ -295,6 +299,69 @@ alter table public.transactions
 ```
 - 코드는 새 칸이 없어도 동작하도록 만들어서(읽을 때 원화·확정으로 채움, 원화 입력은 새 칸을 보내지 않음) **원화 입력은 SQL 적용 전에도 그대로 된다.** 외화로 저장하려면 이 SQL을 먼저 적용해야 한다.
 
+### 13) 고정지출 등록 목록·분류 (2026-11-08)
+여러 번 실행해도 안전하다. 기존 내역과 `fixed_rules`는 지우지 않는다.
+```sql
+create table if not exists public.fixed_types (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null default auth.uid() references auth.users(id) on delete cascade,
+  name text not null check (char_length(btrim(name)) between 1 and 20),
+  sort_order int not null default 0,
+  created_at timestamptz not null default now(),
+  unique (user_id, name)
+);
+
+create table if not exists public.fixed_expenses (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null default auth.uid() references auth.users(id) on delete cascade,
+  merchant text not null check (char_length(btrim(merchant)) between 1 and 100),
+  account_id uuid references public.accounts(id) on delete set null,
+  amount integer not null check (amount > 0),
+  pay_day int not null check (pay_day between 1 and 31),
+  fixed_type text not null check (char_length(btrim(fixed_type)) between 1 and 20),
+  created_at timestamptz not null default now()
+);
+create index if not exists fixed_expenses_user_idx on public.fixed_expenses (user_id);
+create index if not exists fixed_expenses_account_idx on public.fixed_expenses (account_id);
+
+alter table public.fixed_types enable row level security;
+alter table public.fixed_expenses enable row level security;
+drop policy if exists "own fixed_types" on public.fixed_types;
+create policy "own fixed_types" on public.fixed_types
+  for all using (user_id = (select auth.uid())) with check (user_id = (select auth.uid()));
+drop policy if exists "own fixed_expenses" on public.fixed_expenses;
+create policy "own fixed_expenses" on public.fixed_expenses
+  for all using (user_id = (select auth.uid())) with check (user_id = (select auth.uid()));
+
+-- 분류를 직접 추가할 수 있도록 고정 목록 제한을 글자 수 제한으로 바꾼다
+alter table public.transactions drop constraint if exists transactions_fixed_type_check;
+alter table public.transactions drop constraint if exists transactions_fixed_type_len;
+alter table public.transactions
+  add constraint transactions_fixed_type_len
+  check (fixed_type is null or char_length(btrim(fixed_type)) between 1 and 20);
+
+-- 이미 입력한 고정지출을 새 목록으로 옮긴다 (다시 실행해도 중복되지 않음)
+insert into public.fixed_expenses (user_id, merchant, account_id, amount, pay_day, fixed_type)
+select s.user_id, s.merchant, s.account_id, s.net, s.pay_day, s.fixed_type
+from (
+  select distinct on (t.user_id, lower(regexp_replace(t.merchant, '\s', '', 'g')), t.account_id, greatest(t.amount - t.discount, 0))
+    t.user_id, btrim(t.merchant) as merchant, t.account_id,
+    greatest(t.amount - t.discount, 0) as net,
+    extract(day from t.used_at)::int as pay_day, t.fixed_type
+  from public.transactions t
+  where t.is_fixed and not t.is_cancel and t.fixed_type is not null
+    and btrim(t.merchant) <> '' and t.installment_months = 1 and t.amount - t.discount > 0
+  order by t.user_id, lower(regexp_replace(t.merchant, '\s', '', 'g')), t.account_id, greatest(t.amount - t.discount, 0), t.used_at desc, t.created_at desc
+) s
+where not exists (
+  select 1 from public.fixed_expenses f
+  where f.user_id = s.user_id and f.account_id is not distinct from s.account_id and f.amount = s.net
+    and lower(regexp_replace(f.merchant, '\s', '', 'g')) = lower(regexp_replace(s.merchant, '\s', '', 'g'))
+);
+```
+- 분류는 첫 로그인 때 앱이 기본 7개를 넣는다.
+- 같은 결제명·결제수단·금액이면 같은 고정지출로 본다(금액이 다르면 별개 항목).
+
 ## 4. 칸 설명 (헷갈리기 쉬운 것)
 | 칸 | 의미 |
 |----|------|
@@ -312,6 +379,9 @@ alter table public.transactions
 | transactions.exchange_rate | 외화 1단위당 원화 환율. **입력 당시 값을 그대로 저장**해서 나중에 환율이 바뀌어도 이미 적은 금액은 변하지 않음. 카드 청구액으로 고치면 `청구액 ÷ 외화 금액`으로 다시 계산 |
 | transactions.rate_at | 그 환율을 받은 시각 (환율 서버 오류로 받아 둔 값을 썼다면 그 값을 받은 시각) |
 | transactions.krw_confirmed | 원화 금액이 확정인가. `true`=원화 입력 또는 카드 청구액으로 확정, `false`=환율로 계산한 추정 금액(화면에 `≈` 표시). **금액(`amount`)은 항상 원화이고 합계·할부·실적 계산은 원화만 쓴다** |
+| fixed_expenses.amount | 매달 나가는 실결제액(원화 정수) |
+| fixed_expenses.pay_day | 매월 결제일 1~31. 그 달에 없는 날짜는 말일로 계산 |
+| transactions.fixed_type | 저장 당시의 분류 이름(글자). 분류를 지워도 지나간 내역의 글자는 남고, 이름을 바꾸면 함께 바뀐다 |
 | card_programs.measure_basis | `previous_month`=지난달 사용액이 이번 달 혜택 결정, `current_month`=이번 달 사용액이 이번 달 혜택 결정 |
 | card_programs.installment_mode | `full`=사용한 달에 할부 전액 인정, `monthly`=월 납부액만 인정 |
 | card_programs.period_start_day | 실적 집계 시작일. 1이면 달력 기준 |
@@ -322,6 +392,8 @@ alter table public.transactions
 |-----------|------|
 | 결제수단(accounts) | 그 내역은 남고 결제수단이 "미지정"이 됨. 그 카드의 실적 프로그램·혜택은 함께 삭제 |
 | 실적 프로그램 | 그 혜택도 함께 삭제. 내역은 그대로 |
+| 등록한 고정지출(fixed_expenses) | 목록에서만 빠짐. 이미 저장한 내역은 그대로 |
+| 고정지출 분류(fixed_types) | 그 분류의 등록 항목은 `기타고정`으로 바뀜. 지나간 내역은 그대로 |
 | 하루 정리(daily_notes) | 그날의 지출 내역은 그대로 |
 | 내 계정 | 내 모든 데이터 삭제 |
 

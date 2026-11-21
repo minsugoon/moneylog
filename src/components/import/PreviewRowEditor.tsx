@@ -1,18 +1,24 @@
-﻿import { useId, type ReactNode } from 'react'
+import { useEffect, useId, useState, type ReactNode } from 'react'
 import type { Account } from '../../lib/types.ts'
 import type { PreviewItem } from '../../utils/importRows.ts'
 import AmountInput from '../AmountInput.tsx'
 import { formatAccountLabel } from '../../utils/format.ts'
 import { inputClass, labelClass } from '../ui.ts'
 import Badge from '../Badge.tsx'
+import PreviewCurrencyField from './PreviewCurrencyField.tsx'
+import { FX_CURRENCIES, formatFxInput, minorToAmount, parseFxMinor } from '../../utils/currency.ts'
+import { previewKrw } from '../../utils/fxImport.ts'
+import type { RateChoice } from '../../utils/fxRates.ts'
+import { formatApprox, formatRateLabel } from '../../utils/fxDisplay.ts'
 
 interface PreviewRowEditorProps {
   item: PreviewItem
   accounts: Account[]
   fixedTypeOptions: string[]
+  rateFor?: (code: string) => RateChoice
   onEdit: (
     id: string,
-    patch: Partial<Pick<PreviewItem, 'accountId' | 'date' | 'merchant' | 'amount' | 'installment' | 'isCancel' | 'isFixed' | 'fixedType'>>,
+    patch: Partial<Pick<PreviewItem, 'accountId' | 'date' | 'merchant' | 'amount' | 'installment' | 'isCancel' | 'isFixed' | 'fixedType' | 'currency'>>,
   ) => void
   onToggle: (id: string) => void
 }
@@ -28,10 +34,18 @@ const cardTones = {
 
 const statusKinds = { duplicate: 'dup', possible: 'maybe', income: 'income', failed: 'fail' } as const
 
-function PreviewRowEditor({ item, accounts, fixedTypeOptions, onEdit, onToggle }: PreviewRowEditorProps) {
+function PreviewRowEditor({ item, accounts, fixedTypeOptions, rateFor, onEdit, onToggle }: PreviewRowEditorProps) {
   const typeOptions = fixedTypeOptions.includes(item.fixedType) ? fixedTypeOptions : [...fixedTypeOptions, item.fixedType]
   const id = useId()
   const failed = item.status === 'failed'
+  const currency = item.currency ?? 'KRW'
+  const foreign = Boolean(rateFor && currency !== 'KRW')
+  const [fxText, setFxText] = useState(item.amount === null ? '' : formatFxInput(String(item.amount), currency))
+  useEffect(() => setFxText(item.amount === null ? '' : formatFxInput(String(item.amount), currency)), [item.amount, currency])
+  const choice = foreign ? rateFor?.(currency) : null
+  const conversion = foreign && choice ? previewKrw(item, choice) : null
+  const knownCurrency = FX_CURRENCIES.some((entry) => entry.code === currency)
+  const rateText = choice?.rate == null ? '' : knownCurrency ? formatRateLabel(currency, choice.rate) : '1 ' + currency + ' = ' + choice.rate.toLocaleString('ko-KR', { maximumFractionDigits: 4 }) + '원'
   return (
     <li className={`rounded-xl border p-4 transition-colors ${cardTones[item.status]}`}>
       {/* 화면 폭과 상관없이 3줄 카드: (사용일, 결제명) / (금액, 할부, 취소) / 결제수단 */}
@@ -70,11 +84,33 @@ function PreviewRowEditor({ item, accounts, fixedTypeOptions, onEdit, onToggle }
             />
           </Field>
         </div>
+        {rateFor && <PreviewCurrencyField id={`${id}-currency`} code={currency} onChange={(code) => onEdit(item.id, { currency: code, installment: code === 'KRW' ? item.installment : 1 })} />}
         <div className="grid grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)_auto] items-end gap-3">
-          <Field id={`${id}-amount`} label="금액">
-            <AmountInput id={`${id}-amount`} value={item.amount} onChange={(amount) => onEdit(item.id, { amount })} />
+          <Field id={`${id}-amount`} label={foreign ? `금액 (${currency})` : '금액'}>
+            {foreign ? (
+              <input
+                id={`${id}-amount`}
+                type="text"
+                inputMode="decimal"
+                autoComplete="off"
+                value={fxText}
+                onChange={(event) => {
+                  const text = event.target.value
+                  setFxText(text)
+                  const minor = parseFxMinor(text, currency)
+                  onEdit(item.id, { amount: minor === null ? null : minorToAmount(minor, currency) })
+                }}
+                className={inputClass}
+              />
+            ) : (
+              <AmountInput
+                id={`${id}-amount`}
+                value={item.amount}
+                onChange={(amount) => onEdit(item.id, { amount })}
+              />
+            )}
           </Field>
-          <Field id={`${id}-installment`} label="할부">
+          {!foreign && <Field id={`${id}-installment`} label="할부">
             <select
               id={`${id}-installment`}
               value={item.installment}
@@ -87,7 +123,7 @@ function PreviewRowEditor({ item, accounts, fixedTypeOptions, onEdit, onToggle }
                 </option>
               ))}
             </select>
-          </Field>
+          </Field>}
           <label className="flex min-h-11 items-center gap-2 text-base">
             <input
               type="checkbox"
@@ -98,6 +134,14 @@ function PreviewRowEditor({ item, accounts, fixedTypeOptions, onEdit, onToggle }
             취소
           </label>
         </div>
+        {foreign && conversion && (
+          <p
+            role={conversion.message ? 'alert' : undefined}
+            className={`text-xs ${conversion.message ? 'text-amber-800' : 'text-gray-600'}`}
+          >
+            {conversion.message ?? (conversion.krw !== null ? formatApprox(conversion.krw) + ' · ' + rateText : '')}
+          </p>
+        )}
         <Field id={`${id}-account`} label="결제수단">
           <select
             id={`${id}-account`}

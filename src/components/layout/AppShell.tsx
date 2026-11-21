@@ -10,17 +10,20 @@ interface AppShellProps {
   pages: Partial<Record<TabKey, ReactNode>>
   // PC에서 오른쪽에 항상 보이는 "빠른 입력" 패널의 내용
   quickEntry?: ReactNode
+  renderTour?: (state: { tab: TabKey; replayKey: number }) => ReactNode
 }
 
 // 화면 틀: 폭에 따라 배치만 바뀐다 (CSS로만 구분)
 // 모바일: 본문 + 하단 탭 / 태블릿: 사이드바 + 본문 / PC: 사이드바 + 본문 + 빠른 입력
-function AppShell({ pages, quickEntry }: AppShellProps) {
+function AppShell({ pages, quickEntry, renderTour }: AppShellProps) {
   const [activeTab, setActiveTab] = useState<TabKey>('list')
   const [pendingView, setPendingView] = useState<ViewTarget | null>(null)
+  const [replay, setReplay] = useState<{ tab: TabKey | null; count: number }>({ tab: null, count: 0 })
   const nav = useMemo(() => ({
     goToView: (view: ViewTarget) => { setPendingView(view); setActiveTab('view') },
     pendingView,
     clearPendingView: () => setPendingView(null),
+    replayTour: (tab: TabKey) => { setActiveTab(tab); setReplay((value) => ({ tab, count: value.count + 1 })) },
   }), [pendingView])
 
   return (
@@ -40,6 +43,7 @@ function AppShell({ pages, quickEntry }: AppShellProps) {
 
       <QuickEntryPanel>{quickEntry}</QuickEntryPanel>
       <BottomTabs activeTab={activeTab} onSelect={setActiveTab} />
+      {renderTour?.({ tab: activeTab, replayKey: replay.tab === activeTab ? replay.count : 0 })}
     </div>
     </NavContext.Provider>
   )

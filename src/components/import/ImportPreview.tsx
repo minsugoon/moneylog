@@ -1,19 +1,22 @@
-﻿import { useId } from 'react'
+import { useId } from 'react'
 import { DEFAULT_FIXED_TYPES, type Account } from '../../lib/types.ts'
 import { summarizeItems, type PreviewItem } from '../../utils/importRows.ts'
 import { formatAccountLabel } from '../../utils/format.ts'
 import PreviewRowEditor from './PreviewRowEditor.tsx'
-import { cardClass, inputClass, primaryButtonClass, secondaryButtonClass } from '../ui.ts'
+import { cardClass, errorBoxClass, inputClass, primaryButtonClass, secondaryButtonClass } from '../ui.ts'
+import type { RateChoice } from '../../utils/fxRates.ts'
 
 export interface ImportPreviewProps {
   items: PreviewItem[]
   accounts: Account[]
   fixedTypeOptions?: string[]
+  rateFor?: (code: string) => RateChoice
+  saveBlockedMessage?: string | null
   saving: boolean
   error: string
   onEdit: (
     id: string,
-    patch: Partial<Pick<PreviewItem, 'accountId' | 'date' | 'merchant' | 'amount' | 'installment' | 'isCancel' | 'isFixed' | 'fixedType'>>,
+    patch: Partial<Pick<PreviewItem, 'accountId' | 'date' | 'merchant' | 'amount' | 'installment' | 'isCancel' | 'isFixed' | 'fixedType' | 'currency'>>,
   ) => void
   onToggle: (id: string) => void
   onApplyAccount: (accountId: string) => void
@@ -25,6 +28,8 @@ function ImportPreview({
   items,
   accounts,
   fixedTypeOptions = [...DEFAULT_FIXED_TYPES],
+  rateFor,
+  saveBlockedMessage,
   saving,
   error,
   onEdit,
@@ -64,7 +69,7 @@ function ImportPreview({
       ) : (
         <ul className="space-y-4">
           {items.map((item) => (
-            <PreviewRowEditor key={item.id} item={item} accounts={accounts} fixedTypeOptions={fixedTypeOptions} onEdit={onEdit} onToggle={onToggle} />
+            <PreviewRowEditor key={item.id} item={item} accounts={accounts} fixedTypeOptions={fixedTypeOptions} rateFor={rateFor} onEdit={onEdit} onToggle={onToggle} />
           ))}
         </ul>
       )}
@@ -74,6 +79,7 @@ function ImportPreview({
         </p>
       )}
       <div className="sticky bottom-[calc(4rem+env(safe-area-inset-bottom))] z-10 -mx-5 border-t border-gray-200 bg-white px-5 pb-3 pt-3 md:bottom-0">
+        {saveBlockedMessage && <p role="alert" className={errorBoxClass}>{saveBlockedMessage}</p>}
         <p className="mb-2 text-sm font-bold">
           저장 {summary.save}건 / 제외 {summary.excluded}건 / 실패 {summary.failed}건
         </p>
@@ -81,7 +87,7 @@ function ImportPreview({
         <button
           type="button"
           onClick={onSave}
-          disabled={summary.save === 0 || saving}
+          disabled={summary.save === 0 || saving || Boolean(saveBlockedMessage)}
           className={`flex-1 ${primaryButtonClass}`}
         >
           {saving ? '저장하는 중…' : '저장'}

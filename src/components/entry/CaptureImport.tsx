@@ -1,4 +1,4 @@
-import { useState, type ChangeEvent } from 'react'
+import { useCallback, useState, type ChangeEvent } from 'react'
 import ImportPreview from '../import/ImportPreview.tsx'
 import { useAiCapture } from '../../hooks/useAiCapture.ts'
 import { useLedger } from '../../hooks/useLedger.ts'
@@ -17,9 +17,14 @@ import { cardClass, chipClass, inputClass, primaryButtonClass } from '../ui.ts'
 import AiConsentDialog from './AiConsentDialog.tsx'
 import PhotoPickArea from './PhotoPickArea.tsx'
 import UsageBar from '../UsageBar.tsx'
+import { useExchangeRate } from '../../hooks/useExchangeRate.ts'
+import { chooseRate } from '../../utils/fxRates.ts'
+import { fxSaveProblems } from '../../utils/fxImport.ts'
 
 function CaptureImport() {
   const ai = useAiCapture()
+  const { live, cached } = useExchangeRate()
+  const rateFor = useCallback((code: string) => chooseRate(code, live, cached), [live, cached])
   const { accounts, transactions, fixedExpenses, fixedTypes } = useLedger()
   const [showConsent, setShowConsent] = useState(false)
   const [consentBusy, setConsentBusy] = useState(false)
@@ -35,6 +40,7 @@ function CaptureImport() {
   const [resultMessage, setResultMessage] = useState('')
   const activeAccounts = accounts.accounts.filter((account) => account.is_active)
   const overLimit = ai.used + files.length > ai.monthlyLimit
+  const fxProblemCount = fxSaveProblems(items, rateFor)
 
   const acceptConsent = async () => {
     setConsentBusy(true)
@@ -89,7 +95,7 @@ function CaptureImport() {
   }
 
   const save = async () => {
-    const records = toImportRecords(items, 'paste')
+    const records = toImportRecords(items, 'paste', rateFor)
     const missing = items.filter((item) => item.selected && !item.accountId).length
     if (missing) {
       setError(`결제수단을 선택해 주세요 (${missing}건)`)
@@ -123,6 +129,10 @@ function CaptureImport() {
         fixedTypeOptions={fixedTypes.names}
         saving={saving}
         error={error}
+        rateFor={rateFor}
+        saveBlockedMessage={fxProblemCount > 0
+          ? `외화 ${fxProblemCount}건의 원화 금액을 계산할 수 없어요. 잠시 뒤 다시 시도하거나 통화를 원으로 바꿔 주세요.`
+          : null}
         onEdit={(id, patch) =>
           setItems((current) =>
             refreshItems(current.map((item) => (item.id === id ? { ...item, ...patch } : item)), transactions.items),
@@ -182,6 +192,11 @@ function CaptureImport() {
       </div>
       <PhotoPickArea files={files} kind={kind} onSelect={selectFiles} onRemove={(index) => setFiles((current) => current.filter((_, fileIndex) => fileIndex !== index))} />
       <p className="text-xs text-gray-600">AI가 읽은 결과는 틀릴 수 있어요. 읽은 내용은 저장하기 전에 미리보기에서 한 번 더 확인해요.</p>
+      {items.some((item) => (item.currency ?? 'KRW') !== 'KRW') && (
+        <p className="text-xs text-gray-600">
+          외화는 지금 환율로 원화를 계산해 저장해요. 카드 명세서가 나오면 내역에서 청구액으로 고칠 수 있어요.
+        </p>
+      )}
       {overLimit && <p className="text-sm text-red-700">이번 달 한도를 넘어서 읽을 수 없어요</p>}
       {error && <p role="alert" className="text-sm text-red-700">{error}</p>}
       {reading && <p role="status">읽는 중이에요… 몇 초 걸려요</p>}

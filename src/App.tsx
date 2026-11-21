@@ -8,6 +8,7 @@ import HistoryPage from './pages/HistoryPage.tsx'
 import LoginPage from './pages/LoginPage.tsx'
 import SettingsPage from './pages/SettingsPage.tsx'
 import ViewsPage from './pages/ViewsPage.tsx'
+import TabTour from './components/tour/TabTour.tsx'
 
 // 로그인 여부에 따라 보여줄 화면을 고른다. 로그인하지 않으면 앱 안으로 들어갈 수 없다.
 function App() {
@@ -42,6 +43,7 @@ function App() {
   return (
     <LedgerProvider userId={user.id}>
       <AppShell
+        renderTour={({ tab, replayKey }) => <TabTour tab={tab} replayKey={replayKey} />}
         quickEntry={<EntryPanel />}
         pages={{
           list: <HistoryPage />,

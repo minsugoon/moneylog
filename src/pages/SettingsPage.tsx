@@ -5,6 +5,8 @@ import CardProgramSection from '../components/settings/CardProgramSection.tsx'
 import CurrencySection from '../components/settings/CurrencySection.tsx'
 import FixedExpenseSection from '../components/settings/FixedExpenseSection.tsx'
 import FixedTypeSection from '../components/settings/FixedTypeSection.tsx'
+import HelpView from '../components/help/HelpView.tsx'
+import { cardClass } from '../components/ui.ts'
 import type { AuthResult } from '../hooks/useAuth.ts'
 
 interface SettingsPageProps {
@@ -15,6 +17,7 @@ interface SettingsPageProps {
 
 // 설정 화면: 결제수단 관리, 계정 정보, 로그아웃
 function SettingsPage({ email, provider, onSignOut }: SettingsPageProps) {
+  const [helpOpen, setHelpOpen] = useState(false)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
 
@@ -28,6 +31,8 @@ function SettingsPage({ email, provider, onSignOut }: SettingsPageProps) {
       setBusy(false)
     }
   }
+
+  if (helpOpen) return <HelpView onBack={() => setHelpOpen(false)} />
 
   return (
     <div className="mx-auto flex max-w-xl flex-col gap-4">
@@ -44,6 +49,14 @@ function SettingsPage({ email, provider, onSignOut }: SettingsPageProps) {
       <div data-coach="settings-currency"><CurrencySection /></div>
 
       <div data-coach="settings-ai"><AiSettingsSection /></div>
+
+      <button type="button" data-coach="settings-help" onClick={() => setHelpOpen(true)} className={`${cardClass} flex min-h-14 w-full items-center justify-between text-left`}>
+        <span>
+          <span className="block text-base font-bold text-gray-800">❓ 도움말</span>
+          <span className="block text-xs text-gray-600">기능별 사용법과 자주 묻는 질문, 화면 안내 다시 보기</span>
+        </span>
+        <span aria-hidden="true" className="text-gray-500">›</span>
+      </button>
 
       <section className="rounded-2xl bg-white p-5 shadow-sm" aria-labelledby="account-title">
         <h3 id="account-title" className="text-sm font-bold text-gray-600">

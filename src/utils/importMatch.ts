@@ -1,7 +1,7 @@
 import type { Transaction } from '../lib/types.ts'
 import { makeImportHash, makeImportKey, normalizeMerchant, type ImportKeyInput } from './importHash.ts'
 
-export type ExistingTransaction = Pick<Transaction, 'account_id' | 'used_at' | 'merchant' | 'amount' | 'is_cancel' | 'import_hash'>
+export type ExistingTransaction = Pick<Transaction, 'account_id' | 'used_at' | 'merchant' | 'amount' | 'is_cancel' | 'import_hash'> & Partial<Pick<Transaction, 'currency' | 'original_amount'>>
 export type MatchInput = ImportKeyInput & { accountId: string }
 export type MatchStatus = 'new' | 'duplicate' | 'possible'
 export type MatchResult = { status: MatchStatus; hash: string }
@@ -25,8 +25,11 @@ function dayNumber(date: string): number {
 }
 
 function sameCore(input: MatchInput, existing: ExistingTransaction): boolean {
+  const sameAmount = input.currency && input.currency !== 'KRW'
+    ? existing.currency === input.currency && existing.original_amount === input.amount
+    : (!existing.currency || existing.currency === 'KRW') && existing.amount === input.amount
   return existing.account_id === input.accountId &&
-    existing.amount === input.amount &&
+    sameAmount &&
     existing.is_cancel === input.isCancel
 }
 

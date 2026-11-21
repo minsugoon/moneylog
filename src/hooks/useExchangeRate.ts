@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { FX_CURRENCIES } from '../utils/currency.ts'
 import { FX_CACHE_KEY, parseCachedSnapshot, serializeSnapshot } from '../utils/fxCache.ts'
-import { chooseRate, isRateFresh, parseRateResponse, RATE_REFRESH_MIN_MS, RATE_REUSE_MS, RATE_URL, type RateChoice, type RateSnapshot } from '../utils/fxRates.ts'
+import { chooseRate, isRateFresh, parseRateResponse, rateCodesFrom, RATE_REFRESH_MIN_MS, RATE_REUSE_MS, RATE_URL, type RateChoice, type RateSnapshot } from '../utils/fxRates.ts'
 import { readSetting, writeSetting } from '../utils/storage.ts'
 
 let inFlight: Promise<RateSnapshot | null> | null = null
@@ -13,7 +13,7 @@ export async function fetchRateSnapshot(fetchImpl: typeof fetch, now: Date, time
     const response = await fetchImpl(RATE_URL, { signal: controller.signal })
     if (!response.ok) return null
     const json: unknown = await response.json()
-    return parseRateResponse(json, FX_CURRENCIES.map((currency) => currency.code), now)
+    return parseRateResponse(json, [...new Set([...FX_CURRENCIES.map((currency) => currency.code), ...rateCodesFrom(json)])], now)
   } catch {
     return null
   } finally {

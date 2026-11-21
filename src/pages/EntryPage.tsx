@@ -10,7 +10,7 @@ function EntryPage() {
   return (
     <div className="mx-auto flex max-w-xl flex-col gap-4">
       <h2 className="text-lg font-bold text-gray-800">입력</h2>
-      <div className="grid grid-cols-[1fr_1.4fr_1fr] gap-2" role="group" aria-label="입력 방식">
+      <div className="grid grid-cols-[1fr_1.4fr_1fr] gap-2" role="group" aria-label="입력 방식" data-coach="entry-methods">
         <button type="button" aria-pressed={tab === 'manual'} className={chipClass(tab === 'manual', true)} onClick={() => setTab('manual')}><span aria-hidden="true" className="mr-1">✍️</span>직접 입력</button>
         <button type="button" aria-pressed={tab === 'paste'} className={chipClass(tab === 'paste', true)} onClick={() => setTab('paste')}><span aria-hidden="true" className="mr-1">💬</span>문자 붙여넣기</button>
         <button type="button" aria-pressed={tab === 'capture'} className={chipClass(tab === 'capture', true)} onClick={() => setTab('capture')}><span aria-hidden="true" className="mr-1">📷</span>사진 입력</button>

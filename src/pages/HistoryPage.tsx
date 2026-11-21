@@ -35,13 +35,16 @@ function HistoryPage() {
           이번 달
         </button>
       </div>
-      <MonthSwitcher month={month} onChange={setMonth} showThisMonth={false} />
-      <BasisToggle basis={basis} onChange={setBasis} />
+      <div data-coach="history-month" className="flex flex-col gap-4">
+        <MonthSwitcher month={month} onChange={setMonth} showThisMonth={false} />
+        <BasisToggle basis={basis} onChange={setBasis} />
+      </div>
 
-      <PerformanceStrip />
-      <SummaryCard label={`${formatMonthLabel(month)} 합계`} amount={formatWon(sumCharges(entries))} sub={`지출 ${entries.length}건${carried.length > 0 ? ` (이어진 할부 ${carried.length}건 포함)` : ''}`} ariaLabel="월 합계" />
+      <div data-coach="history-performance" className="empty:hidden"><PerformanceStrip /></div>
+      <div data-coach="history-summary"><SummaryCard label={`${formatMonthLabel(month)} 합계`} amount={formatWon(sumCharges(entries))} sub={`지출 ${entries.length}건${carried.length > 0 ? ` (이어진 할부 ${carried.length}건 포함)` : ''}`} ariaLabel="월 합계" /></div>
       {monthFxNote !== null && <p className="text-xs text-gray-600" role="note">{monthFxNote}</p>}
 
+      <div data-coach="history-list">
       {transactions.loading ? (
         <p className="py-8 text-center text-sm text-gray-600">내역을 불러오고 있어요…</p>
       ) : transactions.error ? (
@@ -73,6 +76,7 @@ function HistoryPage() {
           )}
         </>
       )}
+      </div>
 
       {selected && <TransactionDialog key={selected.id} tx={selected} onClose={() => setSelected(null)} />}
     </div>

@@ -33,17 +33,17 @@ function SettingsPage({ email, provider, onSignOut }: SettingsPageProps) {
     <div className="mx-auto flex max-w-xl flex-col gap-4">
       <h2 className="text-lg font-bold text-gray-800">설정</h2>
 
-      <AccountSection />
+      <div data-coach="settings-accounts"><AccountSection /></div>
 
-      <CardProgramSection />
+      <div data-coach="settings-card-programs"><CardProgramSection /></div>
 
-      <FixedExpenseSection />
+      <div data-coach="settings-fixed"><FixedExpenseSection /></div>
 
-      <FixedTypeSection />
+      <div data-coach="settings-fixed-types"><FixedTypeSection /></div>
 
-      <CurrencySection />
+      <div data-coach="settings-currency"><CurrencySection /></div>
 
-      <AiSettingsSection />
+      <div data-coach="settings-ai"><AiSettingsSection /></div>
 
       <section className="rounded-2xl bg-white p-5 shadow-sm" aria-labelledby="account-title">
         <h3 id="account-title" className="text-sm font-bold text-gray-600">

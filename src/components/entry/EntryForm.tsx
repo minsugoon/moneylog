@@ -131,7 +131,7 @@ function EntryForm({ date, onDateChange, initial, onDone, onCancel, floatingSave
   return (
     <form onSubmit={handleSubmit} className={`flex flex-col gap-4 ${floatingSave && !isEdit ? 'pb-20' : ''}`} noValidate>
       {initialFx && initial && <FxEditNotice tx={initial} />}
-      {!isEdit && <FixedLoadPanel options={fixedLoadOptions} onPick={handleFixedLoad} />}
+      {!isEdit && <div data-coach="entry-fixed-load"><FixedLoadPanel options={fixedLoadOptions} onPick={handleFixedLoad} /></div>}
       <div>
         <label htmlFor={`${idPrefix}-merchant`} className={labelClass}>결제명</label>
         <input
@@ -148,11 +148,11 @@ function EntryForm({ date, onDateChange, initial, onDone, onCancel, floatingSave
         />
       </div>
 
-      <FxAmountSection idPrefix={idPrefix} fx={fx} amount={amount} onAmountChange={setAmount} amountLabel={initialFx ? '원화 금액' : undefined} />
+      <div data-coach="entry-amount"><FxAmountSection idPrefix={idPrefix} fx={fx} amount={amount} onAmountChange={setAmount} amountLabel={initialFx ? '원화 금액' : undefined} /></div>
 
       <EntryDateField idPrefix={idPrefix} date={date} onDateChange={onDateChange} />
 
-      <div>
+      <div data-coach="entry-account">
         <span className={labelClass}>결제수단</span>
         {accounts.loading ? (
           <p className="text-sm text-gray-600">결제수단을 불러오고 있어요…</p>
@@ -170,7 +170,7 @@ function EntryForm({ date, onDateChange, initial, onDone, onCancel, floatingSave
 
       {!initialFx && !fx.isFx && <InstallmentFields idPrefix={idPrefix} amount={amount} discount={discount} onDiscountChange={setDiscount} months={months} onMonthsChange={(next) => { setMonths(next); if (next === 1) setInterestFree(false) }} />}
 
-      <div className="flex flex-col">
+      <div className="flex flex-col" data-coach="entry-fixed">
         <label className="flex min-h-11 items-center gap-3 text-base text-gray-700">
           <input
             type="checkbox"
@@ -236,7 +236,7 @@ function EntryForm({ date, onDateChange, initial, onDone, onCancel, floatingSave
             취소
           </button>
         )}
-        <button type="submit" disabled={busy} className={`flex-1 ${primaryButtonClass}`}>
+        <button type="submit" disabled={busy} data-coach="entry-save" className={`flex-1 ${primaryButtonClass}`}>
           {busy ? '저장하는 중…' : isEdit ? '수정 저장' : '저장'}
         </button>
       </div>

@@ -35,7 +35,7 @@ function ViewsPage() {
     <div className="mx-auto flex max-w-xl flex-col gap-4">
       <h2 className="text-lg font-bold text-gray-800">보기</h2>
 
-      <div className="grid grid-cols-4 gap-2" role="group" aria-label="보기 종류">
+      <div className="grid grid-cols-4 gap-2" role="group" aria-label="보기 종류" data-coach="views-tabs">
         {VIEWS.map((item) => (
           <button
             key={item.key}
@@ -50,8 +50,9 @@ function ViewsPage() {
       </div>
 
       {view !== 'period' && view !== 'performance' && <MonthSwitcher month={month} onChange={setMonth} />}
-      {view !== 'performance' && <BasisToggle basis={basis} onChange={setBasis} />}
+      {view !== 'performance' && <div data-coach="views-basis"><BasisToggle basis={basis} onChange={setBasis} /></div>}
 
+      <div data-coach="views-content">
       {transactions.loading ? (
         <p className="py-8 text-center text-sm text-gray-600">내역을 불러오고 있어요…</p>
       ) : transactions.error ? (
@@ -72,6 +73,7 @@ function ViewsPage() {
       ) : (
         <AccountView month={month} basis={basis} />
       )}
+      </div>
     </div>
   )
 }

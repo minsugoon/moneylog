@@ -1,7 +1,14 @@
 import { describe, expect, it } from 'vitest'
 import { renderToString } from 'react-dom/server'
 import AppShell from './components/layout/AppShell.tsx'
+import BottomTabs from './components/layout/BottomTabs.tsx'
+import SideNav from './components/layout/SideNav.tsx'
 import CoachMark from './components/tour/CoachMark.tsx'
+import HistoryPage from './pages/HistoryPage.tsx'
+import EntryPage from './pages/EntryPage.tsx'
+import ViewsPage from './pages/ViewsPage.tsx'
+import SettingsPage from './pages/SettingsPage.tsx'
+import { renderWithLedger } from './testing/ledgerFixtures.tsx'
 import { placeTooltip, spotlightBox } from './utils/coachLayout.ts'
 import { TOURS } from './utils/helpTours.ts'
 import { parseSeen } from './utils/helpTours.ts'
@@ -58,5 +65,30 @@ describe('코치 마크 서버 렌더링', () => {
     let selected = ''
     renderToString(<AppShell pages={{}} renderTour={(state) => { selected = state.tab; return null }} />)
     expect(selected).toBe('list')
+  })
+})
+
+describe('화면별 코치 마크 대상', () => {
+  it('각 탭 화면에 안내 대상 이름표를 그린다', () => {
+    const pages = [
+      { targets: TOURS.list, html: renderWithLedger(<HistoryPage />) },
+      { targets: TOURS.entry, html: renderWithLedger(<EntryPage />) },
+      { targets: TOURS.view, html: renderWithLedger(<ViewsPage />) },
+      { targets: TOURS.settings, html: renderWithLedger(<SettingsPage email="sample@example.test" provider="email" onSignOut={async () => ({ ok: true })} />) },
+    ]
+    for (const { targets, html } of pages) for (const { target } of targets) {
+      if (target === null || target === 'history-performance' || target === 'settings-help' || target.startsWith('nav-')) continue
+      expect(html).toContain(`data-coach="${target}"`)
+    }
+  })
+
+  it('하단 탭과 사이드 메뉴에 모든 탐색 이름표를 그린다', () => {
+    const onSelect = () => {}
+    const bottom = renderToString(<BottomTabs activeTab="list" onSelect={onSelect} />)
+    const side = renderToString(<SideNav activeTab="list" onSelect={onSelect} />)
+    for (const target of TOURS.list.map((step) => step.target).filter((target) => target?.startsWith('nav-'))) {
+      expect(bottom).toContain(`data-coach="${target}"`)
+      expect(side).toContain(`data-coach="${target}"`)
+    }
   })
 })

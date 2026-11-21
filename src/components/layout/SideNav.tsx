@@ -22,6 +22,7 @@ function SideNav({ activeTab, onSelect }: SideNavProps) {
               <button
                 type="button"
                 onClick={() => onSelect(item.key)}
+                data-coach={`nav-${item.key}`}
                 aria-current={isActive ? 'page' : undefined}
                 className={`flex min-h-11 w-full items-center gap-3 rounded-lg px-3 text-left text-base ${
                   isActive ? 'bg-brand/10 font-bold text-brand' : 'text-gray-600 hover:bg-gray-100'

@@ -21,6 +21,7 @@ function BottomTabs({ activeTab, onSelect }: BottomTabsProps) {
               <button
                 type="button"
                 onClick={() => onSelect(item.key)}
+                data-coach={`nav-${item.key}`}
                 aria-current={isActive ? 'page' : undefined}
                 className={`flex h-16 w-full flex-col items-center justify-center gap-0.5 text-[13px] ${
                   isActive ? 'font-bold text-brand' : 'text-gray-500'

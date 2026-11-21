@@ -13,6 +13,11 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value)
 }
 
+export function rateCodesFrom(json: unknown): string[] {
+  if (!isRecord(json) || !isRecord(json.rates)) return []
+  return Object.keys(json.rates).filter((code) => /^[A-Z]{3}$/.test(code))
+}
+
 function roundRate(value: number): number {
   return Math.round(value * 100_000_000) / 100_000_000
 }

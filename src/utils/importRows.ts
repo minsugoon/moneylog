@@ -2,6 +2,8 @@ import { FALLBACK_FIXED_TYPE, type Account, type FixedType } from '../lib/types.
 import type { TransactionInput } from '../hooks/useTransactions.ts'
 import type { AccountHint, ParsedRow } from './parsers/types.ts'
 import { classifyImports, type ExistingTransaction } from './importMatch.ts'
+import { currencyDecimals, convertToKrw, minorToAmount } from './currency.ts'
+import type { RateChoice } from './fxRates.ts'
 
 export type PreviewStatus = 'new' | 'duplicate' | 'possible' | 'income' | 'failed'
 
@@ -13,6 +15,7 @@ export type PreviewItem = {
   time: string | null
   merchant: string
   amount: number | null
+  currency?: string
   installment: number
   isCancel: boolean
   isFixed: boolean
@@ -41,7 +44,10 @@ export function suggestAccountId(hint: AccountHint | null, accounts: Account[]):
 }
 
 export function buildPreviewItems(rows: ParsedRow[], accounts: Account[], existing: ExistingTransaction[]): PreviewItem[] {
-  return refreshItems(rows.map((row, index) => ({
+  return refreshItems(rows.map((row, index) => {
+    const currency = row.currency && /^[A-Z]{3}$/.test(row.currency) ? row.currency : 'KRW'
+    const foreign = currency !== 'KRW'
+    return ({
     id: `row-${index}`,
     row,
     accountId: suggestAccountId(row.accountHint, accounts),
@@ -49,18 +55,19 @@ export function buildPreviewItems(rows: ParsedRow[], accounts: Account[], existi
     time: row.time,
     merchant: row.merchant,
     amount: row.amount,
-    installment: row.installment,
+    currency,
+    installment: foreign ? 1 : row.installment,
     isCancel: row.isCancel,
     isFixed: false,
     fixedType: FALLBACK_FIXED_TYPE,
-    interestFree: row.interestFree,
+    interestFree: foreign ? false : row.interestFree,
     direction: row.direction,
     status: 'new',
     hash: null,
     error: null,
     selected: false,
     userToggled: false,
-  })), existing)
+  })}), existing)
 }
 
 export function refreshItems(items: PreviewItem[], existing: ExistingTransaction[]): PreviewItem[] {
@@ -72,7 +79,7 @@ export function refreshItems(items: PreviewItem[], existing: ExistingTransaction
   })
   const eligible = items.flatMap((item, index) =>
     !errors[index] && item.direction === 'expense' && item.accountId
-      ? [{ index, input: { date: item.date, time: item.time, merchant: item.merchant, amount: item.amount as number, isCancel: item.isCancel, accountId: item.accountId } }]
+      ? [{ index, input: { date: item.date, time: item.time, merchant: item.merchant, amount: item.amount as number, currency: item.currency, isCancel: item.isCancel, accountId: item.accountId } }]
       : [],
   )
   const matches = classifyImports(eligible.map(({ input }) => input), existing)
@@ -106,21 +113,29 @@ export function toggleItem(items: PreviewItem[], id: string): PreviewItem[] {
     : { ...item, selected: !item.selected, userToggled: true })
 }
 
-export function toImportRecords(items: PreviewItem[], source: ImportRecord['source'] = 'sms'): ImportRecord[] {
+export function toImportRecords(items: PreviewItem[], source: ImportRecord['source'] = 'sms', rateFor?: (code: string) => RateChoice): ImportRecord[] {
   return items.flatMap((item) => {
     if (!item.selected || item.status === 'failed' || item.error || item.amount === null) return []
+    const currency = item.currency ?? 'KRW'
+    const foreign = currency !== 'KRW'
+    const choice = foreign ? rateFor?.(currency) : undefined
+    if (foreign && (!choice || choice.status === 'none' || choice.rate === null || !choice.at)) return []
+    const minor = foreign ? Math.round(item.amount * 10 ** currencyDecimals(currency)) : null
+    const converted = foreign ? convertToKrw(minor as number, currency, choice?.rate as number) : null
+    if (converted && !converted.ok) return []
     return [{
       account_id: item.accountId || null,
       used_at: item.date,
       merchant: item.merchant,
-      amount: item.amount,
+      amount: converted?.ok ? converted.krw : item.amount,
       discount: 0,
-      installment_months: item.installment,
+      installment_months: foreign ? 1 : item.installment,
       is_fixed: item.isFixed,
       fixed_type: item.isFixed ? item.fixedType : null,
       memo: null,
       is_cancel: item.isCancel,
-      interest_free: item.interestFree,
+      interest_free: foreign ? false : item.interestFree,
+      ...(foreign ? { currency, original_amount: minorToAmount(minor as number, currency), exchange_rate: choice?.rate, rate_at: choice?.at, krw_confirmed: false } : {}),
       import_hash: item.hash,
       source,
     }]

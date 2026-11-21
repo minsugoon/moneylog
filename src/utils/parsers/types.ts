@@ -10,6 +10,7 @@ export type ParsedRow = {
   time: string | null
   merchant: string
   amount: number | null
+  currency?: string // 사진 입력에서 읽은 통화 (없으면 원화). amount는 이 통화 단위
   installment: number
   isCancel: boolean
   interestFree: boolean

@@ -3,6 +3,7 @@ export type ImportKeyInput = {
   time: string | null
   merchant: string
   amount: number
+  currency?: string
   isCancel: boolean
 }
 
@@ -16,7 +17,7 @@ export function makeImportKey(input: ImportKeyInput, accountId: string): string 
     input.date,
     input.time ?? '',
     normalizeMerchant(input.merchant),
-    String(input.amount),
+    input.currency && input.currency !== 'KRW' ? `${input.currency}:${input.amount}` : String(input.amount),
     input.isCancel ? 'C' : 'P',
   ].join('|')
 }

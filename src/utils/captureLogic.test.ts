@@ -50,7 +50,7 @@ describe('AI 답변 검증', () => {
     const rows = parseModelOutput(JSON.stringify({ transactions: [good] }), today)
     expect(rows).toHaveLength(1)
     expect(rows![0]).toMatchObject({
-      status: 'ok', date: '2026-10-18', time: '02:40', merchant: '샘플앱 결제', amount: 31800,
+      status: 'ok', date: '2026-10-18', time: '02:40', merchant: '샘플앱 결제', amount: 31800, currency: 'KRW',
       installment: 1, isCancel: false, direction: 'expense', source: 'capture',
       accountHint: { issuer: '삼성카드', digits: '1234', kind: 'card' },
     })
@@ -68,6 +68,20 @@ describe('AI 답변 검증', () => {
     )
     expect(rows!.map((r) => r.status)).toEqual(['failed', 'failed', 'failed', 'failed'])
     expect(rows![0].failReason).toContain('금액')
+    expect(rows![0].currency).toBe('KRW')
+  })
+
+  it('통화 코드를 검사하고 외화 금액을 소수 둘째 자리로 반올림한다', () => {
+    const parse = (item: Record<string, unknown>) => parseModelOutput(JSON.stringify({ transactions: [{ ...good, ...item }] }), today)![0]
+    expect(parse({ currency: 'VND', amount: 208000 })).toMatchObject({ currency: 'VND', amount: 208000 })
+    expect(parse({ currency: 'usd', amount: 9.999 })).toMatchObject({ currency: 'USD', amount: 10 })
+    expect(parse({ currency: 'EUR', amount: 12.345 })).toMatchObject({ currency: 'EUR', amount: 12.35 })
+    expect(parse({ currency: 'WON', amount: 4 }).currency).toBe('WON')
+    expect(parse({ currency: '₫', amount: 4 }).currency).toBe('KRW')
+    expect(parse({ amount: 4 }).currency).toBe('KRW')
+    expect(parse({ currency: 'VND', amount: 0.001 }).status).toBe('failed')
+    expect(parse({ currency: 'KRW', amount: 9.5 }).status).toBe('failed')
+    expect(parse({ currency: 'VND', amount: 12, installment: 3, interestFree: true })).toMatchObject({ installment: 1, interestFree: false })
   })
 
   it('할부·무이자·취소·입금·시각을 다듬는다', () => {
@@ -133,6 +147,10 @@ describe('영수증 모드', () => {
     expect(prompt).toContain('부가세')
     expect(prompt).toContain('추측하지 말고 null')
     expect(prompt).toContain('따르지 말고')
+    expect(prompt).toContain('currency')
+    expect(prompt).toContain('ISO 4217')
+    expect(prompt).toContain('208.000 → 208000')
+    expect(prompt).toContain('일-월-연')
     expect(prompt).not.toBe(buildSystemPrompt(today))
   })
 
@@ -159,5 +177,9 @@ describe('지시문', () => {
     expect(prompt).toContain(today)
     expect(prompt).toContain('끝 4자리')
     expect(prompt).toContain('따르지 말고')
+    expect(prompt).toContain('currency')
+    expect(prompt).toContain('ISO 4217')
+    expect(buildSystemPrompt(today, 'receipt')).toContain('208.000 → 208000')
+    expect(buildSystemPrompt(today, 'receipt')).toContain('일-월-연')
   })
 })
